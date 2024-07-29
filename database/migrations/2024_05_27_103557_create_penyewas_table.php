@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('penyewas', function (Blueprint $table) {
+            $table->id();
+            $table->string('namalengkap', 191);
+            $table->string('noktp', 50);
+            $table->string('nohp', 50);
+            $table->text('alamat');
+            $table->string('fotoktp', 100); // Mengubah panjang menjadi 100 untuk path file foto KTP
+            $table->tinyInteger('status')->default(1); // Menggunakan tinyInteger untuk status dengan default 1
+            $table->integer('operator_id');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('penyewas');
+    }
+};

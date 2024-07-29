@@ -1,0 +1,32 @@
+INSERT INTO roles (role, operator_id, created_at, updated_at) 
+VALUES ('developer', 1, GETDATE(), GETDATE()), 
+       ('owner', 1, GETDATE(), GETDATE()),
+       ('superadmin', 1, GETDATE(), GETDATE()),
+       ('admin', 1, GETDATE(), GETDATE());
+
+INSERT INTO users (role_id, username, slug, email, password, status, created_at, updated_at) 
+VALUES 
+(1, 'Developer', 'developer', 'developer@gmail.com', '$2y$10$F2HzGS2rVFciyd3cIyH6iOz8mAUiFGetidNKSEInH8AgpLukoWqqi', '1', GETDATE(), GETDATE()), 
+(2, 'Owner', 'owner', 'owner@gmail.com', '$2y$10$B6v5iovg3UEEOldLqA4F9uuGnmPjtt6Z5M770wR7cliirucSSGGCS', '1', GETDATE(), GETDATE());
+
+INSERT INTO roles (role, operator_id, created_at, updated_at) 
+VALUES ('developer', 1, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()), 
+       ('owner', 1, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+       ('superadmin', 1, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+       ('admin', 1, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+
+INSERT INTO users (role_id, username, slug, email, password, status, created_at, updated_at) 
+VALUES 
+(1, 'Developer', 'developer', 'developer@gmail.com', '$2y$10$F2HzGS2rVFciyd3cIyH6iOz8mAUiFGetidNKSEInH8AgpLukoWqqi', '1', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()), 
+(2, 'Owner', 'owner', 'owner@gmail.com', '$2y$10$B6v5iovg3UEEOldLqA4F9uuGnmPjtt6Z5M770wR7cliirucSSGGCS', '1', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+
+SELECT COUNT(DISTINCT k.id) as jumlah_kamar_harian
+FROM kamars k
+JOIN pembayarans p ON k.id = p.kamar_id
+JOIN lantais l ON k.lantai_id = l.id
+JOIN penyewas s ON p.penyewa_id = s.id
+WHERE l.id = 1
+AND p.jenissewa = 'Harian'
+AND k.status IN (1, 2)
+AND p.status_pembayaran != 'failed'
+AND s.status = 1;
