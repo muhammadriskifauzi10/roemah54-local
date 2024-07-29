@@ -82,13 +82,13 @@ class MainController extends Controller
                 $log = "<span class='badge bg-success'>Tambah Barang</span>";
             } elseif ($row->log == 2) {
                 $log = "<span class='badge bg-warning'>Pembaruan Barang</span>";
-            } elseif ($row->log == 4) {
+            } elseif ($row->log == 3) {
                 $log = "<span class='badge bg-success'>Penggunaan Barang</span>";
+            } elseif ($row->log == 4) {
+                $log = "<span class='badge bg-warning'>Mutasi Barang</span>";
             } elseif ($row->log == 5) {
-                $log = "<span class='badge bg-danger'>Mutasi Barang</span>";
+                $log = "<span class='badge bg-danger'>Hapus Penggunaan Barang</span>";
             } elseif ($row->log == 6) {
-                $log = "<span class='badge bg-warning'>Hapus Penggunaan Barang</span>";
-            } elseif ($row->log == 7) {
                 $log = "<span class='badge bg-info'>Perbaikan Barang</span>";
             }
 

@@ -315,13 +315,13 @@ class MainController extends Controller
                         $server_no_barcode = NULL;
                         $server_label = NULL;
                     }
-
+                   
                     $logbaranginventaris->tanggal_masuk = $model_baranginventaris->tanggal_masuk;
                     $logbaranginventaris->kategoribaranginventaris_id = $model_baranginventaris->kategoribaranginventaris_id;
                     $logbaranginventaris->nama = $model_baranginventaris->nama;
                     $logbaranginventaris->jumlah = intval($jumlah);
                     $logbaranginventaris->asallokasi_id = $lokasi;
-                    $logbaranginventaris->log = 4;
+                    $logbaranginventaris->log = 3;
                     $logbaranginventaris->operator_id = auth()->user()->id;
                     $logbaranginventaris->save();
 
@@ -336,7 +336,7 @@ class MainController extends Controller
                         'nama' => $model_baranginventaris->nama,
                         'jumlah' => intval($jumlah),
                         'asallokasi_id' => $lokasi,
-                        'log' => 4,
+                        'log' => 3,
                         'operator_id' => auth()->user()->id,
                         'created_at' => date("Y-m-d H:i:s"),
                         'updated_at' => date("Y-m-d H:i:s"),
@@ -530,13 +530,13 @@ class MainController extends Controller
                         $server_no_barcode = NULL;
                         $server_label = NULL;
                     }
-
+            
                     $logbaranginventaris->kategoribaranginventaris_id = $model_baranginventaris->kategoribaranginventaris_id;
                     $logbaranginventaris->nama = $model_baranginventaris->nama;
                     $logbaranginventaris->jumlah = $model_penggunaanbaranginventaris->jumlah;
                     $logbaranginventaris->asallokasi_id = $model_penggunaanbaranginventaris->lokasi_id;
                     $logbaranginventaris->tujuanlokasi_id = $tujuanmutasi;
-                    $logbaranginventaris->log = 6;
+                    $logbaranginventaris->log = 4;
                     $logbaranginventaris->operator_id = auth()->user()->id;
                     $logbaranginventaris->save();
 
@@ -551,7 +551,7 @@ class MainController extends Controller
                         'jumlah' => $model_penggunaanbaranginventaris->jumlah,
                         'asallokasi_id' => $model_penggunaanbaranginventaris->lokasi_id,
                         'tujuanlokasi_id' => $tujuanmutasi,
-                        'log' => 5,
+                        'log' => 4,
                         'operator_id' => auth()->user()->id,
                         'created_at' => date("Y-m-d H:i:s"),
                         'updated_at' => date("Y-m-d H:i:s"),
@@ -627,7 +627,7 @@ class MainController extends Controller
                     $server_no_barcode = NULL;
                     $server_label = NULL;
                 }
-
+              
                 $logbaranginventaris->kategoribaranginventaris_id = $model_baranginventaris->kategoribaranginventaris_id;
                 $logbaranginventaris->nama = $model_baranginventaris->nama;
                 $logbaranginventaris->jumlah = $model_penggunaanbaranginventaris->jumlah;
@@ -635,7 +635,7 @@ class MainController extends Controller
                 $logbaranginventaris->log = 5;
                 $logbaranginventaris->operator_id = auth()->user()->id;
                 $logbaranginventaris->save();
-
+               
                 // server
                 DB::connection("mysqldua")->table("logbaranginventaris")->insert([
                     'tanggal_log' => date('Y-m-d H:i:s'),
@@ -646,7 +646,7 @@ class MainController extends Controller
                     'nama' => $model_baranginventaris->nama,
                     'jumlah' => $model_penggunaanbaranginventaris->jumlah,
                     'asallokasi_id' => $model_penggunaanbaranginventaris->lokasi_id,
-                    'log' => 6,
+                    'log' => 5,
                     'operator_id' => auth()->user()->id,
                     'created_at' => date("Y-m-d H:i:s"),
                     'updated_at' => date("Y-m-d H:i:s"),
