@@ -54,7 +54,7 @@
             tableKamar = $("#datatableKamar").DataTable({
                 processing: true,
                 ajax: {
-                    url: "{{ route('datatablekamar') }}",
+                    url: "{{ route('kamar.datatablekamar') }}",
                     type: "POST",
                     // dataSrc: ""
                     dataType: "json",
@@ -100,7 +100,7 @@
             formData.append("token", $("#token").val());
 
             $.ajax({
-                url: "{{ route('getmodalkamar') }}",
+                url: "{{ route('kamar.getmodalkamar') }}",
                 type: "POST",
                 data: formData,
                 processData: false,
@@ -149,7 +149,7 @@
             formData.append("token_listrik", $("#token_listrik").val());
 
             $.ajax({
-                url: "{{ route('postkamar') }}",
+                url: "{{ route('kamar.postkamar') }}",
                 type: "POST",
                 data: formData,
                 processData: false,
@@ -219,7 +219,7 @@
             formData.append("kamar_id", e.getAttribute('data-edit'));
 
             $.ajax({
-                url: "{{ route('getmodaleditkamar') }}",
+                url: "{{ route('kamar.getmodaleditkamar') }}",
                 type: "POST",
                 data: formData,
                 processData: false,
@@ -270,7 +270,7 @@
             formData.append("token_listrik_edit", $("#token_listrik_edit").val());
 
             $.ajax({
-                url: "{{ route('postedittipekamar') }}",
+                url: "{{ route('kamar.postedittipekamar') }}",
                 type: "POST",
                 data: formData,
                 processData: false,

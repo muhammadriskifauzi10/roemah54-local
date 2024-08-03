@@ -2,26 +2,6 @@
 
 @section('mystyles')
     <style>
-        /* body::before {
-                                        content: "";
-                                        position: absolute;
-                                        top: 0;
-                                        left: 0;
-                                        width: 100%;
-                                        height: 100%;
-                                        background-color: rgba(0, 0, 0, 0.7);
-                                    }
-
-                                    body {
-                                        background-image: url(../img/jumbotron.jpg);
-                                        background-size: cover;
-                                        background-repeat: no-repeat;
-                                        background-position: center;
-                                        background-attachment: fixed;
-                                        position: relative;
-                                        height: 100vh;
-                                    } */
-
         main {
             height: 100vh;
         }

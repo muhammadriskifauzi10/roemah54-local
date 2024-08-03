@@ -14,7 +14,7 @@
                 </nav>
 
                 <div class="row">
-                    <div class="col-xl-9">
+                    <div class="col-xl-9 mb-3">
                         <div class="card border-0">
                             <div class="card-body">
                                 <div class="mb-3">

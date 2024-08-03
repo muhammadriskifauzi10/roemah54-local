@@ -19,7 +19,7 @@ class KamarController extends Controller
             'judul' => 'Kamar'
         ];
 
-        return view('contents.dashboard.kamar', $data);
+        return view('contents.dashboard.kamar.main', $data);
     }
     // Ajax Request
     public function datatablekamar()
@@ -247,6 +247,7 @@ class KamarController extends Controller
                         'operator_id' => auth()->user()->id,
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
+
 
                     $response = [
                         'status' => 200,

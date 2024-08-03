@@ -33,7 +33,7 @@ class LoginController extends Controller
 
         $username = htmlspecialchars($_POST['username'], true);
 
-        if (User::where('username', $username)->exists()) {
+        if (User::where('username', $username)->where('status', 1)->exists()) {
             $user = User::where('username', $username)->first();
 
             if (Auth::attempt([

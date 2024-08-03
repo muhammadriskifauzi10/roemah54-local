@@ -7,7 +7,6 @@ use App\Models\Baranginventaris;
 use App\Models\Jenisruangan;
 use App\Models\Kategoribaranginventaris;
 use App\Models\Logbaranginventaris;
-use App\Models\Logmutasibaranginventaris;
 use App\Models\Lokasi;
 use App\Models\Penggunaanbaranginventaris;
 use Carbon\Carbon;
@@ -15,6 +14,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class MainController extends Controller
 {
@@ -78,9 +78,9 @@ class MainController extends Controller
             $aksi = '
             <div class="d-flex align-items-center justify-content-center gap-1">
                 <button type="button" class="btn btn-primary text-light fw-bold"
-                data-mutasi="' . $row->id . '" onclick="openModalMutasiPenggunaanBarang(this)">Mutasi</button>
+                data-mutasi="' . $row->id . '" onclick="openModalMutasiPenggunaanBarang(this)" style="width: 90px;">Mutasi</button>
                 <button type="button" class="btn btn-danger text-light fw-bold"
-                data-hapus="' . $row->id . '" onclick="requestHapusPenggunaanBarang(this)">Hapus</button>
+                data-hapus="' . $row->id . '" onclick="requestHapusPenggunaanBarang(this)" style="width: 90px;">Hapus</button>
             </div>';
 
             $output[] = [
@@ -306,6 +306,14 @@ class MainController extends Controller
                             'label' => Str::lower($parts[0]),
                         ]);
 
+                        // server
+                        DB::connection("mysqldua")->table("penggunaanbaranginventaris")->where('id', (int)$model_penggunaanbaranginventaris->id)->update([
+                            'no_barcode' => $no_barcode,
+                            'label' => Str::lower($parts[0]),
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
+
                         $logbaranginventaris->no_barcode = $no_barcode;
                         $logbaranginventaris->label = Str::lower($parts[0]);
 
@@ -315,7 +323,7 @@ class MainController extends Controller
                         $server_no_barcode = NULL;
                         $server_label = NULL;
                     }
-                   
+
                     $logbaranginventaris->tanggal_masuk = $model_baranginventaris->tanggal_masuk;
                     $logbaranginventaris->kategoribaranginventaris_id = $model_baranginventaris->kategoribaranginventaris_id;
                     $logbaranginventaris->nama = $model_baranginventaris->nama;
@@ -530,7 +538,7 @@ class MainController extends Controller
                         $server_no_barcode = NULL;
                         $server_label = NULL;
                     }
-            
+
                     $logbaranginventaris->kategoribaranginventaris_id = $model_baranginventaris->kategoribaranginventaris_id;
                     $logbaranginventaris->nama = $model_baranginventaris->nama;
                     $logbaranginventaris->jumlah = $model_penggunaanbaranginventaris->jumlah;
@@ -580,6 +588,83 @@ class MainController extends Controller
             }
         }
     }
+    // cetak
+    public function getmodalcetakqrcodepenggunaanbarang()
+    {
+        if (request()->ajax()) {
+            $optionlabel = [];
+            foreach (Penggunaanbaranginventaris::join('baranginventaris as bi', 'penggunaanbaranginventaris.baranginventaris_id', '=', 'bi.id')
+                ->select(
+                    'penggunaanbaranginventaris.id',
+                    'penggunaanbaranginventaris.no_barcode',
+                    'bi.nama'
+                )
+                ->whereNotNull('penggunaanbaranginventaris.no_barcode')->get() as $row) {
+                $optionlabel[] = ' <option value="' . $row->id . '">' . $row->nama . ' - ' . $row->no_barcode . '</option>';
+            }
+
+            $dataHTML = '
+                <form class="modal-content" action="' . route('inventaris.cetakqrcode') . '" autocomplete="off" target="__blank">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="universalModalLabel">Cetak QR Code</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <label for="nama_barang" class="form-label fw-bold">Pilih Nama Barang</label>
+                            <select class="form-select form-select-2"
+                                name="nama_barang[]" id="nama_barang" multiple="multiple" style="width: 100%;">
+                                ' . implode(" ", $optionlabel) . '
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary w-100" id="btnRequest">
+                            <i class="fa fa-barcode me-1"></i>
+                            Print
+                        </button>
+                    </div>
+                </form>
+                ';
+
+            $response = [
+                'status' => 200,
+                'message' => 'success',
+                'dataHTML' => $dataHTML
+            ];
+        } else {
+            $response = [
+                'status' => 400,
+                'message' => 'opps',
+            ];
+        }
+
+        return response()->json($response);
+    }
+    public function cetakqrcode()
+    {
+        $datainput = request()->input('nama_barang');
+
+        if (!$datainput) {
+            return redirect()->route('inventaris.penggunaanbarang')->with('messageFailed', 'Qr Code wajib dipilih');
+        }
+
+        $penggunaanbarang = Penggunaanbaranginventaris::wherein('id', $datainput)->get();
+
+        $data = [
+            'judul' => 'Cetak QR Code',
+            'penggunaanbarang' => $penggunaanbarang
+        ];
+
+        $width = 80 * 2.83465; // 80 mm to points
+        $height = 25 * 2.83465; // 30 mm to points
+
+        // Generate PDF
+        $pdf = Pdf::loadView('contents.dashboard.inventaris.penggunaanbarang.cetak.qrcode', $data)
+            ->setPaper([0, 0, $width, $height]);
+
+        return $pdf->stream('cetakqrcode.pdf');
+    }
     // hapus
     public function destroypenggunaanbarang()
     {
@@ -627,7 +712,7 @@ class MainController extends Controller
                     $server_no_barcode = NULL;
                     $server_label = NULL;
                 }
-              
+
                 $logbaranginventaris->kategoribaranginventaris_id = $model_baranginventaris->kategoribaranginventaris_id;
                 $logbaranginventaris->nama = $model_baranginventaris->nama;
                 $logbaranginventaris->jumlah = $model_penggunaanbaranginventaris->jumlah;
@@ -635,7 +720,7 @@ class MainController extends Controller
                 $logbaranginventaris->log = 5;
                 $logbaranginventaris->operator_id = auth()->user()->id;
                 $logbaranginventaris->save();
-               
+
                 // server
                 DB::connection("mysqldua")->table("logbaranginventaris")->insert([
                     'tanggal_log' => date('Y-m-d H:i:s'),

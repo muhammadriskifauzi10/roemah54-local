@@ -7,7 +7,6 @@ use App\Models\Harga;
 use App\Models\Mitra;
 use App\Models\Tipekamar;
 use Exception;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -172,55 +171,7 @@ class HargaController extends Controller
             return redirect('/harga')->with('messageFailed', 'Opps, terjadi kesalahan!');
         }
     }
-    // Ajax Request
-    public function posttipekamar()
-    {
-        if (request()->ajax()) {
-            try {
-                DB::beginTransaction();
-                $tipekamar = htmlspecialchars(request()->input('tipekamar'), ENT_QUOTES, 'UTF-8');
-
-                if (Tipekamar::where('tipekamar', $tipekamar)->exists()) {
-                    $response = [
-                        'status' => 422,
-                        'message' => 'error',
-                    ];
-
-                    return response()->json($response);
-                }
-
-                Tipekamar::create([
-                    'tipekamar' => Str::upper($tipekamar),
-                    'operator_id' => auth()->user()->id
-                ]);
-
-                // server
-                DB::connection("mysqldua")->table("tipekamars")->insert([
-                    'tipekamar' => Str::upper($tipekamar),
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
-
-                $response = [
-                    'status' => 200,
-                    'message' => 'success',
-                ];
-
-                DB::commit();
-                return response()->json($response);
-            } catch (Exception $e) {
-                $response = [
-                    'status' => 500,
-                    'message' => $e->getMessage(),
-                ];
-
-                DB::rollBack();
-                return response()->json($response);
-            }
-        }
-    }
+    // ajax request
     public function getselectharga()
     {
         if (request()->ajax()) {

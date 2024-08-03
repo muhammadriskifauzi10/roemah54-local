@@ -9,14 +9,14 @@
             <div class="col-xl-10">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('manajemenpengguna.pengguna') }}">Kembali</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('pengguna') }}">Kembali</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Tambah Pengguna</li>
                     </ol>
                 </nav>
 
                 <div class="card border-0">
                     <div class="card-body">
-                        <form action="{{ route('manajemenpengguna.posttambahpengguna') }}" class="row" autocomplete="off" method="POST">
+                        <form action="{{ route('pengguna.posttambahpengguna') }}" class="row" autocomplete="off" method="POST">
                             @csrf
                             <div class="row">
                                 {{-- role --}}

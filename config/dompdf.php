@@ -96,9 +96,9 @@ return array(
             "https://" => ["rules" => []]
         ],
 
-         /**
-          * @var string
-          */
+        /**
+         * @var string
+         */
         'log_output_file' => null,
 
         /**
@@ -171,14 +171,14 @@ return array(
          */
         "default_paper_size" => "a4",
 
-         /**
-          * The default paper orientation.
-          *
-          * The orientation of the page (portrait or landscape).
-          *
-          * @var string
-          */
-        'default_paper_orientation' => "landscape",
+        /**
+         * The default paper orientation.
+         *
+         * The orientation of the page (portrait or landscape).
+         *
+         * @var string
+         */
+        'default_paper_orientation' => "portrait",
 
         /**
          * The default font family

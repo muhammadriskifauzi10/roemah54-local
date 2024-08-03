@@ -13,7 +13,7 @@
                     </ol>
                 </nav>
 
-                <div class="mb-3">
+                <div class="mb-3 d-flex align-items-center justify-content-between">
                     <button type="button" class="btn btn-dark d-flex align-items-center justify-content-center gap-1"
                         onclick="openModalTambahPenggunaanBarang()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
@@ -22,6 +22,16 @@
                                 d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
                         </svg>
                         Penggunaan Barang
+                    </button>
+                    <button type="button" class="btn btn-primary d-flex align-items-center justify-content-center gap-1"
+                        onclick="openModalCetakQrCode()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-printer" viewBox="0 0 16 16">
+                            <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1" />
+                            <path
+                                d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1" />
+                        </svg>
+                        QR Code
                     </button>
                 </div>
 
@@ -191,6 +201,52 @@
                                 // dropdownCssClass: "select2--small",
                             });
                         }, 1000);
+                    }
+                },
+            });
+        }
+
+        // cetak qr code
+        function openModalCetakQrCode() {
+            $.ajax({
+                url: "{{ route('inventaris.getmodalcetakqrcodepenggunaanbarang') }}",
+                type: "POST",
+                // data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    $("#universalModalContent").empty();
+                    $("#universalModalContent").addClass("modal-dialog-centered");
+                    $("#universalModalContent").append(`
+                            <div class="modal-content">
+                                <div class="modal-body">
+                                    <div class="loading">
+                                        <span class="dots pulse1"></span>
+                                        <span class="dots pulse2"></span>
+                                        <span class="dots pulse3"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            `);
+                    $("#universalModal").modal("show");
+                },
+                success: function(response) {
+                    if (response.message == "success") {
+                        setTimeout(function() {
+                            $("#universalModalContent").html(response.dataHTML.trim());
+
+                            $(".form-select-2").select2({
+                                dropdownParent: $("#universalModal"),
+                                theme: "bootstrap-5",
+                                // selectionCssClass: "select2--small",
+                                // dropdownCssClass: "select2--small",
+                            });
+                        }, 1000);
+                    } else {
+                        Swal.fire({
+                            title: "Opps, terjadi kesalahan",
+                            icon: "error"
+                        })
                     }
                 },
             });

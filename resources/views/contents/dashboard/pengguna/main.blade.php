@@ -14,7 +14,7 @@
                 </nav>
 
                 <div class="mb-3">
-                    <a href="{{ route('manajemenpengguna.tambahpengguna') }}" type="button" class="btn btn-dark">
+                    <a href="{{ route('pengguna.tambahpengguna') }}" type="button" class="btn btn-dark">
                         <span class="d-flex align-items-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
                                 class="bi bi-plus-lg" viewBox="0 0 16 16">
@@ -28,13 +28,15 @@
                 {{-- pengguna --}}
                 <div class="card border-0">
                     <div class="card-body">
-                        <table class="table table-light table-hover border-0 m-0" id="datatablePengguna" style="width: 100%">
+                        <table class="table table-light table-hover border-0 m-0" id="datatablePengguna"
+                            style="width: 100%">
                             <thead>
                                 <tr>
                                     <th scope="col">No</th>
                                     <th scope="col">Role</th>
                                     <th scope="col">Nama Pengguna</th>
                                     <th scope="col">Status</th>
+                                    <th scope="col">Aksi</th>
                                 </tr>
                             </thead>
                         </table>
@@ -52,7 +54,7 @@
             tablePengguna = $("#datatablePengguna").DataTable({
                 processing: true,
                 ajax: {
-                    url: "{{ route('manajemenpengguna.datatablepengguna') }}",
+                    url: "{{ route('pengguna.datatablepengguna') }}",
                     type: "POST",
                     // dataSrc: ""
                     dataType: "json"
@@ -69,6 +71,9 @@
                     {
                         data: "status",
                     },
+                    {
+                        data: "aksi",
+                    },
                 ],
                 // "order": [
                 //     [1, 'asc']
@@ -82,5 +87,54 @@
                 // }
             });
         });
+
+        // hapus
+        function requestHapusPengguna(e) {
+            Swal.fire({
+                title: 'Hapus Pengguna?',
+                text: "Anda yakin ingin menghapus pengguna?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#25d366', // Warna hijau
+                cancelButtonColor: '#cc0000', // Warna merah
+                confirmButtonText: 'Ya, saya yakin!',
+                cancelButtonText: 'Tidak, batalkan!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var formData = new FormData();
+                    formData.append("pengguna_id", e.getAttribute('data-hapus'));
+
+                    $.ajax({
+                        url: "{{ route('pengguna.destroypengguna') }}",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            if (response.message == "success") {
+                                Swal.fire({
+                                    title: "Berhasil",
+                                    text: "Pengguna Berhasil Dihapus",
+                                    icon: "success"
+                                })
+                                setTimeout(function() {
+                                    location.reload()
+                                }, 1000)
+                            } else {
+                                Swal.fire({
+                                    title: "Opps, terjadi kesalahan",
+                                    icon: "error"
+                                })
+                            }
+                        },
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        title: "Dibatalkan",
+                        icon: "error"
+                    })
+                }
+            })
+        }
     </script>
 @endpush

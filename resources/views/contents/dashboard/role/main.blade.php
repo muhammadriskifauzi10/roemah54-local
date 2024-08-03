@@ -49,7 +49,7 @@
             tableRole = $("#datatableRole").DataTable({
                 processing: true,
                 ajax: {
-                    url: "{{ route('manajemenpengguna.datatablerole') }}",
+                    url: "{{ route('role.datatablerole') }}",
                     type: "POST",
                     // dataSrc: ""
                     dataType: "json"
@@ -140,7 +140,7 @@
                 formData.append("role", $("#role").val());
 
                 $.ajax({
-                    url: "{{ route('manajemenpengguna.tambahrole') }}",
+                    url: "{{ route('role.tambahrole') }}",
                     type: "POST",
                     data: formData,
                     processData: false,

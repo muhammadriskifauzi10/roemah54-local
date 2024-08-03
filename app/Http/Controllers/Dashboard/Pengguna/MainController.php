@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard\Manajemenpengguna\Pengguna;
+namespace App\Http\Controllers\Dashboard\Pengguna;
 
 use App\Http\Controllers\Controller;
 use App\Models\Role;

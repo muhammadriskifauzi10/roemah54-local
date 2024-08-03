@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard\Manajemenpengguna\Role;
+namespace App\Http\Controllers\Dashboard\Tipekamar;
 
 use App\Http\Controllers\Controller;
-use App\Models\Role;
+use App\Models\Tipekamar;
 use Exception;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class MainController extends Controller
 {
@@ -16,18 +16,18 @@ class MainController extends Controller
             'judul' => 'Role',
         ];
 
-        return view('contents.dashboard.manajemenpengguna.role.main', $data);
+        return view('contents.dashboard.tipekamar.main', $data);
     }
-    public function datatablerole()
+    public function datatabletipekamar()
     {
-        $role = Role::orderby('created_at', 'ASC')->get();
+        $tipekamar = Tipekamar::orderby('created_at', 'ASC')->get();
 
         $output = [];
         $no = 1;
-        foreach ($role as $row) {
+        foreach ($tipekamar as $row) {
             $output[] = [
                 'nomor' => '<strong>' . $no++ . '</strong>',
-                'nama_role' => $row->role,
+                'tipekamar' => $row->tipekamar,
             ];
         }
 
@@ -41,9 +41,9 @@ class MainController extends Controller
         if (request()->ajax()) {
             try {
                 DB::beginTransaction();
-                $role = htmlspecialchars(request()->input('role'), ENT_QUOTES, 'UTF-8');
+                $tipekamar = htmlspecialchars(request()->input('tipekamar'), ENT_QUOTES, 'UTF-8');
 
-                if (Role::where('role', $role)->exists()) {
+                if (Tipekamar::where('tipekamar', $tipekamar)->exists()) {
                     $response = [
                         'status' => 422,
                         'message' => 'error',
@@ -52,14 +52,14 @@ class MainController extends Controller
                     return response()->json($response);
                 }
 
-                Role::create([
-                    'role' => Str::title($role),
+                Tipekamar::create([
+                    'tipekamar' => Str::upper($tipekamar),
                     'operator_id' => auth()->user()->id
                 ]);
 
                 // server
-                DB::connection("mysqldua")->table("roles")->insert([
-                    'role' => Str::title($role),
+                DB::connection("mysqldua")->table("tipekamars")->insert([
+                    'tipekamar' => Str::upper($tipekamar),
                     'operator_id' => auth()->user()->id,
                     'created_at' => date("Y-m-d H:i:s"),
                     'updated_at' => date("Y-m-d H:i:s"),
