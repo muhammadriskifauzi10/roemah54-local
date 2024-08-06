@@ -16,7 +16,7 @@ class MainController extends Controller
             'judul' => 'Role',
         ];
 
-        return view('contents.dashboard.manajemenpengguna.role.main', $data);
+        return view('contents.dashboard.role.main', $data);
     }
     public function datatablerole()
     {

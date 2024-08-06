@@ -18,7 +18,7 @@ class MainController extends Controller
             'judul' => 'Pengguna',
         ];
 
-        return view('contents.dashboard.manajemenpengguna.pengguna.main', $data);
+        return view('contents.dashboard.pengguna.main', $data);
     }
     public function datatablepengguna()
     {
