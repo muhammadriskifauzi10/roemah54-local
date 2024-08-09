@@ -114,8 +114,6 @@ class MainController extends Controller
             if ($post) {
                 DB::commit();
                 return redirect()->route('pengguna')->with('messageSuccess', 'Pengguna berhasil ditambahkan!');
-<<<<<<< HEAD
-=======
             }
         } catch (Exception $e) {
             DB::rollBack();
@@ -296,7 +294,6 @@ class MainController extends Controller
             if ($update) {
                 DB::commit();
                 return redirect()->back()->with('messageSuccess', 'Pengguna berhasil diperbarui!');
->>>>>>> 4d434aee6f09f111af6eac6625cfd6d1ec099b20
             }
         } catch (Exception $e) {
             DB::rollBack();
