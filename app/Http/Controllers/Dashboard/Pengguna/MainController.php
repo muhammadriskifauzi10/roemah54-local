@@ -48,7 +48,7 @@ class MainController extends Controller
             'role' => $role
         ];
 
-        return view('contents.dashboard.manajemenpengguna.pengguna.tambah', $data);
+        return view('contents.dashboard.pengguna.tambah', $data);
     }
     public function create()
     {
@@ -105,7 +105,7 @@ class MainController extends Controller
 
             if ($post) {
                 DB::commit();
-                return redirect()->route('manajemenpengguna.pengguna')->with('messageSuccess', 'Pengguna berhasil ditambahkan!');
+                return redirect()->route('pengguna')->with('messageSuccess', 'Pengguna berhasil ditambahkan!');
             }
         } catch (Exception $e) {
             DB::rollBack();
