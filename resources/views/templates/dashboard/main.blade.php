@@ -117,6 +117,15 @@
 
     <script>
         $(document).ready(function() {
+            $("#trigger-button").on("click", function() {
+                var listMenu = $("#menu > .list-menu")
+
+                if (listMenu.hasClass("show")) {
+                    listMenu.removeClass("show");
+                } else {
+                    listMenu.addClass("show");
+                }
+            })
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

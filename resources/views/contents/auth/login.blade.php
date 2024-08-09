@@ -15,7 +15,7 @@
                 <div class="card shadow-lg border-0 rounded-lg m-0">
                     <div class="card-body">
                         <a href="/" class="text-decoration-none">
-                            <h4 class="text-center font-weight-light my-4 text-success">Roemah 54</h4>
+                            <h3 class="text-center font-weight-light my-4 text-success logo">Roemah 54</h3>
                         </a>
                         <form action="{{ route('authenticate') }}" method="POST" autocomplete="off">
                             @csrf

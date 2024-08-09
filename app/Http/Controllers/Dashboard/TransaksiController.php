@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tagih;
 use App\Models\Transaksi;
 use Carbon\Carbon;
 
@@ -24,12 +25,10 @@ class TransaksiController extends Controller
         $tipe = request()->input('tipe');
 
         $transaksi = Transaksi::when($jenis_transaksi, function ($query) use ($jenis_transaksi) {
-            if ($jenis_transaksi == 1) {
-                return $query->where('tagih_id', 1);
-            } elseif ($jenis_transaksi == 2) {
-                return $query->where('tagih_id', 2);
-            } elseif ($jenis_transaksi == 3) {
-                return $query->where('tagih_id', 3);
+            foreach (Tagih::all() as $row) {
+                if ($jenis_transaksi == $row->id) {
+                    return $query->where('tagih_id', $row->id);
+                }
             }
         })
             ->when($tipe, function ($query) use ($tipe) {

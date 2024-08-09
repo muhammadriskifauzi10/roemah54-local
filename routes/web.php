@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Dashboard\Bisnis\Ritel\MainController as RitelMainController;
 use App\Http\Controllers\Dashboard\HargaController;
 use App\Http\Controllers\Dashboard\Inventaris\Barang\MainController as BarangMainController;
 use App\Http\Controllers\Dashboard\Inventaris\Kategori\MainController as KategoriMainController;
@@ -9,9 +10,12 @@ use App\Http\Controllers\Dashboard\Inventaris\Log\MainController as LogMainContr
 use App\Http\Controllers\Dashboard\Inventaris\Penggunaanbarang\MainController as PenggunaanbarangMainController;
 use App\Http\Controllers\Dashboard\KamarController;
 use App\Http\Controllers\Dashboard\LaundriController;
+use App\Http\Controllers\Dashboard\Layanan\Fandb\MainController as FandbMainController;
+use App\Http\Controllers\Dashboard\Layanan\Laundri\MainController as LaundriMainController;
 use App\Http\Controllers\Dashboard\Lokasi\MainController as LokasiMainController;
 use App\Http\Controllers\Dashboard\MainController;
 use App\Http\Controllers\Dashboard\Pengguna\MainController as PenggunaMainController;
+use App\Http\Controllers\Dashboard\Penyewa\Penyewaankamar\MainController as PenyewaankamarMainController;
 use App\Http\Controllers\Dashboard\Role\MainController as RoleMainController;
 use App\Http\Controllers\Dashboard\PenyewaankamarController;
 use App\Http\Controllers\Dashboard\Scan\MainController as ScanMainController;
@@ -52,12 +56,17 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/lokasi/getmodalcetakqrcodelokasi', [LokasiMainController::class, 'getmodalcetakqrcodelokasi'])->name('lokasi.getmodalcetakqrcodelokasi');
     Route::get('/lokasi/cetakqrcode', [LokasiMainController::class, 'cetakqrcode'])->name('lokasi.cetakqrcode');
 
+    // penyewa
+    // Penyewaan Kamar
+    Route::get('/penyewaankamar', [PenyewaankamarMainController::class, 'index'])->name('penyewaankamar');
+    Route::post('/penyewaankamar/datatablepenyewaankamar', [PenyewaankamarMainController::class, 'datatablepenyewaankamar'])->name('penyewaankamar.datatablepenyewaankamar');
+    Route::get('/penyewaankamar/cetakkwitansi/{id}', [PenyewaankamarMainController::class, 'cetakkwitansi'])->name('penyewaankamar.cetakkwitansi');
+
     // Sewa
     Route::group(['middleware' => 'hassewa'], function () {
         Route::get('/sewa', [SewaController::class, 'index'])->name('sewa');
         Route::post('/sewa', [SewaController::class, 'create'])->name('postsewa');
     });
-    // penyewa
     Route::get('/sewa/{penyewa:id}', [SewaController::class, 'detaildata'])->name('detailpenyewa');
     Route::post('/sewa/kosongkankamar', [SewaController::class, 'kosongkankamar'])->name('postkosongkankamar');
     Route::post('/getmodalbayarkamar', [SewaController::class, 'getmodalbayarkamar'])->name('getmodalbayarkamar');
@@ -70,6 +79,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/getmodalselesaikanpembayarankamar', [SewaController::class, 'getmodalselesaikanpembayarankamar'])->name('getmodalselesaikanpembayarankamar');
     Route::post('/selesaikanpembayarankamar', [SewaController::class, 'selesaikanpembayarankamar'])->name('postselesaikanpembayarankamar');
     Route::post('/bayarisitokenkamar', [SewaController::class, 'bayarisitokenkamar'])->name('postbayarisitokenkamar');
+
     // tipekamar
     Route::get('/tipekamar', [TipekamarMainController::class, 'index'])->name('tipekamar');
     Route::post('/tipekamar/datatabletipekamar', [TipekamarMainController::class, 'datatabletipekamar'])->name('tipekamar.datatabletipekamar');
@@ -81,16 +91,13 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/kamar/getmodaleditkamar', [KamarController::class, 'getmodaleditkamar'])->name('kamar.getmodaleditkamar');
     Route::post('/kamar/postedittipekamar', [KamarController::class, 'postedittipekamar'])->name('kamar.postedittipekamar');
     Route::post('/kamar/tambahkamar', [KamarController::class, 'create'])->name('kamar.postkamar');
-    // Penyewaan Kamar
-    Route::get('/penyewaankamar', [PenyewaankamarController::class, 'index'])->name('penyewaankamar');
-    Route::post('/datatablepenyewaankamar', [PenyewaankamarController::class, 'datatablepenyewaankamar'])->name('datatablepenyewaankamar');
-    Route::get('/penyewaankamar/cetakkwitansi/{id}', [PenyewaankamarController::class, 'cetakkwitansi'])->name('cetakkwitansipembayaran');
-
-    // Laundri
-    // Route::get('/laundri', [LaundriController::class, 'index'])->name('laundri');
-    // Route::post('/datatablelaundri', [LaundriController::class, 'datatablelaundri'])->name('datatablelaundri');
-    // Route::get('/tambahlaundri', [LaundriController::class, 'tambahlaundri'])->name('tambahlaundri');
-    // Route::post('/tambahlaundri', [LaundriController::class, 'posttambahlaundri'])->name('posttambahlaundri');
+    
+    // bisnis
+    // laundri
+    Route::get('/ritel', [RitelMainController::class, 'index'])->name('ritel');
+    Route::post('/ritel/datatableritel', [RitelMainController::class, 'datatableritel'])->name('ritel.datatableritel');
+    Route::get('/ritel/tambahritel', [RitelMainController::class, 'tambahritel'])->name('ritel.tambahritel');
+    Route::post('/ritel/tambahritel', [RitelMainController::class, 'create'])->name('ritel.posttambahritel');
 
     // keuangan
     // Harga

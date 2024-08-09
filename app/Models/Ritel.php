@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Laundri extends Model
+class Ritel extends Model
 {
-    protected $table = 'laundris';
+    protected $table = 'ritels';
     protected $primaryKey = 'id';
 
     public function penyewas()
@@ -18,5 +18,10 @@ class Laundri extends Model
     public function lokasis()
     {
         return $this->hasOne(Lokasi::class, 'id', 'lokasi_id');
+    }
+
+    public function tagihs()
+    {
+        return $this->hasOne(Tagih::class, 'id', 'jenis_ritel');
     }
 }
