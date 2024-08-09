@@ -1,3 +1,6 @@
+/* pacifio */
+@import url("https://fonts.googleapis.com/css2?family=Pacifico&display=swap");
+
 /* Open Sans Font */
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@800&display=swap");
 
@@ -87,8 +90,14 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: "Open Sans", sans-serif !important;
-    margin: 0 !important;
+    font-family: "Open Sans", sans-serif;
+    margin: 0;
+}
+
+/* font logo */
+.logo {
+    font-family: "Pacifico", cursive;
+    font-weight: 800;
 }
 
 /* color */
@@ -175,6 +184,12 @@ h6 {
     text-align: right !important;
 }
 
+/* bootstrap */
+.dropdown-item:focus {
+    background-color: transparent;
+    color: var(--c-black);
+}
+
 /* Android */
 @media (max-width: 576px) {
 }
@@ -192,7 +207,25 @@ h6 {
 }
 
 /* Computer */
+@media (max-width: 1200px) {
+    #menu > .list-menu {
+        display: none;
+    }
+
+    #menu > .list-menu.show {
+        margin-top: 1rem !important;
+        display: block;
+    }
+}
+
 @media (min-width: 1200px) {
+    #menu > .list-menu {
+        display: block;
+    }
+
+    .trigger-menu {
+        display: none;
+    }
 }
 
 /* Computer yang lebih besar */

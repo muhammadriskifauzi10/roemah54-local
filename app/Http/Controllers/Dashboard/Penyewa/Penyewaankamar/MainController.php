@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\Dashboard\Penyewa\Penyewaankamar;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pembayaran;
@@ -11,7 +11,7 @@ use Dompdf\Options;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
-class PenyewaankamarController extends Controller
+class MainController extends Controller
 {
     public function index()
     {
@@ -19,7 +19,7 @@ class PenyewaankamarController extends Controller
             'judul' => 'Penyewaan Kamar',
         ];
 
-        return view('contents.dashboard.penyewaankamar', $data);
+        return view('contents.dashboard.penyewa.penyewaankamar.main', $data);
     }
     public function datatablepenyewaankamar()
     {
@@ -39,7 +39,7 @@ class PenyewaankamarController extends Controller
         foreach ($penyewaankamar as $row) {
             if ($row->tanggal_pembayaran) {
                 if ($row->status_pembayaran == "completed" || $row->status_pembayaran == "pending") {
-                    $cetakkwitansi = '<a href="' . route('cetakkwitansipembayaran', encrypt($row->id)) . '" class="btn btn-success" style="width: 140px;" target="_blank">Cetak Kwitansi</a>';
+                    $cetakkwitansi = '<a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success" style="width: 140px;" target="_blank">Cetak Kwitansi</a>';
                 } else {
                     $cetakkwitansi = "-";
                 }
@@ -129,7 +129,7 @@ class PenyewaankamarController extends Controller
         $fontMetrics->getFont('Pacifico', 'normal', $fontFile);
 
         // Generate PDF
-        $pdf = Pdf::loadView('contents.dashboard.downloadpdf.cetakkwitansi', $data);
+        $pdf = Pdf::loadView('contents.dashboard.penyewa.penyewaankamar.downloadpdf.cetakkwitansi', $data);
         return $pdf->stream('cetakkwitansi.pdf');
         // return view('contents.dashboard.downloadpdf.cetakinvoice', $data);
     }
