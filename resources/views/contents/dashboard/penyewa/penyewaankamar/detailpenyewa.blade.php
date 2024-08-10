@@ -14,15 +14,23 @@
                     </ol>
                 </nav>
 
-                @if ($penyewa->transaksisewa_kamars->status_pembayaran == 'completed')
+                {{-- @if ($penyewa->transaksisewa_kamars->status_pembayaran == 'completed')
                     @if (\Carbon\Carbon::now() > \Carbon\Carbon::parse($penyewa->transaksisewa_kamars->tanggal_keluar))
-                        <div class="mb-3">
-                            <button type="button" class="btn btn-dark" onclick="requestKosongkanKamar()">
-                                Kosongkan Kamar
+                        <div class="d-flex align-items-center justify-content-end mb-3">
+                            <button type="button"
+                                class="btn btn-success d-flex align-items-center justify-content-center gap-1"
+                                onclick="openModalBayarKamar()" style="width: 180px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                    class="bi bi-credit-card" viewBox="0 0 16 16">
+                                    <path
+                                        d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z" />
+                                    <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
+                                </svg>
+                                Perpanjang Kamar
                             </button>
                         </div>
                     @endif
-                @endif
+                @endif --}}
 
                 <div class="card border-0">
                     <div class="card-body p-0">
@@ -159,20 +167,6 @@
                                         @endif
                                     </th>
                                 </tr>
-
-                                @if ($penyewa->transaksisewa_kamars->status_pembayaran == 'completed')
-                                    @if (\Carbon\Carbon::now() > \Carbon\Carbon::parse($penyewa->transaksisewa_kamars->tanggal_keluar))
-                                        <tr>
-                                            <th scope="row" colspan="3" class="text-center text-danger">
-                                                -_- Perpanjang Penyewaan Kamar -_-
-                                                <div class="mt-4">
-                                                    <button type="button" class="btn btn-success"
-                                                        onclick="openModalBayarKamar()">Bayar</button>
-                                                </div>
-                                            </th>
-                                        </tr>
-                                    @endif
-                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -181,154 +175,3 @@
         </div>
     </div>
 @endsection
-
-@push('myscripts')
-    <script>
-        const transaksi_id = {{ $penyewa->transaksisewa_kamars->id }}
-        const lantai_id = {{ $kamar->lantai_id }}
-        const penyewa_id = {{ $penyewa->id }}
-
-        function requestKosongkanKamar() {
-            Swal.fire({
-                title: 'Kosongkan Kamar?',
-                text: "Anda yakin ingin mengosongkan kamar ini?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#25d366', // Warna hijau
-                cancelButtonColor: '#cc0000', // Warna merah
-                confirmButtonText: 'Ya, saya yakin!',
-                cancelButtonText: 'Tidak, batalkan!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    var formData = new FormData();
-                    formData.append("token", $("#token").val());
-                    formData.append("transaksi_id", transaksi_id);
-
-                    $.ajax({
-                        url: "{{ route('postkosongkankamar') }}",
-                        type: "POST",
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: function(response) {
-                            if (response.message == "success") {
-                                Swal.fire({
-                                    title: "Berhasil",
-                                    text: "Kamar Berhasil Dikosongkan",
-                                    icon: "success"
-                                })
-                                setTimeout(function() {
-                                    location.assign('/dasbor/' + lantai_id)
-                                }, 1000)
-                            } else {
-                                Swal.fire({
-                                    title: "Opps, terjadi kesalahan",
-                                    icon: "error"
-                                })
-                            }
-                        },
-                    });
-                } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    Swal.fire({
-                        title: "Dibatalkan",
-                        icon: "error"
-                    })
-                }
-            })
-        }
-
-        // Bayar Kos
-        function openModalBayarKamar() {
-            var formData = new FormData();
-            formData.append("token", $("#token").val());
-            formData.append("transaksi_id", transaksi_id);
-
-            $.ajax({
-                url: "{{ route('getmodalbayarkamar') }}",
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                beforeSend: function() {
-                    $("#universalModalContent").empty();
-                    $("#universalModalContent").addClass("modal-dialog-centered");
-                    $("#universalModalContent").append(`
-                        <div class="modal-content">
-                            <div class="modal-body">
-                                <div class="loading">
-                                    <span class="dots pulse1"></span>
-                                    <span class="dots pulse2"></span>
-                                    <span class="dots pulse3"></span>
-                                </div>
-                            </div>
-                        </div>
-                        `);
-                    $("#universalModal").modal("show");
-                },
-                success: function(response) {
-                    if (response.message == "success") {
-                        setTimeout(function() {
-                            $("#universalModalContent").html(response.dataHTML.trim());
-
-                            $(".form-select-2").select2({
-                                dropdownParent: $("#universalModal"),
-                                theme: "bootstrap-5",
-                                // selectionCssClass: "select2--small",
-                                // dropdownCssClass: "select2--small",
-                            });
-                        }, 1000);
-                    }
-                },
-            });
-        }
-
-        function requestBayarKamar(e) {
-            e.preventDefault()
-
-            let error = 0;
-            if ($("#jenissewa").val() === "Pilih Jenis Sewa") {
-                $("#jenissewa").addClass("is-invalid")
-                $("#errorJenisSewa").text("Kolom ini wajib diisi")
-                error++
-            } else {
-                $("#jenissewa").removeClass("is-invalid")
-                $("#errorJenisSewa").text("")
-            }
-
-            if (error == 0) {
-                $("#btnRequest").prop("disabled", true)
-
-                var formData = new FormData();
-                formData.append("token", $("#token").val());
-                formData.append("transaksi_id", transaksi_id);
-                formData.append("jenissewa", $("#jenissewa").val());
-                formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
-
-                $.ajax({
-                    url: "{{ route('postbayarkamar') }}",
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if (response.message == "success") {
-                            Swal.fire({
-                                title: "Berhasil",
-                                text: "Kamar Berhasil Diperpanjang",
-                                icon: "success"
-                            })
-                            setTimeout(function() {
-                                location.assign('/sewa/' + penyewa_id)
-                            }, 1000)
-                        } else {
-                            Swal.fire({
-                                title: "Opps, terjadi kesalahan",
-                                icon: "error"
-                            })
-                        }
-                    },
-                });
-            }
-        }
-    </script>
-@endpush

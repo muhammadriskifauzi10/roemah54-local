@@ -92,14 +92,40 @@
                                                                     </tr>
                                                                 </tbody>
                                                             </table>
-                                                            @if ($row->transaksisewa_kamars->jenissewa == 'Harian')
-                                                                <div
-                                                                    class="mt-4 d-flex align-items-center justify-content-center gap-1">
-                                                                    <button type="button" class="btn btn-primary fw-bold"
+                                                            <div
+                                                                class="mt-4 d-flex align-items-center justify-content-center gap-1">
+                                                                @if ($row->transaksisewa_kamars->jenissewa == 'Harian')
+                                                                    <button type="button"
+                                                                        class="btn btn-primary fw-bold d-flex align-items-center justify-content-center gap-1"
                                                                         onclick="openModalBayarIsiTokenKamar(event, {{ $row->transaksisewa_kamars->id }})"
-                                                                        style="width: 110px;">Isi Token</button>
-                                                                </div>
-                                                            @endif
+                                                                        style="width: 180px;">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16" height="16"
+                                                                            fill="currentColor" class="bi bi-lightning-fill"
+                                                                            viewBox="0 0 16 16">
+                                                                            <path
+                                                                                d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z" />
+                                                                        </svg>
+                                                                        Isi Token</button>
+                                                                @endif
+                                                                @if (\Carbon\Carbon::now() > \Carbon\Carbon::parse($row->transaksisewa_kamars->tanggal_keluar))
+                                                                    <button type="button"
+                                                                        class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1"
+                                                                        onclick="openModalPerpanjangPenyewaanKamar(event, {{ $row->transaksisewa_kamars->id }})"
+                                                                        style="width: 180px;">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16" height="16"
+                                                                            fill="currentColor" class="bi bi-credit-card"
+                                                                            viewBox="0 0 16 16">
+                                                                            <path
+                                                                                d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z" />
+                                                                            <path
+                                                                                d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
+                                                                        </svg>
+                                                                        Perpanjang Kamar
+                                                                    </button>
+                                                                @endif
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </a>
@@ -181,7 +207,8 @@
                                     <table style="width: 100%">
                                         @if (App\Models\Lokasi::where('jenisruangan_id', 2)->where('lantai_id', $lantai->id)->where('status', 0)->count() > 0)
                                             @php
-                                                $kamar = App\Models\Lokasi::where('jenisruangan_id', 2)->where('lantai_id', $lantai->id)
+                                                $kamar = App\Models\Lokasi::where('jenisruangan_id', 2)
+                                                    ->where('lantai_id', $lantai->id)
                                                     ->where('status', 0)
                                                     ->get();
                                                 $total = count($kamar);
@@ -281,7 +308,7 @@
             })
         }
 
-        // Selesaikan Pembayaran
+        // bayar kamar
         function openModalBayarKamar(e, transaksi_id) {
             e.preventDefault()
 
@@ -332,6 +359,27 @@
             e.preventDefault()
 
             let error = 0;
+
+            if (($("#total_bayar").val() == "" || $("#total_bayar").val() == 0) && ($("#potongan_harga").val() == "" || $(
+                    "#potongan_harga").val() == 0)) {
+                // total bayar
+                $("#total_bayar").addClass("is-invalid")
+                $("#errorTotalBayar").text("Kolom ini wajib diisi")
+
+                // potongan harga
+                $("#potongan_harga").addClass("is-invalid")
+                $("#errorPotonganHarga").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                // total harga
+                $("#total_bayar").removeClass("is-invalid")
+                $("#errorTotalBayar").text("")
+
+                // potongan harga
+                $("#potongan_harga").removeClass("is-invalid")
+                $("#errorPotonganHarga").text("")
+            }
+
             if (error == 0) {
                 $("#btnRequest").prop("disabled", true)
 
@@ -562,6 +610,102 @@
                             }, 1000)
                         } else {
                             $("#btnRequest").prop("disabled", false)
+                            Swal.fire({
+                                title: "Opps, terjadi kesalahan",
+                                icon: "error"
+                            })
+                        }
+                    },
+                });
+            }
+        }
+
+        // perpanjang
+        function openModalPerpanjangPenyewaanKamar(e, transaksi_id) {
+            e.preventDefault()
+
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("transaksi_id", transaksi_id);
+
+            $.ajax({
+                url: "{{ route('getmodalperpanjangpembayarankamar') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    $("#universalModalContent").empty();
+                    $("#universalModalContent").addClass("modal-dialog-centered");
+                    $("#universalModalContent").append(`
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div class="loading">
+                                    <span class="dots pulse1"></span>
+                                    <span class="dots pulse2"></span>
+                                    <span class="dots pulse3"></span>
+                                </div>
+                            </div>
+                        </div>
+                        `);
+                    $("#universalModal").modal("show");
+                },
+                success: function(response) {
+                    if (response.message == "success") {
+                        setTimeout(function() {
+                            $("#universalModalContent").html(response.dataHTML.trim());
+
+                            $(".form-select-2").select2({
+                                dropdownParent: $("#universalModal"),
+                                theme: "bootstrap-5",
+                                // selectionCssClass: "select2--small",
+                                // dropdownCssClass: "select2--small",
+                            });
+                        }, 1000);
+                    }
+                },
+            });
+        }
+
+        function requestBayarPerpanjangPenyewaanKamar(e) {
+            e.preventDefault()
+
+            let error = 0;
+            if ($("#jenissewa").val() === "Pilih Jenis Sewa") {
+                $("#jenissewa").addClass("is-invalid")
+                $("#errorJenisSewa").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                $("#jenissewa").removeClass("is-invalid")
+                $("#errorJenisSewa").text("")
+            }
+
+            if (error == 0) {
+                $("#btnRequest").prop("disabled", true)
+
+                var formData = new FormData();
+                formData.append("token", $("#token").val());
+                formData.append("transaksi_id", transaksi_id);
+                formData.append("jenissewa", $("#jenissewa").val());
+                formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
+
+                $.ajax({
+                    url: "{{ route('postbayarperpanjangankamar') }}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.message == "success") {
+                            Swal.fire({
+                                title: "Berhasil",
+                                text: "Kamar Berhasil Diperpanjang",
+                                icon: "success"
+                            })
+                            setTimeout(function() {
+                                location.assign('/sewa/' + penyewa_id)
+                            }, 1000)
+                        } else {
                             Swal.fire({
                                 title: "Opps, terjadi kesalahan",
                                 icon: "error"

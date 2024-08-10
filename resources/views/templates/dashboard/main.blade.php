@@ -43,7 +43,7 @@
         @yield('contents')
     </main>
 
-    @if (auth()->check())
+    {{-- @if (auth()->check())
         @if (!request()->is('scan*'))
             <div style="position: fixed; bottom: 10px; right: 10px; z-index: 10;">
                 <div class="d-flex align-items-center gap-2">
@@ -76,7 +76,7 @@
                 </div>
             </div>
         @endif
-    @endif
+    @endif --}}
 
     <!-- Modal Universal -->
     <div class="modal fade" id="universalModal" tabindex="-1" aria-labelledby="universalModalLabel" aria-hidden="true">

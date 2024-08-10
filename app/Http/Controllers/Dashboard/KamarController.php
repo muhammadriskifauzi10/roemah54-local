@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Harga;
 use App\Models\Lokasi;
 use App\Models\Lantai;
+use App\Models\Pembayaran;
+use App\Models\Penyewa;
 use App\Models\Tipekamar;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -192,82 +195,6 @@ class KamarController extends Controller
 
         return response()->json($response);
     }
-    public function postedittipekamar()
-    {
-        if (request()->ajax()) {
-            try {
-                DB::beginTransaction();
-                $kamar_id = htmlspecialchars(request()->input('kamar_id'), ENT_QUOTES, 'UTF-8');
-                $tipekamar_id = htmlspecialchars(request()->input('tipekamar_id'), ENT_QUOTES, 'UTF-8');
-                $token_listrik = htmlspecialchars(request()->input('token_listrik'), ENT_QUOTES, 'UTF-8');
-                $token_listrik_edit = htmlspecialchars(request()->input('token_listrik_edit'), ENT_QUOTES, 'UTF-8');
-
-                if ($token_listrik != $token_listrik_edit) {
-                    $ruletokenlistrik = 'unique:kamars,token_listrik';
-                } else {
-                    $ruletokenlistrik = '';
-                }
-
-                if (Lokasi::where('id', $kamar_id)->exists()) {
-                    $validator = Validator::make(request()->all(), [
-                        'tipekamar_id' => [
-                            function ($attribute, $value, $fail) {
-                                if (!Tipekamar::where('id', (int)$value)->exists()) {
-                                    $fail('Kolom ini wajib dipilih');
-                                }
-                            },
-                        ],
-                        'token_listrik' => ['required', $ruletokenlistrik]
-                    ], [
-                        'token_listrik.required' => 'Kolom ini wajib diisi',
-                        'token_listrik.unique' => 'Kolom ini sudah terdaftar',
-                    ]);
-
-                    if ($validator->fails()) {
-                        $response = [
-                            'status' => 400,
-                            'message' => 'opps',
-                            'dataError' => $validator->errors()
-                        ];
-
-                        return response()->json($response);
-                    }
-
-                    Lokasi::where('id', $kamar_id)->update([
-                        'tipekamar_id' => $tipekamar_id,
-                        'token_listrik' => $token_listrik,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
-                    // server
-                    DB::connection("mysqldua")->table("lokasis")->where('id', $kamar_id)->update([
-                        'tipekamar_id' => $tipekamar_id,
-                        'token_listrik' => $token_listrik,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
-
-                    $response = [
-                        'status' => 200,
-                        'message' => 'success',
-                    ];
-
-                    DB::commit();
-                    return response()->json($response);
-                }
-            } catch (Exception $e) {
-                $response = [
-                    'status' => 500,
-                    'message' => $e->getMessage(),
-                ];
-
-                DB::rollBack();
-                return response()->json($response);
-            }
-        }
-    }
     public function create()
     {
         if (request()->ajax()) {
@@ -347,6 +274,291 @@ class KamarController extends Controller
                 ];
 
                 DB::rollBack();
+                return response()->json($response);
+            }
+        }
+    }
+    public function edittipekamar()
+    {
+        if (request()->ajax()) {
+            try {
+                DB::beginTransaction();
+                $kamar_id = htmlspecialchars(request()->input('kamar_id'), ENT_QUOTES, 'UTF-8');
+                $tipekamar_id = htmlspecialchars(request()->input('tipekamar_id'), ENT_QUOTES, 'UTF-8');
+                $token_listrik = htmlspecialchars(request()->input('token_listrik'), ENT_QUOTES, 'UTF-8');
+                $token_listrik_edit = htmlspecialchars(request()->input('token_listrik_edit'), ENT_QUOTES, 'UTF-8');
+
+                if ($token_listrik != $token_listrik_edit) {
+                    $ruletokenlistrik = 'unique:kamars,token_listrik';
+                } else {
+                    $ruletokenlistrik = '';
+                }
+
+                if (Lokasi::where('id', $kamar_id)->exists()) {
+                    $validator = Validator::make(request()->all(), [
+                        'tipekamar_id' => [
+                            function ($attribute, $value, $fail) {
+                                if (!Tipekamar::where('id', (int)$value)->exists()) {
+                                    $fail('Kolom ini wajib dipilih');
+                                }
+                            },
+                        ],
+                        'token_listrik' => ['required', $ruletokenlistrik]
+                    ], [
+                        'token_listrik.required' => 'Kolom ini wajib diisi',
+                        'token_listrik.unique' => 'Kolom ini sudah terdaftar',
+                    ]);
+
+                    if ($validator->fails()) {
+                        $response = [
+                            'status' => 400,
+                            'message' => 'opps',
+                            'dataError' => $validator->errors()
+                        ];
+
+                        return response()->json($response);
+                    }
+
+                    Lokasi::where('id', $kamar_id)->update([
+                        'tipekamar_id' => $tipekamar_id,
+                        'token_listrik' => $token_listrik,
+                        'operator_id' => auth()->user()->id,
+                        'updated_at' => date("Y-m-d H:i:s"),
+                    ]);
+
+                    // server
+                    DB::connection("mysqldua")->table("lokasis")->where('id', $kamar_id)->update([
+                        'tipekamar_id' => $tipekamar_id,
+                        'token_listrik' => $token_listrik,
+                        'operator_id' => auth()->user()->id,
+                        'updated_at' => date("Y-m-d H:i:s"),
+                    ]);
+
+                    $response = [
+                        'status' => 200,
+                        'message' => 'success',
+                    ];
+
+                    DB::commit();
+                    return response()->json($response);
+                }
+            } catch (Exception $e) {
+                $response = [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ];
+
+                DB::rollBack();
+                return response()->json($response);
+            }
+        }
+    }
+    public function informasitamu($id)
+    {
+        $id = decrypt($id);
+
+        if (!Lokasi::where('id', $id)->exists()) {
+            abort(404);
+        }
+
+        $kamar = Lokasi::where('id', $id)->first();
+
+        $data = [
+            'judul' => 'Informasi Tamu',
+            'kamar' => $kamar
+        ];
+
+        return view('contents.dashboard.kamar.informasitamu', $data);
+    }
+    public function datatableinformasitamu()
+    {
+        $minDate = request()->input('minDate');
+        $maxDate = request()->input('maxDate');
+        $kamar_id = request()->input('kamar_id');
+
+        $penyewaankamar = Pembayaran::where('lokasi_id', $kamar_id)
+            ->where('tagih_id', 1)
+            ->orderBy('tanggal_masuk', 'DESC')
+            ->get();
+
+        $output = [];
+        $no = 1;
+        foreach ($penyewaankamar as $row) {
+            // if ($row->tanggal_pembayaran && in_array($row->status_pembayaran, ['completed', 'pending'])) {
+            //     $cetak = '
+            //         <div class="d-flex align-items-center justify-content-center gap-1">
+            //             <a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success d-flex align-items-center justify-content-center gap-1" style="width: 160px;" target="_blank">
+            //                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+            //                     <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+            //                     <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+            //                 </svg>
+            //                 Cetak Kwitansi
+            //             </a>
+            //         </div>';
+            // } else {
+            //     $cetak = '-';
+            // }
+
+            if ($row->penyewas->status == 1) {
+                $status_penyewa = "<span class='badge bg-success'>Aktif</span>";
+            } else {
+                if ($row->status_pembayaran == "failed") {
+                    $status_penyewa = "<span class='badge bg-danger text-light'>Tamu Dibatalkan</span>";
+                } else {
+                    $status_penyewa = "<span class='badge bg-danger text-light'>Tamu Sudah Pulang</span>";
+                }
+            }
+
+            if ($row->status_pembayaran == "completed") {
+                $status_pembayaran = "<span class='badge bg-success'>Lunas</span>";
+            } elseif ($row->status_pembayaran == "pending") {
+                $status_pembayaran = "<span class='badge bg-warning text-light'>Belum Lunas</span>";
+            } elseif ($row->status_pembayaran == "failed") {
+                $status_pembayaran = "<span class='badge bg-danger'>Dibatalkan</span>";
+            }
+
+            if ($row->penyewas->status == 1 && $row->status_pembayaran == "pending") {
+                $aksi = '
+                    <div class="d-flex align-items-center justify-content-center gap-1">
+                        <button type="button" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" onclick="openModalBayarKamar(event, ' . $row->id . ')" style="width: 180px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-credit-card" viewBox="0 0 16 16">
+                                <path
+                                    d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z" />
+                                <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
+                            </svg>
+                        Bayar</button>
+                        <button type="button" class="btn btn-danger text-light fw-bold" onclick="requestPulangkanTamu(' . $row->penyewas->id . ')" style="width: 180px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-person-raised-hand" viewBox="0 0 16 16">
+                                <path
+                                    d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
+                                <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                            </svg>
+                            Pulangkan Tamu
+                        </button>
+                    </div>
+                ';
+            } else {
+                $aksi = '-';
+            }
+
+
+            $output[] = [
+                'nomor' => '<strong>' . $no++ . '</strong>',
+                'status_penyewa' => $status_penyewa,
+                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("Y-m-d H:i:s"),
+                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("Y-m-d H:i:s"),
+                'nama_penyewa' => $row->penyewas->namalengkap,
+                'mitra' => $row->mitras->mitra,
+                'jenissewa' => $row->jenissewa,
+                'jumlah_pembayaran' => $row->jumlah_pembayaran ? "RP. " . number_format($row->jumlah_pembayaran, '0', '.', '.') : "RP. 0",
+                'diskon' => intval($row->diskon) . " %",
+                'potongan_harga' => $row->potongan_harga ? "RP. " . number_format($row->potongan_harga, '0', '.', '.') : "RP. 0",
+                'total_bayar' => $row->total_bayar ? "RP. " . number_format($row->total_bayar, '0', '.', '.') : "RP. 0",
+                'tanggal_pembayaran' => $row->tanggal_pembayaran ? Carbon::parse($row->tanggal_pembayaran)->format("Y-m-d H:i:s") : "-",
+                'kurang_bayar' => $row->kurang_bayar ? "RP. " . number_format($row->kurang_bayar, '0', '.', '.') : "RP. 0",
+                'status_pembayaran' => $status_pembayaran,
+                'aksi' => $aksi,
+            ];
+        }
+
+        return response()->json([
+            'data' => $output
+        ]);
+    }
+    // baru
+    public function pulangkantamu()
+    {
+        if (request()->ajax()) {
+            $penyewa_id = htmlspecialchars(request()->input('penyewa_id'), ENT_QUOTES, 'UTF-8');
+            if (Penyewa::where('id', $penyewa_id)->exists()) {
+                try {
+                    DB::beginTransaction();
+
+                    Penyewa::where('id', $penyewa_id)->update([
+                        'status' => 0,
+                        'operator_id' => auth()->user()->id,
+                        'updated_at' => date("Y-m-d H:i:s"),
+                    ]);
+
+                    // server
+                    DB::connection("mysqldua")->table("penyewas")->where('id', $penyewa_id)->update([
+                        'status' => 0,
+                        'operator_id' => auth()->user()->id,
+                        'updated_at' => date("Y-m-d H:i:s"),
+                    ]);
+
+                    $response = [
+                        'status' => 200,
+                        'message' => 'success',
+                    ];
+
+                    DB::commit();
+                    return response()->json($response);
+                } catch (Exception $e) {
+                    $response = [
+                        'status' => 500,
+                        'message' => 'error',
+                    ];
+
+                    DB::rollBack();
+                    return response()->json($response);
+                }
+            } else {
+                $response = [
+                    'status' => 404,
+                    'message' => 'error',
+                ];
+
+                return response()->json($response);
+            }
+        }
+    }
+    // baru
+    public function kosongkankamar()
+    {
+        if (request()->ajax()) {
+            $kamar_id = htmlspecialchars(request()->input('kamar_id'), ENT_QUOTES, 'UTF-8');
+            if (Lokasi::where('id', $kamar_id)->exists()) {
+                try {
+                    DB::beginTransaction();
+
+                    Lokasi::where('id', $kamar_id)->update([
+                        'status' => 0,
+                        'operator_id' => auth()->user()->id,
+                        'updated_at' => date("Y-m-d H:i:s"),
+                    ]);
+
+                    // server
+                    DB::connection("mysqldua")->table("lokasis")->where('id', $kamar_id)->update([
+                        'status' => 0,
+                        'operator_id' => auth()->user()->id,
+                        'updated_at' => date("Y-m-d H:i:s"),
+                    ]);
+
+                    $response = [
+                        'status' => 200,
+                        'message' => 'success',
+                    ];
+
+                    DB::commit();
+                    return response()->json($response);
+                } catch (Exception $e) {
+                    $response = [
+                        'status' => 500,
+                        'message' => 'error',
+                    ];
+
+                    DB::rollBack();
+                    return response()->json($response);
+                }
+            } else {
+                $response = [
+                    'status' => 404,
+                    'message' => 'error',
+                ];
+
                 return response()->json($response);
             }
         }

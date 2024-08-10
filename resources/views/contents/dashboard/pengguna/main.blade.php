@@ -36,7 +36,7 @@
                                     <th scope="col">Role</th>
                                     <th scope="col">Nama Pengguna</th>
                                     <th scope="col">Status</th>
-                                    <!-- <th scope="col">Aksi</th> -->
+                                    <th scope="col">Aksi</th>
                                 </tr>
                             </thead>
                         </table>
@@ -71,9 +71,9 @@
                     {
                         data: "status",
                     },
-                    // {
-                    //     data: "aksi",
-                    // },
+                    {
+                        data: "aksi",
+                    },
                 ],
                 // "order": [
                 //     [1, 'asc']

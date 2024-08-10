@@ -17,13 +17,23 @@
                 <div class="card border-0">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-6 mb-3">
+                            <div class="col-xl-4 mb-3">
                                 <label for="minDate" class="form-label fw-600">Min Tanggal Masuk</label>
                                 <input type="date" class="form-control" id="minDate" value="{{ date('Y-m-01') }}">
                             </div>
-                            <div class="col-6 mb-3">
+                            <div class="col-xl-4 mb-3">
                                 <label for="maxDate" class="form-label fw-600">Max Tanggal Masuk</label>
                                 <input type="date" class="form-control" id="maxDate" value="{{ date('Y-m-d') }}">
+                            </div>
+                            <div class="col-xl-4 mb-3">
+                                <label for="status_pembayaran" class="form-label">Status Pembayaran</label>
+                                <select class="form-select form-select-2" name="status_pembayaran" id="status_pembayaran"
+                                    style="width: 100%;">
+                                    <option>Pilih Status Pembayaran</option>
+                                    <option value="failed">Dibatalkan</option>
+                                    <option value="completed">Lunas</option>
+                                    <option value="pending">Booking / Belum Lunas</option>
+                                </select>
                             </div>
                         </div>
                         <table class="table table-light table-hover border-0 m-0" id="datatablePenyewaanKamar">
@@ -69,6 +79,7 @@
                     data: function(d) {
                         d.minDate = $("#minDate").val();
                         d.maxDate = $("#maxDate").val();
+                        d.status_pembayaran = $("#status_pembayaran").val();
                     },
                 },
                 columns: [{
@@ -158,7 +169,7 @@
                 // }
             });
 
-            $("#minDate, #maxDate").change(function() {
+            $("#minDate, #maxDate, #status_pembayaran").change(function() {
                 tablePenyewaanKamar.ajax.reload();
             });
         });

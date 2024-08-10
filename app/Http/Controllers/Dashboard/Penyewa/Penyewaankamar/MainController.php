@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Dashboard\Penyewa\Penyewaankamar;
 
 use App\Http\Controllers\Controller;
+use App\Models\Lokasi;
 use App\Models\Pembayaran;
+use App\Models\Penyewa;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Dompdf\Dompdf;
@@ -25,26 +27,56 @@ class MainController extends Controller
     {
         $minDate = request()->input('minDate');
         $maxDate = request()->input('maxDate');
+        $status_pembayaran = request()->input('status_pembayaran');
 
-        $penyewaankamar = Pembayaran::when($minDate && $maxDate, function ($query) use ($minDate, $maxDate) {
-            $query->whereDate('tanggal_masuk', '>=', $minDate)
-                ->whereDate('tanggal_masuk', '<=', $maxDate);
-        })
-            ->where('tagih_id', 1)
-            ->orderBy('tanggal_masuk', 'ASC')
+        $penyewaankamar = Pembayaran::join('penyewas as p', 'pembayarans.penyewa_id', '=', 'p.id')
+            ->select(
+                'pembayarans.id',
+                'pembayarans.tanggal_masuk',
+                'pembayarans.tanggal_keluar',
+                'pembayarans.tagih_id',
+                'pembayarans.lokasi_id',
+                'pembayarans.tipekamar_id',
+                'pembayarans.mitra_id',
+                'pembayarans.jenissewa',
+                'pembayarans.jumlah_pembayaran',
+                'pembayarans.diskon',
+                'pembayarans.potongan_harga',
+                'pembayarans.total_bayar',
+                'pembayarans.tanggal_pembayaran',
+                'pembayarans.kurang_bayar',
+                'pembayarans.status_pembayaran',
+                'p.namalengkap',
+                'p.status',
+            )
+            ->when($minDate && $maxDate, function ($query) use ($minDate, $maxDate) {
+                $query->whereDate('pembayarans.tanggal_masuk', '>=', $minDate)
+                    ->whereDate('pembayarans.tanggal_masuk', '<=', $maxDate);
+            })
+            ->when($status_pembayaran !== "Pilih Status Pembayaran", function ($query) use ($status_pembayaran) {
+                $query->where('pembayarans.status_pembayaran', $status_pembayaran);
+            })
+            ->where('pembayarans.tagih_id', 1)
+            ->where('p.status', 1)
+            ->orderBy('pembayarans.tanggal_masuk', 'ASC')
             ->get();
 
         $output = [];
         $no = 1;
         foreach ($penyewaankamar as $row) {
-            if ($row->tanggal_pembayaran) {
-                if ($row->status_pembayaran == "completed" || $row->status_pembayaran == "pending") {
-                    $cetakkwitansi = '<a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success" style="width: 140px;" target="_blank">Cetak Kwitansi</a>';
-                } else {
-                    $cetakkwitansi = "-";
-                }
+            if ($row->tanggal_pembayaran && in_array($row->status_pembayaran, ['completed', 'pending'])) {
+                $cetak = '
+                    <div class="d-flex align-items-center justify-content-center gap-1">
+                        <a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success d-flex align-items-center justify-content-center gap-1" style="width: 160px;" target="_blank">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                            </svg>
+                            Cetak Kwitansi
+                        </a>
+                    </div>';
             } else {
-                $cetakkwitansi = "-";
+                $cetak = '-';
             }
 
             if ($row->status_pembayaran == "completed") {
@@ -57,7 +89,7 @@ class MainController extends Controller
 
             $aksi = '
                 <div class="d-flex align-items-center justify-content-center">
-                ' . $cetakkwitansi . '
+                ' . $cetak . '
                 </div>
             ';
 
@@ -65,7 +97,7 @@ class MainController extends Controller
                 'nomor' => '<strong>' . $no++ . '</strong>',
                 'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("Y-m-d H:i:s"),
                 'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("Y-m-d H:i:s"),
-                'nama_penyewa' => $row->penyewas->namalengkap,
+                'nama_penyewa' => $row->namalengkap,
                 'nomor_kamar' => $row->lokasis->nomor_kamar,
                 'tipe_kamar' => $row->tipekamars->tipekamar,
                 'mitra' => $row->mitras->mitra,
@@ -84,6 +116,30 @@ class MainController extends Controller
         return response()->json([
             'data' => $output
         ]);
+    }
+    public function detailpenyewa(Penyewa $penyewa)
+    {
+        if ($penyewa->status == 0) {
+            abort(404);
+        }
+
+        if ($penyewa->transaksisewa_kamars) {
+            $kamar = Lokasi::where('id', $penyewa->transaksisewa_kamars->lokasi_id)->first();
+            if ($kamar->status == 1 || $kamar->status == 2) {
+                $data = [
+                    'judul' => 'Detail Penyewa',
+                    'penyewa' => $penyewa,
+                    'kamar' => $kamar,
+                    // 'tenggatwaktu' => $tenggatwaktu
+                ];
+
+                return view('contents.dashboard.penyewa.penyewaankamar.detailpenyewa', $data);
+            } else {
+                abort(404);
+            }
+        } else {
+            abort(404);
+        }
     }
     public function cetakkwitansi($id)
     {
