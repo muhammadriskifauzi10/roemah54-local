@@ -40,9 +40,36 @@ class KamarController extends Controller
                 $status = "<strong class='badge bg-danger fw-bold'>Belum Terisi</strong>";
             }
 
+            if ($row->status == 1 || $row->status == 2) {
+                $kosongkankamar = '<button type="button" class="btn btn-danger text-light fw-bold" onclick="requestKosongkanKamar(' . $row->id . ')" style="width: 180px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                            class="bi bi-person-raised-hand" viewBox="0 0 16 16">
+                                            <path
+                                                d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
+                                            <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                        </svg>
+                                        Kosongkan Kamar
+                                    </button>';
+            } else {
+                $kosongkankamar = '';
+            }
+
             $aksi = '<div class="d-flex align-items-center justify-content-center gap-1">
+                        <a href="' . route('kamar.informasitamu', encrypt($row->id)) . '" class="btn btn-info d-flex align-items-center justify-content-center gap-1 text-light" style="width: 180px;">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+                                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+                            </svg>
+                            Informasi Tamu
+                        </a>
                         <button type="button" class="btn btn-warning text-light fw-bold"
-                        data-edit="' . $row->id . '" onclick="openModalEditKamar(this)">Edit</button>
+                        data-edit="' . $row->id . '" onclick="openModalEditKamar(this)" style="width: 180px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16">
+                                <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z"/>
+                            </svg>
+                            Edit Kamar
+                        </button>
+                        ' . $kosongkankamar . '
                    </div>';
 
             $output[] = [
