@@ -74,7 +74,7 @@ class MainController extends Controller
         $jenisritel = Tagih::select(
             'id',
             'tagih AS jenis_ritel'
-        )->whereNotIn('id', [1, 2])->get();
+        )->whereNotIn('id', [1, 2, 3])->get();
 
         $data = [
             'judul' => 'Tambah ritel',

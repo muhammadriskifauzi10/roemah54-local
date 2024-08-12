@@ -69,7 +69,7 @@
                                         <div class="input-group" style="z-index: 0;">
                                             <input type="number" class="form-control @error('kiloan') is-invalid @enderror"
                                                 name="kiloan" id="kiloan" value="{{ old('kiloan') }}"
-                                                @if (old('jenis_ritel') == 8) @else
+                                                @if (old('jenis_ritel') == 7) @else
                                                 disabled @endif>
                                             <span class="input-group-text bg-success text-light fw-bold">KG</span>
                                         </div>
@@ -188,7 +188,7 @@
         function jenisRitel(e) {
             const jenisritel = e.target.value;
 
-            if (jenisritel == 8) {
+            if (jenisritel == 7) {
                 $("#kiloan").removeAttr("disabled")
                 $("#kiloan").val(1)
             } else {
