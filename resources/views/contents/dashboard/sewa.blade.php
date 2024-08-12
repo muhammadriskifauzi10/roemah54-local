@@ -77,7 +77,7 @@
                                             <label for="noktp" class="form-label fw-bold">No KTP</label>
                                             <input type="number" class="form-control @error('noktp') is-invalid @enderror"
                                                 name="noktp" id="noktp" placeholder="Masukkan No KTP"
-                                                value="{{ old('noktp') }}">
+                                                value="{{ old('noktp') }}" oninput="onNoKtp(event)">
                                             @error('noktp')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
@@ -120,7 +120,8 @@
                                         <div class="col-lg-4 mb-3">
                                             <label for="kamar" class="form-label fw-bold">Kamar</label>
                                             <select class="form-select form-select-2 @error('kamar') is-invalid @enderror"
-                                                name="kamar" id="kamar" style="width: 100%;" onchange="selectKamar()">
+                                                name="kamar" id="kamar" style="width: 100%;"
+                                                onchange="selectKamar()">
                                                 <option>Pilih Kamar</option>
                                             </select>
                                             @error('kamar')
@@ -403,6 +404,30 @@
             });
         })
 
+        function onNoKtp(event) {
+            const noktp = event.target.value;
+
+            if (noktp.length == 16) {
+                var formData = new FormData();
+                formData.append("noktp", noktp);
+
+                $.ajax({
+                    url: "{{ route('penyewaankamar.getrequestformsewaonktp') }}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.message == "success") {
+                            $("#namalengkap").val(response.data['namalengkap'])
+                            $("#nohp").val(response.data['nohp'])
+                            $("#alamat").val(response.data['alamat'])
+                        }
+                    },
+                });
+            }
+        }
+
         function selectLantai() {
             // kamar
             $("#kamar").empty()
@@ -618,66 +643,5 @@
                 $("#jumlahhari").val("")
             }
         }
-
-        // function onDiskon() {
-        //     let diskon = $("#diskon").val();
-        //     let mitra = $("#mitra").val();
-
-        //     if (diskon) {
-        //         if (mitra === 1) {
-        //             $("#diskon").prop("disabled", false);
-        //         } else {
-        //             $("#diskon").prop("disabled", true);
-        //         }
-        //     } else {
-        //         $("#diskon").prop("disabled", true);
-        //     }
-        // }
-        // function ondiskon() {
-        //     var diskon_rukita = $("input[name='diskonrukita']:checked").val();
-        //     let hargaBulanan = $("#tot").val(); // Contoh harga bulanan
-        //     if ($("#jenissewa").val() === "Bulanan") {
-        //         $("#y").prop("disabled", false)
-        //         $("#t").prop("disabled", false)
-        //         if (diskon_rukita == "Y") {
-        //             // Menghitung diskon harga
-        //             let rDiskonHarga = parseInt(hargaBulanan) * (15 / 100);
-        //             let rPotongan = "RP. " + rDiskonHarga.toLocaleString(
-        //                 'id-ID'); // Format menggunakan titik sebagai pemisah ribuan
-
-        //             // Menghitung harga setelah diskon
-        //             let rDiskonSisa = parseInt(hargaBulanan) - rDiskonHarga;
-        //             let rTotalPembayaran = "RP. " + rDiskonSisa.toLocaleString(
-        //                 'id-ID'); // Format menggunakan titik sebagai pemisah ribuan
-
-        //             // Menampilkan hasil
-        //             $("#d-diskon").text("15 %")
-        //             $("#d-potongan").text(rPotongan);
-        //             $("#d-totalpembayaran").text(rTotalPembayaran);
-        //         } else {
-        //             let rTotalPembayaran = "RP. " + parseInt(hargaBulanan).toLocaleString(
-        //                 'id-ID'); // Format menggunakan titik sebagai pemisah ribuan
-
-        //             // Menampilkan hasil
-        //             $("#d-diskon").text("0 %")
-        //             $("#d-potongan").text("RP. 0");
-        //             $("#d-totalpembayaran").text(rTotalPembayaran);
-        //         }
-        //     } else {
-        //         $("#t").prop("checked", true)
-
-        //         $("#y").prop("disabled", true)
-        //         $("#t").prop("disabled", true)
-
-
-        //         let rTotalPembayaran = "RP. " + parseInt(hargaBulanan).toLocaleString(
-        //             'id-ID'); // Format menggunakan titik sebagai pemisah ribuan
-
-        //         // Menampilkan hasil
-        //         $("#d-diskon").text("0 %")
-        //         $("#d-potongan").text("RP. 0");
-        //         $("#d-totalpembayaran").text(rTotalPembayaran);
-        //     }
-        // }
     </script>
 @endpush

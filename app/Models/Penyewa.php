@@ -27,7 +27,6 @@ class Penyewa extends Model
         return $this->belongsTo(Lantai::class, 'lantai_id');
     }
 
-
     public function transaksisewa_kamars()
     {
         return $this->hasOne(Pembayaran::class)->where('tagih_id', 1)->latest();

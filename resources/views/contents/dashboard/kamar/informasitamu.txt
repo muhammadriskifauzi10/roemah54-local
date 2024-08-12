@@ -1,0 +1,124 @@
+@extends('templates.dashboard.main')
+
+@section('contents')
+    <div class="container-fluid mt-3 mb-3">
+        <div class="row">
+            <div class="col-xl-2 mb-3">
+                @include('templates.dashboard.sidebar')
+            </div>
+            <div class="col-xl-10">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ route('kamar') }}">Kembali</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Informasi Tamu Kamar {{ $kamar->nomor_kamar }}
+                        </li>
+                    </ol>
+                </nav>
+
+                {{-- Kamar --}}
+                <div class="card border-0">
+                    <div class="card-body">
+                        <table class="table table-light table-hover border-0 m-0" id="datatableInformasiTamu">
+                            <thead>
+                                <tr>
+                                    <th scope="col">No</th>
+                                    <th scope="col">Status Penyewa</th>
+                                    <th scope="col">Tanggal Masuk</th>
+                                    <th scope="col">Tanggal Keluar</th>
+                                    <th scope="col">Nama Penyewa</th>
+                                    <th scope="col">Mitra</th>
+                                    <th scope="col">Jenis Sewa</th>
+                                    <th scope="col">Harga Kamar</th>
+                                    <th scope="col">Diskon</th>
+                                    <th scope="col">Potongan Harga</th>
+                                    <th scope="col">Total Bayar</th>
+                                    <th scope="col">Tanggal Pembayaran</th>
+                                    <th scope="col">Kurang Bayar</th>
+                                    <th scope="col">Status Pembayaran</th>
+                                    <th scope="col">Aksi</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('myscripts')
+    <script>
+        var tableInformasiTamu
+        $(document).ready(function() {
+            tableInformasiTamu = $("#datatableInformasiTamu").DataTable({
+                processing: true,
+                ajax: {
+                    url: "{{ route('kamar.datatableinformasitamu') }}",
+                    type: "POST",
+                    // dataSrc: ""
+                    dataType: "json",
+                    data: function(d) {
+                        d.kamar_id = '{{ $kamar->id }}';
+                    },
+                },
+                columns: [{
+                        data: "nomor",
+                    },
+                    {
+                        data: 'status_penyewa'
+                    },
+                    {
+                        data: "tanggal_masuk",
+                    },
+                    {
+                        data: "tanggal_keluar",
+                    },
+                    {
+                        data: "nama_penyewa",
+                    },
+                    {
+                        data: "mitra",
+                    },
+                    {
+                        data: "jenissewa",
+                    },
+                    {
+                        data: "jumlah_pembayaran",
+                    },
+                    {
+                        data: "diskon",
+                    },
+                    {
+                        data: "potongan_harga",
+                    },
+                    {
+                        data: "total_bayar",
+                    },
+                    {
+                        data: "tanggal_pembayaran",
+                    },
+                    {
+                        data: "kurang_bayar",
+                    },
+                    {
+                        data: "status_pembayaran",
+                    },
+                    {
+                        data: "aksi",
+                    },
+                ],
+                // "order": [
+                //     [1, 'asc']
+                // ],
+                // scrollY: "700px",
+                scrollX: true,
+                // scrollCollapse: true,
+                // paging:         false,
+                // fixedColumns: {
+                //     left: 3,
+                // }
+            });
+
+        });
+    </script>
+@endpush

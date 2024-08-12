@@ -43,39 +43,12 @@ class SewaController extends Controller
 
         return view('contents.dashboard.sewa', $data);
     }
-    // public function detaildata(Penyewa $penyewa)
-    // {
-    //     if ($penyewa->status == 0) {
-    //         abort(404);
-    //     }
-
-    //     if ($penyewa->transaksisewa_kamars) {
-    //         $kamar = Lokasi::where('id', $penyewa->transaksisewa_kamars->lokasi_id)->first();
-    //         if ($kamar->status == 1 || $kamar->status == 2) {
-    //             $data = [
-    //                 'judul' => 'Detail Penyewa',
-    //                 'penyewa' => $penyewa,
-    //                 'kamar' => $kamar,
-    //                 // 'tenggatwaktu' => $tenggatwaktu
-    //             ];
-
-    //             return view('contents.dashboard.detailpenyewa', $data);
-    //         } else {
-    //             abort(404);
-    //         }
-    //     } else {
-    //         abort(404);
-    //     }
-    // }
     public function create()
     {
         $noktp = htmlspecialchars(request()->input('noktp'), true);
         if (!Penyewa::where('noktp', $noktp)->exists()) {
             $rulefotoktp = 'required|mimes:jpg,jpeg,png';
         } else {
-            // if (Penyewa::where('noktp', $noktp)->where('status', 1)->exists()) {
-            //     return redirect()->back()->with('messageFailed', 'Opps, Anda sudah memiliki penyewaan kamar');
-            // }
             $rulefotoktp = 'mimes:jpg,jpeg,png';
         }
 
@@ -939,68 +912,6 @@ class SewaController extends Controller
         }
     }
     // Perpanjang
-    // public function kosongkankamar()
-    // {
-    //     if (request()->ajax()) {
-    //         $transaksi_id = htmlspecialchars(request()->input('transaksi_id'), ENT_QUOTES, 'UTF-8');
-    //         if (Pembayaran::where('id', $transaksi_id)->exists()) {
-    //             try {
-    //                 DB::beginTransaction();
-    //                 $model_pembayaran = Pembayaran::where('id', $transaksi_id)->first();
-
-    //                 Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
-    //                     'status' => 0,
-    //                     'operator_id' => auth()->user()->id,
-    //                     'updated_at' => date("Y-m-d H:i:s"),
-    //                 ]);
-
-    //                 // server
-    //                 DB::connection("mysqldua")->table("lokasis")->where('id', $model_pembayaran->lokasi_id)->update([
-    //                     'status' => 0,
-    //                     'operator_id' => auth()->user()->id,
-    //                     'updated_at' => date("Y-m-d H:i:s"),
-    //                 ]);
-
-
-    //                 Penyewa::where('id', $model_pembayaran->penyewa_id)->update([
-    //                     'status' => 0,
-    //                     'operator_id' => auth()->user()->id,
-    //                     'updated_at' => date("Y-m-d H:i:s"),
-    //                 ]);
-
-    //                 // server
-    //                 DB::connection("mysqldua")->table("penyewas")->where('id', $model_pembayaran->penyewa_id)->update([
-    //                     'status' => 0,
-    //                     'operator_id' => auth()->user()->id,
-    //                     'updated_at' => date("Y-m-d H:i:s"),
-    //                 ]);
-
-    //                 $response = [
-    //                     'status' => 200,
-    //                     'message' => 'success',
-    //                 ];
-
-    //                 DB::commit();
-    //                 return response()->json($response);
-    //             } catch (Exception $e) {
-    //                 $response = [
-    //                     'status' => 500,
-    //                     'message' => 'error',
-    //                 ];
-
-    //                 DB::rollBack();
-    //                 return response()->json($response);
-    //             }
-    //         } else {
-    //             $response = [
-    //                 'status' => 404,
-    //                 'message' => 'error',
-    //             ];
-
-    //             return response()->json($response);
-    //         }
-    //     }
-    // }
     public function getmodalperpanjangpembayarankamar()
     {
         if (request()->ajax()) {

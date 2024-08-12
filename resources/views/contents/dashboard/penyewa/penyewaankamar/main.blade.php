@@ -17,22 +17,32 @@
                 <div class="card border-0">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-xl-4 mb-3">
+                            <div class="col-xl-3 mb-3">
                                 <label for="minDate" class="form-label fw-600">Min Tanggal Masuk</label>
                                 <input type="date" class="form-control" id="minDate" value="{{ date('Y-m-01') }}">
                             </div>
-                            <div class="col-xl-4 mb-3">
+                            <div class="col-xl-3 mb-3">
                                 <label for="maxDate" class="form-label fw-600">Max Tanggal Masuk</label>
                                 <input type="date" class="form-control" id="maxDate" value="{{ date('Y-m-d') }}">
                             </div>
-                            <div class="col-xl-4 mb-3">
+                            <div class="col-xl-3 mb-3">
+                                <label for="penyewa" class="form-label">Pilih Penyewa</label>
+                                <select class="form-select form-select-2" name="penyewa" id="penyewa"
+                                    style="width: 100%;">
+                                    <option>Pilih Penyewa</option>
+                                    @foreach ($penyewa as $row)
+                                        <option value="{{ $row->id }}">{{ $row->namalengkap }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-xl-3 mb-3">
                                 <label for="status_pembayaran" class="form-label">Status Pembayaran</label>
                                 <select class="form-select form-select-2" name="status_pembayaran" id="status_pembayaran"
                                     style="width: 100%;">
                                     <option>Pilih Status Pembayaran</option>
                                     <option value="failed">Dibatalkan</option>
                                     <option value="completed">Lunas</option>
-                                    <option value="pending">Booking / Belum Lunas</option>
+                                    <option value="pending">Belum Lunas</option>
                                 </select>
                             </div>
                         </div>
@@ -79,6 +89,7 @@
                     data: function(d) {
                         d.minDate = $("#minDate").val();
                         d.maxDate = $("#maxDate").val();
+                        d.penyewa = $("#penyewa").val();
                         d.status_pembayaran = $("#status_pembayaran").val();
                     },
                 },
@@ -169,9 +180,171 @@
                 // }
             });
 
-            $("#minDate, #maxDate, #status_pembayaran").change(function() {
+            $("#minDate, #maxDate, #penyewa, #status_pembayaran").change(function() {
                 tablePenyewaanKamar.ajax.reload();
             });
         });
+
+        // bayar kamar
+        function openModalBayarKamar(e, transaksi_id) {
+            e.preventDefault()
+
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("transaksi_id", transaksi_id);
+
+            $.ajax({
+                url: "{{ route('getmodalselesaikanpembayarankamar') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    $("#universalModalContent").empty();
+                    $("#universalModalContent").addClass("modal-dialog-centered");
+                    $("#universalModalContent").append(`
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="loading">
+                                <span class="dots pulse1"></span>
+                                <span class="dots pulse2"></span>
+                                <span class="dots pulse3"></span>
+                            </div>
+                        </div>
+                    </div>
+                    `);
+                    $("#universalModal").modal("show");
+                },
+                success: function(response) {
+                    if (response.message == "success") {
+                        setTimeout(function() {
+                            $("#universalModalContent").html(response.dataHTML.trim());
+
+                            // Money
+                            $('.formatrupiah').maskMoney({
+                                allowNegative: false,
+                                precision: 0,
+                                thousands: '.'
+                            });
+                        }, 1000);
+                    }
+                },
+            });
+        }
+
+        function requestSelesaikanPembayaranKamar(e) {
+            e.preventDefault()
+
+            let error = 0;
+
+            if (($("#total_bayar").val() == "" || $("#total_bayar").val() == 0) && ($("#potongan_harga")
+                    .val() == "" || $(
+                        "#potongan_harga").val() == 0)) {
+                // total bayar
+                $("#total_bayar").addClass("is-invalid")
+                $("#errorTotalBayar").text("Kolom ini wajib diisi")
+
+                // potongan harga
+                $("#potongan_harga").addClass("is-invalid")
+                $("#errorPotonganHarga").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                // total harga
+                $("#total_bayar").removeClass("is-invalid")
+                $("#errorTotalBayar").text("")
+
+                // potongan harga
+                $("#potongan_harga").removeClass("is-invalid")
+                $("#errorPotonganHarga").text("")
+            }
+
+            if (error == 0) {
+                $("#btnRequest").prop("disabled", true)
+
+                var formData = new FormData();
+                formData.append("token", $("#token").val());
+                formData.append("transaksi_id", $("#transaksi_id").val());
+                formData.append("total_bayar", $("#total_bayar").val());
+                formData.append("potongan_harga", $("#potongan_harga").val());
+                formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
+
+                $.ajax({
+                    url: "{{ route('postselesaikanpembayarankamar') }}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.message == "success") {
+                            Swal.fire({
+                                title: "Berhasil",
+                                text: "Pembayaran berhasil ditambahkan",
+                                icon: "success"
+                            })
+                            setTimeout(function() {
+                                location.reload()
+                            }, 1000)
+                        } else {
+                            $("#btnRequest").prop("disabled", false)
+                            Swal.fire({
+                                title: "Opps, terjadi kesalahan",
+                                icon: "error"
+                            })
+                        }
+                    },
+                });
+            }
+        }
+
+        // pulangkan tamu
+        function requestPulangkanTamu(id) {
+            Swal.fire({
+                title: 'Pulangkan Tamu?',
+                text: "Anda yakin ingin pulangkan tamu?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#25d366', // Warna hijau
+                cancelButtonColor: '#cc0000', // Warna merah
+                confirmButtonText: 'Ya, saya yakin!',
+                cancelButtonText: 'Tidak, batalkan!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var formData = new FormData();
+                    formData.append("token", $("#token").val());
+                    formData.append("pembayaran_id", id);
+
+                    $.ajax({
+                        url: "{{ route('penyewaankamar.pulangkantamu') }}",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            if (response.message == "success") {
+                                Swal.fire({
+                                    title: "Berhasil",
+                                    text: "Tamu Berhasil Dipulangkan",
+                                    icon: "success"
+                                })
+
+                                setTimeout(function() {
+                                    location.reload()
+                                }, 1000)
+                            } else {
+                                Swal.fire({
+                                    title: "Opps, terjadi kesalahan",
+                                    icon: "error"
+                                })
+                            }
+                        },
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        title: "Dibatalkan",
+                        icon: "error"
+                    })
+                }
+            })
+        }
     </script>
 @endpush

@@ -9,15 +9,11 @@ use App\Http\Controllers\Dashboard\Inventaris\Kategori\MainController as Kategor
 use App\Http\Controllers\Dashboard\Inventaris\Log\MainController as LogMainController;
 use App\Http\Controllers\Dashboard\Inventaris\Penggunaanbarang\MainController as PenggunaanbarangMainController;
 use App\Http\Controllers\Dashboard\KamarController;
-use App\Http\Controllers\Dashboard\LaundriController;
-use App\Http\Controllers\Dashboard\Layanan\Fandb\MainController as FandbMainController;
-use App\Http\Controllers\Dashboard\Layanan\Laundri\MainController as LaundriMainController;
 use App\Http\Controllers\Dashboard\Lokasi\MainController as LokasiMainController;
 use App\Http\Controllers\Dashboard\MainController;
 use App\Http\Controllers\Dashboard\Pengguna\MainController as PenggunaMainController;
 use App\Http\Controllers\Dashboard\Penyewa\Penyewaankamar\MainController as PenyewaankamarMainController;
 use App\Http\Controllers\Dashboard\Role\MainController as RoleMainController;
-use App\Http\Controllers\Dashboard\PenyewaankamarController;
 use App\Http\Controllers\Dashboard\Scan\MainController as ScanMainController;
 use App\Http\Controllers\Dashboard\SewaController;
 use App\Http\Controllers\Dashboard\Tipekamar\MainController as TipekamarMainController;
@@ -62,14 +58,15 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/penyewaankamar/detailpenyewa/{penyewa:id}', [PenyewaankamarMainController::class, 'detailpenyewa'])->name('detailpenyewa');
     Route::post('/penyewaankamar/datatablepenyewaankamar', [PenyewaankamarMainController::class, 'datatablepenyewaankamar'])->name('penyewaankamar.datatablepenyewaankamar');
     Route::get('/penyewaankamar/cetakkwitansi/{id}', [PenyewaankamarMainController::class, 'cetakkwitansi'])->name('penyewaankamar.cetakkwitansi');
+    Route::post('/penyewaankamar/pulangkantamu', [PenyewaankamarMainController::class, 'pulangkantamu'])->name('penyewaankamar.pulangkantamu');
+    Route::post('/penyewaankamar/getrequestformsewaonktp', [PenyewaankamarMainController::class, 'getrequestformsewaonktp'])->name('penyewaankamar.getrequestformsewaonktp');
 
     // Sewa
     Route::group(['middleware' => 'hassewa'], function () {
         Route::get('/sewa', [SewaController::class, 'index'])->name('sewa');
         Route::post('/sewa', [SewaController::class, 'create'])->name('postsewa');
     });
-    // Route::get('/sewa/{penyewa:id}', [SewaController::class, 'detaildata'])->name('detailpenyewa');
-    // Route::post('/sewa/kosongkankamar', [SewaController::class, 'kosongkankamar'])->name('postkosongkankamar');
+
     Route::post('/getmodalperpanjangpembayarankamar', [SewaController::class, 'getmodalperpanjangpembayarankamar'])->name('getmodalperpanjangpembayarankamar');
     Route::post('/sewa/bayarperpanjangankamar', [SewaController::class, 'bayarperpanjangankamar'])->name('postbayarperpanjangankamar');
     Route::post('/getselectlantaikamar', [SewaController::class, 'getselectlantaikamar'])->name('getselectlantaikamar');
@@ -90,12 +87,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/kamar/datatablekamar', [KamarController::class, 'datatablekamar'])->name('kamar.datatablekamar');
     Route::post('/kamar/getmodalkamar', [KamarController::class, 'getmodalkamar'])->name('kamar.getmodalkamar');
     Route::post('/kamar/tambahkamar', [KamarController::class, 'create'])->name('kamar.postkamar');
-    Route::get('/kamar/informasitamu/{id}', [KamarController::class, 'informasitamu'])->name('kamar.informasitamu');
-    Route::post('/kamar/pulangkantamu', [KamarController::class, 'pulangkantamu'])->name('kamar.postpulangkantamu');
-    Route::post('/kamar/datatableinformasitamu', [KamarController::class, 'datatableinformasitamu'])->name('kamar.datatableinformasitamu');
     Route::post('/kamar/getmodaleditkamar', [KamarController::class, 'getmodaleditkamar'])->name('kamar.getmodaleditkamar');
     Route::post('/kamar/postedittipekamar', [KamarController::class, 'edittipekamar'])->name('kamar.postedittipekamar');
-    Route::post('/kamar/kosongkankamar', [KamarController::class, 'kosongkankamar'])->name('kamar.postkosongkankamar');
 
     // bisnis
     // laundri

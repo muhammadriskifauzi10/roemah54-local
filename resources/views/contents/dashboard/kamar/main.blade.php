@@ -319,56 +319,5 @@
                 },
             });
         }
-
-        // kosongkan kamar
-        function requestKosongkanKamar(id) {
-            Swal.fire({
-                title: 'Kosongkan Kamar?',
-                text: "Anda yakin ingin mengosongkan kamar ini?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#25d366', // Warna hijau
-                cancelButtonColor: '#cc0000', // Warna merah
-                confirmButtonText: 'Ya, saya yakin!',
-                cancelButtonText: 'Tidak, batalkan!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    var formData = new FormData();
-                    formData.append("token", $("#token").val());
-                    formData.append("kamar_id", id);
-
-                    $.ajax({
-                        url: "{{ route('kamar.postkosongkankamar') }}",
-                        type: "POST",
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: function(response) {
-                            if (response.message == "success") {
-                                Swal.fire({
-                                    title: "Berhasil",
-                                    text: "Kamar Berhasil Dikosongkan",
-                                    icon: "success"
-                                })
-
-                                setTimeout(function() {
-                                    location.reload()
-                                }, 1000)
-                            } else {
-                                Swal.fire({
-                                    title: "Opps, terjadi kesalahan",
-                                    icon: "error"
-                                })
-                            }
-                        },
-                    });
-                } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    Swal.fire({
-                        title: "Dibatalkan",
-                        icon: "error"
-                    })
-                }
-            })
-        }
     </script>
 @endpush
