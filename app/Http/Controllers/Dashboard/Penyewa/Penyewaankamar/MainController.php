@@ -19,8 +19,11 @@ class MainController extends Controller
 {
     public function index()
     {
+        $penyewa = Penyewa::all();
+
         $data = [
             'judul' => 'Penyewaan Kamar',
+            'penyewa' => $penyewa,
         ];
 
         return view('contents.dashboard.penyewa.penyewaankamar.main', $data);
