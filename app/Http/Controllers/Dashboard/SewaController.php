@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Denda;
 use App\Models\Harga;
 use App\Models\Lokasi;
 use App\Models\Lantai;
@@ -911,13 +912,14 @@ class SewaController extends Controller
             return response()->json($response);
         }
     }
-    // Perpanjang
+    // baru
+    // perpanjang
     public function getmodalperpanjangpembayarankamar()
     {
         if (request()->ajax()) {
-            $transaksi_id = htmlspecialchars(request()->input('transaksi_id'), ENT_QUOTES, 'UTF-8');
-            if (Pembayaran::where('id', $transaksi_id)->exists()) {
-                $model_pembayaran = Pembayaran::where('id', $transaksi_id)->first();
+            $pembayaran_id = htmlspecialchars(request()->input('pembayaran_id'), ENT_QUOTES, 'UTF-8');
+            if (Pembayaran::where('id', $pembayaran_id)->exists()) {
+                $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
 
                 $jenissewa = [
                     'Harian',
@@ -935,19 +937,37 @@ class SewaController extends Controller
                 $dataHTML = '
                 <form class="modal-content" onsubmit="requestBayarPerpanjangPenyewaanKamar(event)" autocomplete="off">
                     <input type="hidden" name="__token" value="' . request()->input('token') . '" id="token">
+                    <input type="hidden" name="__pembayaran_id" value="' . $pembayaran_id . '" id="pembayaran_id">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="universalModalLabel">Edit Jenis Sewa</h1>
+                        <h1 class="modal-title fs-5" id="universalModalLabel">Perpanjang Penyewaan Kamar</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="jenissewa" class="form-label fw-bold">Pilih Jenis Sewa</label>
                             <select class="form-select form-select-2"
-                                name="jenissewa" id="jenissewa" style="width: 100%;">
+                                name="jenissewa" id="jenissewa" style="width: 100%;" onchange="selectJenisSewa()">
                                 <option>Pilih Jenis Sewa</option>
                                 ' . implode(" ", $selectjenissewa) . '
                             </select>
                             <span class="text-danger" id="errorJenisSewa"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="jumlahhari" class="form-label fw-bold">Jumlah Hari</label>
+                            <div class="input-group" style="z-index: 0;">
+                                <input type="number" class="form-control" name="jumlahhari" id="jumlahhari" oninput="jumlahHari()">
+                                <span class="input-group-text bg-success text-light fw-bold">Hari</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="total_bayar" class="form-label fw-bold">Total
+                                Bayar</label>
+                            <div class="input-group" style="z-index: 0;">
+                                <span class="input-group-text bg-success text-light fw-bold">RP</span>
+                                <input type="text"
+                                    class="form-control formatrupiah"
+                                    name="total_bayar" id="total_bayar" placeholder="0">
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="cash" class="form-label fw-bold">
@@ -1015,21 +1035,28 @@ class SewaController extends Controller
     public function bayarperpanjangankamar()
     {
         if (request()->ajax()) {
-            $transaksi_id = htmlspecialchars(request()->input('transaksi_id'), ENT_QUOTES, 'UTF-8');
+            $pembayaran_id = htmlspecialchars(request()->input('pembayaran_id'), ENT_QUOTES, 'UTF-8');
             $jenissewa = request()->input('jenissewa');
+            $jumlahhari = htmlspecialchars(request()->input('jumlahhari'), true);
+            $total_bayar = htmlspecialchars(request()->input('total_bayar'), true);
             $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), ENT_QUOTES, 'UTF-8');
-            if (Pembayaran::where('id', $transaksi_id)->exists()) {
+            if (Pembayaran::where('id', $pembayaran_id)->exists()) {
                 try {
                     DB::beginTransaction();
-                    $model_pembayaran = Pembayaran::where('id', $transaksi_id)->first();
+                    $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
                     $kamar = Lokasi::where('id', $model_pembayaran->lokasi_id)->first();
                     $model_harga = Harga::where("tipekamar_id", $kamar->tipekamar_id)->first();
 
                     $tanggalmasuk = $model_pembayaran->tanggal_keluar;
                     $tanggalmasuk_format = Carbon::parse($tanggalmasuk)->format('Y-m-d H:i');
 
+                    if ($total_bayar) {
+                        $total_bayar = str_replace(".", "", $total_bayar);
+                    } else {
+                        $total_bayar = 0;
+                    }
+
                     if (stripos($jenissewa, 'Harian') !== false) {
-                        // Harian (Daily)
                         $tenggatwaktu = $this->check_out($tanggalmasuk_format);
 
                         if ($model_harga->mitra_id == 1) {
@@ -1041,8 +1068,15 @@ class SewaController extends Controller
                             $potongan_harga = $model_harga->harian * ($diskon / 100);
                             $jumlah_pembayaran = $model_harga->harian - $potongan_harga;
                         }
+
+                        if ($jumlahhari || $jumlahhari > 0) {
+                            $new_tanggalmasuk = Carbon::parse($tanggalmasuk_format)->addDay($jumlahhari - 1);
+                            $tenggatwaktu = $this->check_out($new_tanggalmasuk);
+
+                            $potongan_harga = $model_harga->harian * intval($jumlahhari) * ($diskon / 100);
+                            $jumlah_pembayaran = intval($jumlah_pembayaran) * intval($jumlahhari);
+                        }
                     } elseif (stripos($jenissewa, 'Mingguan / 7 Hari') !== false) {
-                        // Mingguan / 14 Hari (Weekly / 14 Days)
                         $tenggatwaktu = Carbon::parse($this->check_out($tanggalmasuk_format))->addWeek();
 
                         if ($model_harga->mitra_id == 1) {
@@ -1055,7 +1089,6 @@ class SewaController extends Controller
                             $jumlah_pembayaran = $model_harga->mingguan - $potongan_harga;
                         }
                     } elseif (stripos($jenissewa, 'Mingguan / (14 Hari)') !== false) {
-                        // Mingguan / (> 14 Hari) (Weekly / (> 14 Days))
                         $tenggatwaktu = Carbon::parse($this->check_out($tanggalmasuk_format))->addWeeks(2);
 
                         if ($model_harga->mitra_id == 1) {
@@ -1082,11 +1115,23 @@ class SewaController extends Controller
                         }
                     }
 
-                    // pembayaran
+                    if (intval($total_bayar) >= intval($jumlah_pembayaran)) {
+                        $status_pembayaran = "completed";
+                        $status_kamar = 1;
+                    } else {
+                        $status_pembayaran = "pending";
+                        $status_kamar = 2;
+                    }
+
                     $model_post_pembayaran = new Pembayaran();
                     $model_post_pembayaran->tagih_id = 1;
-                    $model_post_pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
-                    $model_post_pembayaran->tanggal_masuk = $model_pembayaran->tanggal_keluar;
+                    if (intval($total_bayar) > 0) {
+                        $model_post_pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
+                        $tanggal_pembayaran = date('Y-m-d H:i:s');
+                    } else {
+                        $tanggal_pembayaran = NULL;
+                    }
+                    $model_post_pembayaran->tanggal_masuk = $tanggalmasuk;
                     $model_post_pembayaran->tanggal_keluar = $tenggatwaktu;
                     $model_post_pembayaran->penyewa_id = $model_pembayaran->penyewa_id;
                     $model_post_pembayaran->mitra_id = $model_pembayaran->mitra_id;
@@ -1096,17 +1141,17 @@ class SewaController extends Controller
                     $model_post_pembayaran->jumlah_pembayaran = intval($jumlah_pembayaran) + intval($potongan_harga);
                     $model_post_pembayaran->diskon = $diskon;
                     $model_post_pembayaran->potongan_harga = intval($potongan_harga);
-                    $model_post_pembayaran->total_bayar = intval($jumlah_pembayaran);
-                    $model_post_pembayaran->kurang_bayar = 0;
-                    $model_post_pembayaran->status_pembayaran = "completed";
+                    $model_post_pembayaran->total_bayar = $total_bayar;
+                    $model_post_pembayaran->kurang_bayar = intval($jumlah_pembayaran) - intval($total_bayar);
+                    $model_post_pembayaran->status_pembayaran = $status_pembayaran;
                     $model_post_pembayaran->operator_id = auth()->user()->id;
                     $post = $model_post_pembayaran->save();
 
                     // server
                     DB::connection("mysqldua")->table("pembayarans")->insert([
                         'tagih_id' => 1,
-                        'tanggal_pembayaran' => date('Y-m-d H:i:s'),
-                        'tanggal_masuk' => $model_pembayaran->tanggal_keluar,
+                        'tanggal_pembayaran' => $tanggal_pembayaran,
+                        'tanggal_masuk' => $tanggalmasuk,
                         'tanggal_keluar' => $tenggatwaktu,
                         'penyewa_id' => $model_pembayaran->penyewa_id,
                         'mitra_id' => $model_pembayaran->mitra_id,
@@ -1116,60 +1161,132 @@ class SewaController extends Controller
                         'jumlah_pembayaran' => intval($jumlah_pembayaran) + intval($potongan_harga),
                         'diskon' => $diskon,
                         'potongan_harga' => intval($potongan_harga),
-                        'total_bayar' => intval($jumlah_pembayaran),
-                        'kurang_bayar' => 0,
-                        'status_pembayaran' => "completed",
+                        'total_bayar' => $total_bayar,
+                        'kurang_bayar' => intval($jumlah_pembayaran) - intval($total_bayar),
+                        'status_pembayaran' => $status_pembayaran,
                         'operator_id' => auth()->user()->id,
                         'created_at' => date("Y-m-d H:i:s"),
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
                     if ($post) {
-                        // Generate no transaksi
-                        $tahun = date('Y');
-                        $bulan = date('m');
-                        $tanggal = date('d');
-                        $infoterakhir = Transaksi::orderBy('created_at', 'DESC')->first();
+                        if (intval($total_bayar) > 0) {
+                            // Generate no transaksi
+                            $tahun = date('Y');
+                            $bulan = date('m');
+                            $tanggal = date('d');
+                            $infoterakhir = Transaksi::orderBy('created_at', 'DESC')->first();
 
-                        if ($infoterakhir) {
-                            $tahunterakhir = Carbon::parse($infoterakhir->created_at)->format('Y') ?? 0;
-                            $bulanterakhir = Carbon::parse($infoterakhir->created_at)->format('m') ?? 0;
-                            $tanggalterakhir = Carbon::parse($infoterakhir->created_at)->format('d') ?? 0;
-                            $nomor = substr($infoterakhir->no_transaksi, 6);
+                            if ($infoterakhir) {
+                                $tahunterakhir = Carbon::parse($infoterakhir->created_at)->format('Y') ?? 0;
+                                $bulanterakhir = Carbon::parse($infoterakhir->created_at)->format('m') ?? 0;
+                                $tanggalterakhir = Carbon::parse($infoterakhir->created_at)->format('d') ?? 0;
+                                $nomor = substr($infoterakhir->no_transaksi, 6);
 
-                            if ($tahun != $tahunterakhir || $bulan != $bulanterakhir || $tanggal != $tanggalterakhir) {
+                                if ($tahun != $tahunterakhir || $bulan != $bulanterakhir || $tanggal != $tanggalterakhir) {
+                                    $nomor = 0;
+                                }
+                            } else {
                                 $nomor = 0;
                             }
-                        } else {
-                            $nomor = 0;
+
+                            // yymmddxxxxxx
+                            $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
+
+                            $transaksi = new Transaksi();
+                            $transaksi->no_transaksi = $no_transaksi;
+                            $transaksi->tagih_id = 1;
+                            $transaksi->pembayaran_id = $model_post_pembayaran->id;
+                            $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
+                            $transaksi->jumlah_uang = $total_bayar;
+                            $transaksi->metode_pembayaran = $metode_pembayaran;
+                            $transaksi->operator_id = auth()->user()->id;
+                            $transaksi->save();
+
+                            // server
+                            DB::connection("mysqldua")->table("transaksis")->insert([
+                                'no_transaksi' => $no_transaksi,
+                                'tagih_id' => 1,
+                                'pembayaran_id' => $model_post_pembayaran->id,
+                                'tanggal_transaksi' => date('Y-m-d H:i:s'),
+                                'jumlah_uang' => $total_bayar,
+                                'metode_pembayaran' => $metode_pembayaran,
+                                'operator_id' => auth()->user()->id,
+                                'created_at' => date("Y-m-d H:i:s"),
+                                'updated_at' => date("Y-m-d H:i:s"),
+                            ]);
                         }
 
-                        // yymmddxxxxxx
-                        $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
-
-                        // transaksi
-                        $transaksi = new Transaksi();
-                        $transaksi->no_transaksi = $no_transaksi;
-                        $transaksi->tagih_id = 1;
-                        $transaksi->pembayaran_id = $model_post_pembayaran->id;
-                        $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
-                        $transaksi->jumlah_uang = intval($jumlah_pembayaran);
-                        $transaksi->metode_pembayaran = $metode_pembayaran;
-                        $transaksi->operator_id = auth()->user()->id;
-                        $transaksi->save();
-
-                        // server
-                        DB::connection("mysqldua")->table("transaksis")->insert([
-                            'no_transaksi' => $no_transaksi,
-                            'tagih_id' => 1,
-                            'pembayaran_id' => $model_post_pembayaran->id,
-                            'tanggal_transaksi' => date('Y-m-d H:i:s'),
-                            'jumlah_uang' => intval($jumlah_pembayaran),
-                            'metode_pembayaran' => $metode_pembayaran,
+                        Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
+                            'status' => $status_kamar,
                             'operator_id' => auth()->user()->id,
-                            'created_at' => date("Y-m-d H:i:s"),
                             'updated_at' => date("Y-m-d H:i:s"),
                         ]);
+
+                        // server
+                        DB::connection("mysqldua")->table("lokasis")->where('id', $model_pembayaran->lokasi_id)->update([
+                            'status' => $status_kamar,
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
+
+                        // denda checkout
+                        $givenDateTime = Carbon::create($model_pembayaran->tanggal_keluar);
+
+                        // Ambil waktu sekarang
+                        $now = Carbon::now();
+
+                        // Tentukan waktu batasan (15:00 pada tanggal yang sama)
+                        $limitTime = $givenDateTime->copy()->setHour(15)->setMinute(0)->setSecond(0);
+
+                        // Hitung pembayaran berdasarkan waktu sekarang dan waktu batasan
+                        if ($now->greaterThanOrEqualTo($givenDateTime) && $now->greaterThanOrEqualTo($limitTime)) {
+                            $model_denda_checkout = new Denda();
+                            $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
+                            $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
+                            $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
+                            $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
+                            $model_denda_checkout->tagih_id = 3;
+                            $model_denda_checkout->jumlah_uang = 100000;
+                            $model_denda_checkout->operator_id = auth()->user()->id;
+                            $model_denda_checkout->save();
+
+                            // server
+                            DB::connection("mysqldua")->table("dendas")->insert([
+                                'tanggal_denda' => date('Y-m-d H:i:s'),
+                                'pembayaran_id' => $model_pembayaran->id,
+                                'penyewa_id' => $model_pembayaran->penyewa_id,
+                                'lokasi_id' => $model_pembayaran->lokasi_id,
+                                'tagih_id' => 3,
+                                'jumlah_uang' => 100000,
+                                'operator_id' => auth()->user()->id,
+                                'created_at' => date("Y-m-d H:i:s"),
+                                'updated_at' => date("Y-m-d H:i:s"),
+                            ]);
+                        } elseif ($now->greaterThanOrEqualTo($givenDateTime) && $now->lessThan($limitTime)) {
+                            $model_denda_checkout = new Denda();
+                            $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
+                            $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
+                            $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
+                            $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
+                            $model_denda_checkout->tagih_id = 3;
+                            $model_denda_checkout->jumlah_uang = 50000;
+                            $model_denda_checkout->operator_id = auth()->user()->id;
+                            $model_denda_checkout->save();
+
+                            // server
+                            DB::connection("mysqldua")->table("dendas")->insert([
+                                'tanggal_denda' => date('Y-m-d H:i:s'),
+                                'pembayaran_id' => $model_pembayaran->id,
+                                'penyewa_id' => $model_pembayaran->penyewa_id,
+                                'lokasi_id' => $model_pembayaran->lokasi_id,
+                                'tagih_id' => 3,
+                                'jumlah_uang' => 50000,
+                                'operator_id' => auth()->user()->id,
+                                'created_at' => date("Y-m-d H:i:s"),
+                                'updated_at' => date("Y-m-d H:i:s"),
+                            ]);
+                        }
                     }
 
                     DB::commit();
@@ -1187,7 +1304,7 @@ class SewaController extends Controller
             } else {
                 $response = [
                     'status' => 422,
-                    'message' => $transaksi_id,
+                    'message' => 'error',
                 ];
             }
 
@@ -1274,9 +1391,11 @@ class SewaController extends Controller
                 $harga = Harga::where('tipekamar_id', (int)$kamar->tipekamar_id)->first();
                 if (Harga::where('tipekamar_id', (int)$kamar->tipekamar_id)->where('mitra_id', (int)$harga->mitra_id)->exists()) {
                     $selectmitra = [];
-                    foreach (Harga::join('mitras as t2', 'hargas.mitra_id', '=', 't2.id')
-                        ->where('hargas.tipekamar_id', '=', $harga->tipekamar_id)
-                        ->get() as $row) {
+                    foreach (
+                        Harga::join('mitras as t2', 'hargas.mitra_id', '=', 't2.id')
+                            ->where('hargas.tipekamar_id', '=', $harga->tipekamar_id)
+                            ->get() as $row
+                    ) {
                         $selectmitra[] = '<option value="' . $row->id . '">' . $row->mitra . '</option>';
                     }
 

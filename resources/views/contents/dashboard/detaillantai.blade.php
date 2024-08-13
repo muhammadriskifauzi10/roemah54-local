@@ -621,12 +621,12 @@
         }
 
         // perpanjang
-        function openModalPerpanjangPenyewaanKamar(e, transaksi_id) {
+        function openModalPerpanjangPenyewaanKamar(e, pembayaran_id) {
             e.preventDefault()
 
             var formData = new FormData();
-            formData.append("token", $("#token").val());
-            formData.append("transaksi_id", transaksi_id);
+            formData.append("token", $('meta[name="csrf-token"]').attr('content'))
+            formData.append("pembayaran_id", pembayaran_id);
 
             $.ajax({
                 url: "{{ route('getmodalperpanjangpembayarankamar') }}",
@@ -661,6 +661,13 @@
                                 // selectionCssClass: "select2--small",
                                 // dropdownCssClass: "select2--small",
                             });
+
+                            // Money
+                            $('.formatrupiah').maskMoney({
+                                allowNegative: false,
+                                precision: 0,
+                                thousands: '.'
+                            });
                         }, 1000);
                     }
                 },
@@ -685,8 +692,10 @@
 
                 var formData = new FormData();
                 formData.append("token", $("#token").val());
-                formData.append("transaksi_id", transaksi_id);
+                formData.append("pembayaran_id", $("#pembayaran_id").val());
                 formData.append("jenissewa", $("#jenissewa").val());
+                formData.append("jumlahhari", $("#jumlahhari").val());
+                formData.append("total_bayar", $("#total_bayar").val());
                 formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
 
                 $.ajax({
@@ -703,7 +712,7 @@
                                 icon: "success"
                             })
                             setTimeout(function() {
-                                location.assign('/sewa/' + penyewa_id)
+                                location.reload()
                             }, 1000)
                         } else {
                             Swal.fire({
@@ -713,6 +722,24 @@
                         }
                     },
                 });
+            }
+        }
+
+        function selectJenisSewa() {
+            jumlahHari()
+        }
+
+        function jumlahHari() {
+            var jenissewa = $("#jenissewa").val()
+            let jumlahhari = $("#jumlahhari").val()
+
+            if (jumlahhari <= 0) {
+                $("#jumlahhari").val("")
+                jumlahhari = 0
+            }
+
+            if (jenissewa != "Harian") {
+                $("#jumlahhari").val("")
             }
         }
     </script>

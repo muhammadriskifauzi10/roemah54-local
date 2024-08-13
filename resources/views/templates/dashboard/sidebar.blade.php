@@ -30,7 +30,7 @@
                 class="list-group-item list-group-item-action border-0 {{ request()->is('penyewaankamar*') ? 'active' : '' }}">
                 Penyewaan Kamar
             </a>
-            <a href="javascript:void(0)" class="list-group-item list-group-item-action border-0">
+            <a href="{{ route('dendacheckout') }}" class="list-group-item list-group-item-action border-0 {{ request()->is('dendacheckout*') ? 'active' : '' }}">
                 Denda Checkout
             </a>
 

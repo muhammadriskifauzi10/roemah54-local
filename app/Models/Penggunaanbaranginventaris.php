@@ -12,6 +12,11 @@ class Penggunaanbaranginventaris extends Model
     protected $table = 'penggunaanbaranginventaris';
     protected $primaryKey = 'id';
 
+    public function baranginventaris()
+    {
+        return $this->hasOne(Baranginventaris::class, 'id', 'baranginventaris_id');
+    }
+
     public function kategoris()
     {
         return $this->hasOne(Kategoribaranginventaris::class, 'id', 'kategoribaranginventaris_id');

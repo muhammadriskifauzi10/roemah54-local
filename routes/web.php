@@ -12,6 +12,7 @@ use App\Http\Controllers\Dashboard\KamarController;
 use App\Http\Controllers\Dashboard\Lokasi\MainController as LokasiMainController;
 use App\Http\Controllers\Dashboard\MainController;
 use App\Http\Controllers\Dashboard\Pengguna\MainController as PenggunaMainController;
+use App\Http\Controllers\Dashboard\Penyewa\Dendacheckout\MainController as DendacheckoutMainController;
 use App\Http\Controllers\Dashboard\Penyewa\Penyewaankamar\MainController as PenyewaankamarMainController;
 use App\Http\Controllers\Dashboard\Role\MainController as RoleMainController;
 use App\Http\Controllers\Dashboard\Scan\MainController as ScanMainController;
@@ -60,7 +61,12 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/penyewaankamar/cetakkwitansi/{id}', [PenyewaankamarMainController::class, 'cetakkwitansi'])->name('penyewaankamar.cetakkwitansi');
     Route::post('/penyewaankamar/pulangkantamu', [PenyewaankamarMainController::class, 'pulangkantamu'])->name('penyewaankamar.pulangkantamu');
     Route::post('/penyewaankamar/getrequestformsewaonktp', [PenyewaankamarMainController::class, 'getrequestformsewaonktp'])->name('penyewaankamar.getrequestformsewaonktp');
-
+    // denda checkout
+    Route::get('/dendacheckout', [DendacheckoutMainController::class, 'index'])->name('dendacheckout');
+    Route::post('/dendacheckout/datatabledendacheckout', [DendacheckoutMainController::class, 'datatabledendacheckout'])->name('dendacheckout.datatabledendacheckout');
+    Route::post('/dendacheckout/getmodalbayardenda', [DendacheckoutMainController::class, 'getmodalbayardenda'])->name('dendacheckout.getmodalbayardenda');
+    Route::post('/dendacheckout/bayardenda', [DendacheckoutMainController::class, 'bayardenda'])->name('dendacheckout.bayardenda');
+    
     // Sewa
     Route::group(['middleware' => 'hassewa'], function () {
         Route::get('/sewa', [SewaController::class, 'index'])->name('sewa');
