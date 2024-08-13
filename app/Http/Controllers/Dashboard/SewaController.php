@@ -1200,6 +1200,7 @@ class SewaController extends Controller
                             $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
                             $transaksi->jumlah_uang = $total_bayar;
                             $transaksi->metode_pembayaran = $metode_pembayaran;
+                            $transaksi->tipe = "pemasukan";
                             $transaksi->operator_id = auth()->user()->id;
                             $transaksi->save();
 
@@ -1211,6 +1212,7 @@ class SewaController extends Controller
                                 'tanggal_transaksi' => date('Y-m-d H:i:s'),
                                 'jumlah_uang' => $total_bayar,
                                 'metode_pembayaran' => $metode_pembayaran,
+                                'tipe' => "pemasukan",
                                 'operator_id' => auth()->user()->id,
                                 'created_at' => date("Y-m-d H:i:s"),
                                 'updated_at' => date("Y-m-d H:i:s"),
