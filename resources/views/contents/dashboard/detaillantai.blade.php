@@ -135,7 +135,7 @@
                                                     class="col-xl-6 kamar text-decoration-none mb-4">
                                                     <div class="card border-0 rounded" style="height: 100%">
                                                         <div class="card-header bg-warning text-light text-center fw-bold">
-                                                            Booking / Belum Lunas
+                                                            Booking
                                                         </div>
                                                         <div class="card-body d-flex flex-column">
                                                             <table style="width: 100%">

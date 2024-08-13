@@ -93,7 +93,7 @@
                                             <div class="mt-1 d-flex align-items-center gap-4">
                                                 <div class="bg-warning" style="width: 20px; height: 20px;"></div>
                                                 <strong class="black">{{ $row->lokasis->where('status', 2)->count() }}
-                                                    Booking / Belum Lunas</strong>
+                                                    Booking</strong>
                                             </div>
                                             <div class="mt-1 d-flex align-items-center gap-4">
                                                 <div class="bg-danger" style="width: 20px; height: 20px;"></div>
