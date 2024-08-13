@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lantai;
+use App\Models\Lokasi;
+use App\Models\Penyewa;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use PhpParser\Node\Stmt\Catch_;

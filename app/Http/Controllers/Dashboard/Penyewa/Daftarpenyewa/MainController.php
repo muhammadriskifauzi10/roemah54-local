@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard\Penyewa\Daftarpenyewa;
 
 use App\Http\Controllers\Controller;
+use App\Models\Penyewa;
 
 class MainController extends Controller
 {
