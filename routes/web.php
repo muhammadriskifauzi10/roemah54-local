@@ -12,6 +12,7 @@ use App\Http\Controllers\Dashboard\KamarController;
 use App\Http\Controllers\Dashboard\Lokasi\MainController as LokasiMainController;
 use App\Http\Controllers\Dashboard\MainController;
 use App\Http\Controllers\Dashboard\Pengguna\MainController as PenggunaMainController;
+use App\Http\Controllers\Dashboard\Penyewa\Daftarpenyewa\MainController as DaftarpenyewaMainController;
 use App\Http\Controllers\Dashboard\Penyewa\Dendacheckout\MainController as DendacheckoutMainController;
 use App\Http\Controllers\Dashboard\Penyewa\Penyewaankamar\MainController as PenyewaankamarMainController;
 use App\Http\Controllers\Dashboard\Role\MainController as RoleMainController;
@@ -45,6 +46,8 @@ Route::group(['middleware' => 'auth'], function () {
     // dasbor
     Route::get('/dasbor', [MainController::class, 'index'])->name('dasbor');
     Route::get('/dasbor/{lantai:id}', [MainController::class, 'detaildata'])->name('detaillantai');
+    Route::get('/dasbor/detailpenyewa/{penyewa:id}', [MainController::class, 'detailpenyewa'])->name('detailpenyewa');
+    
     // Lantai
     Route::post('/tambahlantai', [MainController::class, 'create'])->name('postlantai');
     // lokasi
@@ -54,9 +57,11 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/lokasi/cetakqrcode', [LokasiMainController::class, 'cetakqrcode'])->name('lokasi.cetakqrcode');
 
     // penyewa
+    // daftar penyewa
+    Route::get('/daftarpenyewa', [DaftarpenyewaMainController::class, 'index'])->name('daftarpenyewa');
+    Route::post('/daftarpenyewa/datatabledaftarpenyewa', [DaftarpenyewaMainController::class, 'datatabledaftarpenyewa'])->name('daftarpenyewa.datatabledaftarpenyewa');
     // Penyewaan Kamar
     Route::get('/penyewaankamar', [PenyewaankamarMainController::class, 'index'])->name('penyewaankamar');
-    Route::get('/penyewaankamar/detailpenyewa/{penyewa:id}', [PenyewaankamarMainController::class, 'detailpenyewa'])->name('detailpenyewa');
     Route::post('/penyewaankamar/datatablepenyewaankamar', [PenyewaankamarMainController::class, 'datatablepenyewaankamar'])->name('penyewaankamar.datatablepenyewaankamar');
     Route::get('/penyewaankamar/cetakkwitansi/{id}', [PenyewaankamarMainController::class, 'cetakkwitansi'])->name('penyewaankamar.cetakkwitansi');
     Route::post('/penyewaankamar/pulangkantamu', [PenyewaankamarMainController::class, 'pulangkantamu'])->name('penyewaankamar.pulangkantamu');

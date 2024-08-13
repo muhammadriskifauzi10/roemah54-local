@@ -53,6 +53,10 @@ class SewaController extends Controller
             $rulefotoktp = 'mimes:jpg,jpeg,png';
         }
 
+        if (Penyewa::where('noktp', $noktp)->where('status', 1)->exists()) {
+            return redirect()->back()->with('messageFailed', 'Opps, Penyewa sedang aktif menyewa');
+        }
+
         $validator = Validator::make(request()->all(), [
             'tanggalmasuk' => 'required|date',
             'jumlahhari' => 'nullable|numeric',

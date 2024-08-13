@@ -73,4 +73,28 @@ class MainController extends Controller
             }
         }
     }
+    public function detailpenyewa(Penyewa $penyewa)
+    {
+        if ($penyewa->status == 0) {
+            abort(404);
+        }
+
+        if ($penyewa->transaksisewa_kamars) {
+            $kamar = Lokasi::where('id', $penyewa->transaksisewa_kamars->lokasi_id)->first();
+            if ($kamar->status == 1 || $kamar->status == 2) {
+                $data = [
+                    'judul' => 'Detail Penyewa',
+                    'penyewa' => $penyewa,
+                    'kamar' => $kamar,
+                    // 'tenggatwaktu' => $tenggatwaktu
+                ];
+
+                return view('contents.dashboard.penyewa.penyewaankamar.detailpenyewa', $data);
+            } else {
+                abort(404);
+            }
+        } else {
+            abort(404);
+        }
+    }
 }

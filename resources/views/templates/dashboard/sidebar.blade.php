@@ -13,7 +13,7 @@
     <div class="list-menu">
         <div class="list-group border-0">
             <a href="{{ route('dasbor') }}"
-                class="list-group-item list-group-item-action border-0 {{ request()->is('dasbor*') || request()->is('sewa*') ? 'active' : '' }}">
+                class="list-group-item list-group-item-action border-0 {{ request()->is('dasbor*') ? 'active' : '' }}">
                 Dasbor
             </a>
             <a href="{{ route('lokasi') }}"
@@ -23,7 +23,7 @@
 
             {{-- penyewa --}}
             <div class="fw-bold my-3">Penyewa</div>
-            <a href="javascript:void(0)" class="list-group-item list-group-item-action border-0">
+            <a href="{{ route('daftarpenyewa') }}" class="list-group-item list-group-item-action border-0 {{ request()->is('daftarpenyewa*') ? 'active' : '' }}">
                 Daftar Penyewa
             </a>
             <a href="{{ route('penyewaankamar') }}"
