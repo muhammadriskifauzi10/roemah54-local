@@ -1320,6 +1320,19 @@ class SewaController extends Controller
                                 'updated_at' => date("Y-m-d H:i:s"),
                             ]);
                         }
+
+                        Pembayaran::where('id', $model_pembayaran->id)->update([
+                            'status' => 0,
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
+
+                        // server
+                        DB::connection("mysqldua")->table("pembayarans")->where('id', $model_pembayaran->id)->update([
+                            'status' => 0,
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
                     }
 
                     DB::commit();
