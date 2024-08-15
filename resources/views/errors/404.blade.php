@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>RSU Bunda Thamrin</title>
+    <title>Roemah 54</title>
 
     {{-- Bootstrap 5 CSS --}}
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" />
@@ -75,7 +75,7 @@
 <body>
     <div class="container">
         <div class="panel">
-            <span class="notfound">🫥</span>
+            <span class="notfound">404</span>
             <h1 class="text-center">Opps, halaman tidak ditemukan</h1>
         </div>
     </div>

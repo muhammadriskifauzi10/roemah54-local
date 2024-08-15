@@ -29,6 +29,7 @@ class MainController extends Controller
 
         return view('contents.dashboard.penyewa.penyewaankamar.main', $data);
     }
+    // baru
     public function datatablepenyewaankamar()
     {
         $minDate = request()->input('minDate');
@@ -65,108 +66,70 @@ class MainController extends Controller
             // tombol cetak kwitansi
             if ($row->tanggal_pembayaran && in_array($row->status_pembayaran, ['completed', 'pending'])) {
                 $cetakkwitansi = '
-                  <a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
-                          <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
-                          <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
-                      </svg>
-                      Cetak Kwitansi
-                  </a>';
+                 <a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                         <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                         <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                     </svg>
+                     Cetak Kwitansi
+                 </a>';
             } else {
                 $cetakkwitansi = '';
             }
 
             // status penyewa
-            if ($row->penyewas->status == 1) {
-                if ($row->penyewas->transaksisewa_kamars->id == $row->id && ($row->lokasis->status == 1 || $row->lokasis->status == 2)) {
-                    if ($row->status_pembayaran == "failed") {
-                        $bayar = '';
-                        $pulangkantamu = '';
-                    } else if ($row->status_pembayaran == "pending") {
-                        $bayar = '
-                          <button type="button" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" onclick="openModalBayarKamar(event, ' . $row->id . ')" style="width: 180px;">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                  class="bi bi-credit-card" viewBox="0 0 16 16">
-                                  <path
-                                      d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z" />
-                                  <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
-                              </svg>
-                              Bayar
-                          </button>
-                          ';
-                        $pulangkantamu = '
-                          <button type="button" class="btn btn-danger text-light fw-bold" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                  class="bi bi-person-raised-hand" viewBox="0 0 16 16">
-                                  <path
-                                      d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
-                                  <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
-                              </svg>
-                              Pulangkan Tamu
-                          </button>';
-                    } else {
-                        $bayar = '';
-                        $pulangkantamu = '
-                          <button type="button" class="btn btn-danger text-light fw-bold" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                  class="bi bi-person-raised-hand" viewBox="0 0 16 16">
-                                  <path
-                                      d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
-                                  <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
-                              </svg>
-                              Pulangkan Tamu
-                          </button>';
-                    }
+            if ($row->status_pembayaran == "completed") {
+                $bayar = '';
+                if ($row->status == 1) {
+                    $pulangkantamu = '
+                     <button type="button" class="btn btn-danger text-light fw-bold" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-person-raised-hand" viewBox="0 0 16 16">
+                             <path
+                                 d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
+                             <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                         </svg>
+                         Pulangkan Tamu
+                     </button>';
                 } else {
-                    if ($row->status_pembayaran == "failed") {
-                        $bayar = '';
-                        $pulangkantamu = '';
-                    } else if ($row->status_pembayaran == "pending") {
-                        $bayar = '
-                              <button type="button" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" onclick="openModalBayarKamar(event, ' . $row->id . ')" style="width: 180px;">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                      class="bi bi-credit-card" viewBox="0 0 16 16">
-                                      <path
-                                          d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z" />
-                                      <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
-                                  </svg>
-                                  Bayar
-                              </button>
-                              ';
-                        $pulangkantamu = '';
-                    } else {
-                        $bayar = '';
-                        $pulangkantamu = '';
-                    }
-                }
-            } else {
-                if ($row->status_pembayaran == "failed") {
-                    $bayar = '';
-                    $pulangkantamu = '';
-                } else if ($row->status_pembayaran == "pending") {
-                    $bayar = '
-                          <button type="button" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" onclick="openModalBayarKamar(event, ' . $row->id . ')" style="width: 180px;">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                  class="bi bi-credit-card" viewBox="0 0 16 16">
-                                  <path
-                                      d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z" />
-                                  <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
-                              </svg>
-                              Bayar
-                          </button>
-                          ';
-                    $pulangkantamu = '';
-                } else {
-                    $bayar = '';
                     $pulangkantamu = '';
                 }
+            } else if ($row->status_pembayaran == "pending") {
+                $bayar = '
+                 <button type="button" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" onclick="openModalBayarKamar(event, ' . $row->id . ')" style="width: 180px;">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                         class="bi bi-credit-card" viewBox="0 0 16 16">
+                         <path
+                             d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z" />
+                         <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
+                     </svg>
+                     Bayar
+                 </button>';
+
+                if ($row->status == 1) {
+                    $pulangkantamu = '
+                     <button type="button" class="btn btn-danger text-light fw-bold" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-person-raised-hand" viewBox="0 0 16 16">
+                             <path
+                                 d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
+                             <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                         </svg>
+                         Pulangkan Tamu
+                     </button>';
+                } else {
+                    $pulangkantamu = '';
+                }
+            } elseif ($row->status_pembayaran == "failed") {
+                $bayar = '';
+                $pulangkantamu = '';
             }
 
             $aksi = '<div class="d-flex align-items-center justify-content-center gap-1">
-              ' . $bayar . '
-              ' . $cetakkwitansi . '
-              ' . $pulangkantamu . '
-              </div>';
+             ' . $bayar . '
+             ' . $cetakkwitansi . '
+             ' . $pulangkantamu . '
+             </div>';
 
             $output[] = [
                 'nomor' => '<strong>' . $no++ . '</strong>',
@@ -250,19 +213,33 @@ class MainController extends Controller
 
                     $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
 
-                    // penyewa
-                    Penyewa::where('id', $model_pembayaran->penyewa_id)->update([
+                    Pembayaran::where('id', $model_pembayaran->id)->update([
                         'status' => 0,
                         'operator_id' => auth()->user()->id,
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
                     // server
-                    DB::connection("mysqldua")->table("penyewas")->where('id', $model_pembayaran->penyewa_id)->update([
+                    DB::connection("mysqldua")->table("pembayarans")->where('id', $model_pembayaran->id)->update([
                         'status' => 0,
                         'operator_id' => auth()->user()->id,
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
+
+                    if (Pembayaran::where('penyewa_id', $model_pembayaran->penyewa_id)->where('status', 1)->count() < 1) {
+                        Penyewa::where('id', $model_pembayaran->penyewa_id)->update([
+                            'status' => 0,
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
+
+                        // server
+                        DB::connection("mysqldua")->table("penyewas")->where('id', $model_pembayaran->penyewa_id)->update([
+                            'status' => 0,
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
+                    }
 
                     // kosongkan kamar
                     Lokasi::where('id', $model_pembayaran->lokasi_id)->update([

@@ -53,10 +53,6 @@ class SewaController extends Controller
             $rulefotoktp = 'mimes:jpg,jpeg,png';
         }
 
-        if (Penyewa::where('noktp', $noktp)->where('status', 1)->exists()) {
-            return redirect()->back()->with('messageFailed', 'Opps, Penyewa sedang aktif menyewa');
-        }
-
         $validator = Validator::make(request()->all(), [
             'tanggalmasuk' => 'required|date',
             'jumlahhari' => 'nullable|numeric',
@@ -106,7 +102,7 @@ class SewaController extends Controller
             'nohp.required' => 'Kolom ini wajib diisi',
             'nohp.regex' => 'No HP tidak valid',
             'fotoktp.required' => 'Kolom ini wajib diisi',
-            'fotoktp.mimes' => ' Ekstensi file hanya mendukung format jpg dan jpeg',
+            'fotoktp.mimes' => 'Ekstensi file hanya mendukung format jpg dan jpeg',
             'total_bayar.required' => 'Kolom ini wajib diisi',
             'total_bayar.not_in' => 'Kolom ini wajib diisi',
             'alamat.required' => 'Kolom ini wajib diisi',
@@ -390,7 +386,7 @@ class SewaController extends Controller
                 ]);
 
                 DB::commit();
-                return redirect('/dasbor')->with('messageSuccess', 'Penyewaan kamar berhasil ditambahkan!');
+                return redirect()->route('dasbor')->with('messageSuccess', 'Penyewaan kamar berhasil ditambahkan');
             }
         } catch (Exception $e) {
             DB::rollBack();
@@ -402,14 +398,15 @@ class SewaController extends Controller
     public function batalkanpembayarankamar()
     {
         if (request()->ajax()) {
-            $transaksi_id = htmlspecialchars(request()->input('transaksi_id'), ENT_QUOTES, 'UTF-8');
-            if (Pembayaran::where('id', $transaksi_id)->exists()) {
+            $pembayaran_id = htmlspecialchars(request()->input('pembayaran_id'), ENT_QUOTES, 'UTF-8');
+            if (Pembayaran::where('id', $pembayaran_id)->exists()) {
                 try {
                     DB::beginTransaction();
-                    $model_pembayaran = Pembayaran::where('id', $transaksi_id)->first();
+                    $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
 
                     Pembayaran::where('id', $model_pembayaran->id)->update([
                         'status_pembayaran' => 'failed',
+                        'status' => 0,
                         'operator_id' => auth()->user()->id,
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
@@ -417,22 +414,25 @@ class SewaController extends Controller
                     // server
                     DB::connection("mysqldua")->table("pembayarans")->where('id', $model_pembayaran->id)->update([
                         'status_pembayaran' => 'failed',
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
-                    Penyewa::where('id', $model_pembayaran->penyewa_id)->update([
                         'status' => 0,
                         'operator_id' => auth()->user()->id,
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
-                    // server
-                    DB::connection("mysqldua")->table("penyewas")->where('id', $model_pembayaran->penyewa_id)->update([
-                        'status' => 0,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
+                    if (Pembayaran::where('penyewa_id', $model_pembayaran->penyewa_id)->where('status', 1)->count() < 1) {
+                        Penyewa::where('id', $model_pembayaran->penyewa_id)->update([
+                            'status' => 0,
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
+
+                        // server
+                        DB::connection("mysqldua")->table("penyewas")->where('id', $model_pembayaran->penyewa_id)->update([
+                            'status' => 0,
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
+                    }
 
                     Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
                         'status' => 0,
@@ -457,7 +457,7 @@ class SewaController extends Controller
                 } catch (Exception $e) {
                     $response = [
                         'status' => 500,
-                        'message' => 'error',
+                        'message' => $e->getMessage(),
                     ];
 
                     DB::rollBack();
@@ -527,6 +527,24 @@ class SewaController extends Controller
                         ';
                     }
                 }
+
+                if (auth()->user()->role_id == 1 || auth()->user()->role_id == 3) {
+                    $potongan_harga = '
+                    <div class="mb-3">
+                        <label for="potongan_harga" class="form-label fw-bold">Potongan Harga</label>
+                        <div class="input-group" style="z-index: 0;">
+                            <span class="input-group-text bg-success text-light fw-bold">RP</span>
+                            <input type="text"
+                                class="form-control formatrupiah"
+                                name="potongan_harga" id="potongan_harga" value="0">
+                        </div>
+                        <span class="text-danger" id="errorPotonganHarga"></span>
+                    </div>
+                    ';
+                } else {
+                    $potongan_harga = '';
+                }
+
                 $dataHTML = '
                 <form class="modal-content" onsubmit="requestSelesaikanPembayaranKamar(event)" autocomplete="off">
                     <input type="hidden" name="__token" value="' . request()->input('token') . '" id="token">
@@ -563,16 +581,7 @@ class SewaController extends Controller
                             </div>
                             <span class="text-danger" id="errorTotalBayar"></span>
                         </div>
-                        <div class="mb-3">
-                            <label for="potongan_harga" class="form-label fw-bold">Potongan Harga</label>
-                            <div class="input-group" style="z-index: 0;">
-                                <span class="input-group-text bg-success text-light fw-bold">RP</span>
-                                <input type="text"
-                                    class="form-control formatrupiah"
-                                    name="potongan_harga" id="potongan_harga" value="0">
-                            </div>
-                            <span class="text-danger" id="errorPotonganHarga"></span>
-                        </div>
+                        ' . $potongan_harga . '
                         <div class="mb-3">
                             <label for="cash" class="form-label fw-bold">
                                 Metode Pembayaran
@@ -786,6 +795,7 @@ class SewaController extends Controller
     {
         if (request()->ajax()) {
             $transaksi_id = htmlspecialchars(request()->input('transaksi_id'), ENT_QUOTES, 'UTF-8');
+            $foto_kwh_lama = request()->file('foto_kwh_lama');
             $jumlah_kwh_lama = htmlspecialchars(request()->input('jumlah_kwh_lama'), ENT_QUOTES, 'UTF-8');
             $jumlah_kwh_baru = htmlspecialchars(request()->input('jumlah_kwh_baru'), ENT_QUOTES, 'UTF-8');
             $jumlah_pembayaran = htmlspecialchars(request()->input('jumlah_pembayaran'), ENT_QUOTES, 'UTF-8');
@@ -844,6 +854,7 @@ class SewaController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
+
                     $model_post_pembayaran = new Pembayaran();
                     $model_post_pembayaran->tagih_id = 2;
                     $model_post_pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
@@ -894,10 +905,26 @@ class SewaController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
+                    $fotokwhlamatokenlistrik = "kwhlama" . "-" . $model_post_tokenlistrik->id . "." .  $foto_kwh_lama->getClientOriginalExtension();
+                    $file = $foto_kwh_lama;
+                    $tujuan_upload = 'img/fotokwhlamatokenlistrik';
+                    $file->move($tujuan_upload, $fotokwhlamatokenlistrik);
+
+                    Tokenlistrik::where('id', $model_post_tokenlistrik->id)->update([
+                        'fotokwhlama' => $fotokwhlamatokenlistrik
+                    ]);
+
+                    // server
+                    DB::connection("mysqldua")->table("tokenlistriks")->where('id', $model_post_tokenlistrik->id)->update([
+                        'fotokwhlama' => $fotokwhlamatokenlistrik,
+                        'updated_at' => date("Y-m-d H:i:s"),
+                    ]);
+
                     DB::commit();
                     $response = [
                         'status' => 200,
                         'message' => 'success',
+                        'data' => request()->all()
                     ];
                 } catch (Exception $e) {
                     DB::rollBack();
@@ -916,7 +943,6 @@ class SewaController extends Controller
             return response()->json($response);
         }
     }
-    // baru
     // perpanjang
     public function getmodalperpanjangpembayarankamar()
     {
@@ -1173,6 +1199,7 @@ class SewaController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
+
                     if ($post) {
                         if (intval($total_bayar) > 0) {
                             // Generate no transaksi
@@ -1317,7 +1344,7 @@ class SewaController extends Controller
             return response()->json($response);
         }
     }
-
+    // end baru
     // Trigger
     public function getselectlantaikamar()
     {

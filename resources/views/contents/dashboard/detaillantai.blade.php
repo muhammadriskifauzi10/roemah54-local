@@ -34,19 +34,14 @@
                                 @if (App\Models\Lokasi::where('jenisruangan_id', 2)->where('lantai_id', $lantai->id)->where(function ($query) {
                                             $query->where('status', 1)->orWhere('status', 2);
                                         })->count() > 0)
-                                    @foreach ($lantai->lokasis as $row)
-                                        @if ($row->transaksisewa_kamars)
-                                            @php
-                                                $penyewa = DB::table('penyewas')
-                                                    ->where('id', $row->transaksisewa_kamars->penyewa_id)
-                                                    ->first();
-                                            @endphp
-                                            @if ($row->status == 1 && $penyewa->status == 1 && $row->transaksisewa_kamars->status_pembayaran == 'completed')
-                                                {{-- Kamar Terisi --}}
-                                                <a href="{{ route('detailpenyewa', $row->transaksisewa_kamars->penyewa_id) }}"
+                                    @foreach ($lantai->lokasis as $l)
+                                        @foreach (App\Models\Pembayaran::where('lokasi_id', $l->id)->where('status', '<>', 0)->get() as $p)
+                                            @if ($p->status_pembayaran == 'completed')
+                                                {{-- kamar terisi --}}
+                                                <a href="{{ route('detailpenyewa', $p->penyewa_id) }}"
                                                     class="col-xl-6 kamar text-decoration-none mb-4">
                                                     <div class="card border-0 rounded" style="height: 100%">
-                                                        @if (\Carbon\Carbon::now() > \Carbon\Carbon::parse($row->transaksisewa_kamars->tanggal_keluar))
+                                                        @if (\Carbon\Carbon::now() > \Carbon\Carbon::parse($p->tanggal_keluar))
                                                             <div
                                                                 class="card-header bg-danger text-light text-center fw-bold">
                                                                 Belum Diperpanjang
@@ -64,40 +59,47 @@
                                                                         <td>Nomor Kamar</td>
                                                                         <td class="text-right" width="10">:</td>
                                                                         <td class="text-right fw-bold text-success">
-                                                                            {{ $row->nomor_kamar }}
+                                                                            {{ $l->nomor_kamar }}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Tipe Kamar</td>
+                                                                        <td class="text-right">:</td>
+                                                                        <td class="text-right">
+                                                                            {{ $l->tipekamars->tipekamar }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Penyewa</td>
                                                                         <td class="text-right">:</td>
                                                                         <td class="text-right">
-                                                                            {{ $penyewa->namalengkap }}
+                                                                            {{ $p->penyewas->namalengkap }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Periode</td>
                                                                         <td class="text-right">:</td>
                                                                         <td class="text-right">
-                                                                            {{ \Carbon\Carbon::parse($row->transaksisewa_kamars->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
                                                                             <br>
-                                                                            {{ \Carbon\Carbon::parse($row->transaksisewa_kamars->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Jenis Sewa</td>
                                                                         <td class="text-right">:</td>
                                                                         <td class="text-right">
-                                                                            {{ $row->transaksisewa_kamars->jenissewa }}
+                                                                            {{ $p->jenissewa }}
                                                                         </td>
                                                                     </tr>
                                                                 </tbody>
                                                             </table>
                                                             <div
                                                                 class="mt-4 d-flex align-items-center justify-content-center gap-1">
-                                                                @if ($row->transaksisewa_kamars->jenissewa == 'Harian')
+                                                                @if ($p->jenissewa == 'Harian')
                                                                     <button type="button"
                                                                         class="btn btn-primary fw-bold d-flex align-items-center justify-content-center gap-1"
-                                                                        onclick="openModalBayarIsiTokenKamar(event, {{ $row->transaksisewa_kamars->id }})"
+                                                                        onclick="openModalBayarIsiTokenKamar(event, {{ $p->id }})"
                                                                         style="width: 180px;">
                                                                         <svg xmlns="http://www.w3.org/2000/svg"
                                                                             width="16" height="16"
@@ -108,10 +110,10 @@
                                                                         </svg>
                                                                         Isi Token</button>
                                                                 @endif
-                                                                @if (\Carbon\Carbon::now() > \Carbon\Carbon::parse($row->transaksisewa_kamars->tanggal_keluar))
+                                                                @if (\Carbon\Carbon::now() > \Carbon\Carbon::parse($p->tanggal_keluar))
                                                                     <button type="button"
                                                                         class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1"
-                                                                        onclick="openModalPerpanjangPenyewaanKamar(event, {{ $row->transaksisewa_kamars->id }})"
+                                                                        onclick="openModalPerpanjangPenyewaanKamar(event, {{ $p->id }})"
                                                                         style="width: 180px;">
                                                                         <svg xmlns="http://www.w3.org/2000/svg"
                                                                             width="16" height="16"
@@ -129,13 +131,13 @@
                                                         </div>
                                                     </div>
                                                 </a>
-                                            @elseif($row->status == 2 && $penyewa->status == 1 && $row->transaksisewa_kamars->status_pembayaran == 'pending')
-                                                {{-- Booking --}}
-                                                <a href="{{ route('detailpenyewa', $row->transaksisewa_kamars->penyewa_id) }}"
+                                            @elseif ($p->status_pembayaran == 'pending')
+                                                {{-- booking / belum lunas --}}
+                                                <a href="{{ route('detailpenyewa', $p->penyewa_id) }}"
                                                     class="col-xl-6 kamar text-decoration-none mb-4">
                                                     <div class="card border-0 rounded" style="height: 100%">
                                                         <div class="card-header bg-warning text-light text-center fw-bold">
-                                                            Booking
+                                                            Booking / Belum Lunas
                                                         </div>
                                                         <div class="card-body d-flex flex-column">
                                                             <table style="width: 100%">
@@ -144,30 +146,37 @@
                                                                         <td>Nomor Kamar</td>
                                                                         <td class="text-right" width="10">:</td>
                                                                         <td class="text-right fw-bold text-success">
-                                                                            {{ $row->nomor_kamar }}
+                                                                            {{ $l->nomor_kamar }}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Tipe Kamar</td>
+                                                                        <td class="text-right">:</td>
+                                                                        <td class="text-right">
+                                                                            {{ $l->tipekamars->tipekamar }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Penyewa</td>
                                                                         <td class="text-right">:</td>
                                                                         <td class="text-right">
-                                                                            {{ $penyewa->namalengkap }}
+                                                                            {{ $p->penyewas->namalengkap }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Periode</td>
                                                                         <td class="text-right">:</td>
                                                                         <td class="text-right">
-                                                                            {{ \Carbon\Carbon::parse($row->transaksisewa_kamars->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
                                                                             <br>
-                                                                            {{ \Carbon\Carbon::parse($row->transaksisewa_kamars->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Jenis Sewa</td>
                                                                         <td class="text-right">:</td>
                                                                         <td class="text-right">
-                                                                            {{ $row->transaksisewa_kamars->jenissewa }}
+                                                                            {{ $p->jenissewa }}
                                                                         </td>
                                                                     </tr>
                                                                 </tbody>
@@ -175,14 +184,14 @@
                                                             <div
                                                                 class="mt-4 d-flex align-items-center justify-content-center gap-1">
                                                                 <button type="button" class="btn btn-danger fw-bold"
-                                                                    onclick="requestBatalkanPembayaran(event, {{ $row->transaksisewa_kamars->id }})"
+                                                                    onclick="requestBatalkanPembayaran(event, {{ $p->id }})"
                                                                     style="width: 110px;">Batalkan</button>
                                                                 <button type="button" class="btn btn-success fw-bold"
-                                                                    onclick="openModalBayarKamar(event, {{ $row->transaksisewa_kamars->id }})"
+                                                                    onclick="openModalBayarKamar(event, {{ $p->id }})"
                                                                     style="width: 110px;">Bayar</button>
-                                                                @if ($row->transaksisewa_kamars->jenissewa == 'Harian')
+                                                                @if ($p->jenissewa == 'Harian')
                                                                     <button type="button" class="btn btn-primary fw-bold"
-                                                                        onclick="openModalBayarIsiTokenKamar(event, {{ $row->transaksisewa_kamars->id }})"
+                                                                        onclick="openModalBayarIsiTokenKamar(event, {{ $p->id }})"
                                                                         style="width: 110px;">Isi Token</button>
                                                                 @endif
                                                             </div>
@@ -190,7 +199,7 @@
                                                     </div>
                                                 </a>
                                             @endif
-                                        @endif
+                                        @endforeach
                                     @endforeach
                                 @else
                                     <p class="m-0 text-center fw-bold text-secondary">-_- Tambah Penyewaan Kamar -_-</p>
@@ -257,7 +266,7 @@
 
 @push('myscripts')
     <script>
-        function requestBatalkanPembayaran(e, transaksi_id) {
+        function requestBatalkanPembayaran(e, pembayaran_id) {
             e.preventDefault()
             Swal.fire({
                 title: 'Batalkan Booking Kamar?',
@@ -272,7 +281,7 @@
                 if (result.isConfirmed) {
                     var formData = new FormData();
                     formData.append("token", $("#token").val());
-                    formData.append("transaksi_id", transaksi_id);
+                    formData.append("pembayaran_id", pembayaran_id);
 
                     $.ajax({
                         url: "{{ route('postbatalkanpembayarankamar') }}",
@@ -440,7 +449,7 @@
             setTimeout(function() {
                 $("#universalModalContent").html(
                     `
-                    <form class="modal-content" onsubmit="requestBayarIsiTokenKamar(event)" autocomplete="off">
+                    <form class="modal-content" onsubmit="requestBayarIsiTokenKamar(event)" autocomplete="off" enctype="multipart/form-data" id="bayarisitokenkamar">
                         <input type="hidden" name="__token" value="` +
                     $("meta[name='csrf-token']").attr("content") +
                     `" id="token">
@@ -450,6 +459,11 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
+                             <div class="mb-3">
+                                <label for="foto_kwh_lama" class="form-label fw-bold">Foto KWH Lama <sup class="red">*</sup></label>
+                                <input type="file" class="form-control" name="foto_kwh_lama" id="foto_kwh_lama">
+                                <span class="text-danger" id="errorFotoKWHLama"></span>
+                            </div>
                             <div class="mb-3">
                                 <label for="jumlah_kwh_lama" class="form-label fw-bold">Jumlah KWH Lama <sup class="red">*</sup></label>
                                 <input type="number" class="form-control" name="jumlah_kwh_lama" id="jumlah_kwh_lama" placeholder="0">
@@ -514,11 +528,11 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-success w-100" id="btnRequest">
-                                Ya
-                            </button>
+                            <div>
+                                <button type="submit" class="btn btn-success w-100" id="btnRequest">
+                                    Ya
+                                </button>
+                            </div>
                         </div>
                     </form>
                 `
@@ -537,6 +551,26 @@
             e.preventDefault()
 
             let error = 0;
+
+            if ($('#foto_kwh_lama')[0].files.length === 0) {
+                $("#foto_kwh_lama").addClass("is-invalid")
+                $("#errorFotoKWHLama").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                let file = $('#foto_kwh_lama')[0].files[0];
+                let fileType = file.type;
+                let allowedTypes = ['image/jpeg', 'image/jpg'];
+
+                // Check if the file type is allowed
+                if (!allowedTypes.includes(fileType)) {
+                    $('#foto_kwh_lama').addClass('is-invalid');
+                    $('#errorFotoKWHLama').text('Ekstensi file hanya mendukung format jpg dan jpeg');
+                    error++;
+                } else {
+                    $("#foto_kwh_lama").removeClass("is-invalid")
+                    $("#errorFotoKWHLama").text("")
+                }
+            }
             // KWH lama
             if ($("#jumlah_kwh_lama").val() == "") {
                 $("#jumlah_kwh_lama").addClass("is-invalid")
@@ -577,14 +611,7 @@
             if (error == 0) {
                 $("#btnRequest").prop("disabled", true)
 
-                var formData = new FormData();
-                formData.append("token", $("#token").val());
-                formData.append("transaksi_id", $("#transaksi_id").val());
-                formData.append("jumlah_kwh_lama", $("#jumlah_kwh_lama").val());
-                formData.append("jumlah_kwh_baru", $("#jumlah_kwh_baru").val());
-                formData.append("jumlah_pembayaran", $("#jumlah_pembayaran").val());
-                formData.append("keterangan", $("#keterangan").val());
-                formData.append("metode_pembayaran", $("input[name='metode_pembayaran_token']:checked").val());
+                var formData = new FormData($('#bayarisitokenkamar')[0]);
 
                 $.ajax({
                     url: "{{ route('postbayarisitokenkamar') }}",
@@ -600,10 +627,7 @@
                                 icon: "success"
                             })
 
-                            $("#jumlah_kwh_lama").val("")
-                            $("#jumlah_kwh_baru").val("")
-                            $("#jumlah_pembayaran").val("")
-                            $("#keterangan").val("")
+                            $('#bayarisitokenkamar')[0].reset(); // Resets all form fields
 
                             setTimeout(function() {
                                 location.reload()

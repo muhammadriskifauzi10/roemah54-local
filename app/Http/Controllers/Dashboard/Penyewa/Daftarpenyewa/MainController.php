@@ -36,6 +36,9 @@ class MainController extends Controller
                         'no_hp' => $row->nohp,
                         'alamat' => $row->alamat,
                         'status' => $status,
+                        'foto_ktp' => '
+                        <a href="' . asset('img/ktp/' . $row->fotoktp) . '" class="fw-bold" target="_blank">Lihat File</a>
+                        ',
                   ];
             }
 

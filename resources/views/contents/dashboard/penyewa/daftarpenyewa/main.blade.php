@@ -16,6 +16,7 @@
                 {{-- daftar penyewa --}}
                 <div class="card border-0">
                     <div class="card-body">
+                        <h6 class="m-0">Total Penyewa Aktif: {{ DB::table('penyewas')->where('status', 1)->count() }}</h6>
                         <table class="table table-light table-hover border-0 m-0" id="datatableDaftarPenyewa">
                             <thead>
                                 <tr>
@@ -25,6 +26,7 @@
                                     <th scope="col">No HP</th>
                                     <th scope="col">Alamat</th>
                                     <th scope="col">Status</th>
+                                    <th scope="col">Foto KTP</th>
                                 </tr>
                             </thead>
                         </table>
@@ -41,6 +43,7 @@
         $(document).ready(function() {
             tableDaftarPenyewa = $("#datatableDaftarPenyewa").DataTable({
                 processing: true,
+                paging: false,
                 ajax: {
                     url: "{{ route('daftarpenyewa.datatabledaftarpenyewa') }}",
                     type: "POST",
@@ -64,6 +67,9 @@
                     },
                     {
                         data: "status",
+                    },
+                    {
+                        data: "foto_ktp",
                     },
                 ],
                 // "order": [

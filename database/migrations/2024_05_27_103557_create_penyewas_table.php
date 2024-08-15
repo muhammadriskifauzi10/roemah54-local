@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('noktp', 50);
             $table->string('nohp', 50);
             $table->text('alamat');
-            $table->string('fotoktp', 100); // Mengubah panjang menjadi 100 untuk path file foto KTP
-            $table->tinyInteger('status')->default(1); // Menggunakan tinyInteger untuk status dengan default 1
+            $table->string('fotoktp', 100);
+            $table->tinyInteger('status')->default(1);
             $table->integer('operator_id');
             $table->timestamps();
         });

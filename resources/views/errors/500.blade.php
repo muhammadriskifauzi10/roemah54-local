@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>RSU Bunda Thamrin</title>
+    <title>Roemah 54</title>
 
     {{-- Bootstrap 5 CSS --}}
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" />

@@ -8,7 +8,6 @@ use App\Models\Lokasi;
 use App\Models\Penyewa;
 use Exception;
 use Illuminate\Support\Facades\DB;
-use PhpParser\Node\Stmt\Catch_;
 
 class MainController extends Controller
 {
@@ -49,11 +48,6 @@ class MainController extends Controller
                     'operator_id' => auth()->user()->id
                 ]);
 
-                $response = [
-                    'status' => 200,
-                    'message' => 'success',
-                ];
-
                 // server
                 DB::connection("mysqldua")->table("lantais")->insert([
                     'namalantai' => "Lantai " . Lantai::all()->count() + 1,
@@ -61,6 +55,11 @@ class MainController extends Controller
                     'created_at' => date("Y-m-d H:i:s"),
                     'updated_at' => date("Y-m-d H:i:s"),
                 ]);
+
+                $response = [
+                    'status' => 200,
+                    'message' => 'success',
+                ];
 
                 DB::commit();
                 return response()->json($response);

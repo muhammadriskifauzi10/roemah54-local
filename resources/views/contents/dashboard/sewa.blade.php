@@ -59,6 +59,18 @@
                                     enctype="multipart/form-data">
                                     @csrf
                                     <div class="row">
+                                        {{-- No KTP --}}
+                                        <div class="col-lg-4 mb-3">
+                                            <label for="noktp" class="form-label fw-bold">No KTP</label>
+                                            <input type="number" class="form-control @error('noktp') is-invalid @enderror"
+                                                name="noktp" id="noktp" placeholder="Masukkan No KTP"
+                                                value="{{ old('noktp') }}" oninput="onNoKtp(event)">
+                                            @error('noktp')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
+                                        </div>
                                         {{-- Nama --}}
                                         <div class="col-lg-4 mb-3">
                                             <label for="namalengkap" class="form-label fw-bold">Nama Lengkap</label>
@@ -67,18 +79,6 @@
                                                 name="namalengkap" id="namalengkap" placeholder="Masukkan Nama Lengkap"
                                                 value="{{ old('namalengkap') }}">
                                             @error('namalengkap')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
-                                            @enderror
-                                        </div>
-                                        {{-- No KTP --}}
-                                        <div class="col-lg-4 mb-3">
-                                            <label for="noktp" class="form-label fw-bold">No KTP</label>
-                                            <input type="number" class="form-control @error('noktp') is-invalid @enderror"
-                                                name="noktp" id="noktp" placeholder="Masukkan No KTP"
-                                                value="{{ old('noktp') }}" oninput="onNoKtp(event)">
-                                            @error('noktp')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>

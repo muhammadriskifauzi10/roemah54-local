@@ -51,6 +51,7 @@
         $(document).ready(function() {
             tableLokasi = $("#datatableLokasi").DataTable({
                 processing: true,
+                paging: false,
                 ajax: {
                     url: "{{ route('lokasi.datatablelokasi') }}",
                     type: "POST",
