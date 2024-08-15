@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Lantai;
 use App\Models\Lokasi;
 use App\Models\Penyewa;
+use App\Models\Transaksi;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -13,6 +15,27 @@ class MainController extends Controller
 {
     public function index()
     {
+        // Mendapatkan tanggal awal dan akhir bulan sebelumnya
+        $startOfPreviousMonth = Carbon::now()->subMonth()->startOfMonth()->toDateString();
+        $endOfPreviousMonth = Carbon::now()->subMonth()->endOfMonth()->toDateString();
+
+        // Menghitung total pendapatan bulan sebelumnya
+        $totalPendapatanBulanSebelumnya = Transaksi::where('tipe', 'pemasukan')
+            ->whereDate('tanggal_transaksi', '>=', $startOfPreviousMonth)
+            ->whereDate('tanggal_transaksi', '<=', $endOfPreviousMonth)
+            ->sum('jumlah_uang');
+
+        // Mendapatkan tanggal awal dan akhir bulan ini
+        $startOfMonth = Carbon::now()->startOfMonth()->toDateString();
+        $endOfMonth = Carbon::now()->endOfMonth()->toDateString();
+
+        // Menghitung total pendapatan bulan ini
+        $totalPendapatanBulanIni = Transaksi::where('tipe', 'pemasukan')
+            ->whereDate('tanggal_transaksi', '>=', $startOfMonth)
+            ->whereDate('tanggal_transaksi', '<=', $endOfMonth)
+            ->sum('jumlah_uang');
+
+
         $lantai = Lantai::join('lokasis', 'lantais.id', '=', 'lokasis.lantai_id')
             ->select(
                 'lantais.id',
@@ -25,7 +48,9 @@ class MainController extends Controller
 
         $data = [
             'judul' => 'Dasbor',
-            'lantai' => $lantai
+            'lantai' => $lantai,
+            'pendapatandibulansebelumnya' => $totalPendapatanBulanSebelumnya,
+            'pendapatandibulanini' => $totalPendapatanBulanIni,
         ];
 
         return view('contents.dashboard.main', $data);

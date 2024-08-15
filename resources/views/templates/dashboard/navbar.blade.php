@@ -6,7 +6,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup">
-            <div class="btn-group me-4">
+            <div class="btn-group me-2">
                 <button type="button" class="dropdown-toggle fw-bold text-light" data-bs-toggle="dropdown"
                     aria-expanded="false" style="background-color: transparent;">
                     {{ auth()->user()->username }}

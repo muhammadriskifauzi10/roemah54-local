@@ -12,11 +12,12 @@
                         <li class="breadcrumb-item active" aria-current="page">Daftar Penyewa</li>
                     </ol>
                 </nav>
+                
+                <h5 class="m-0 mb-3">Total Penyewa Aktif: {{ DB::table('penyewas')->where('status', 1)->count() }}</h6>
 
                 {{-- daftar penyewa --}}
                 <div class="card border-0">
                     <div class="card-body">
-                        <h6 class="m-0">Total Penyewa Aktif: {{ DB::table('penyewas')->where('status', 1)->count() }}</h6>
                         <table class="table table-light table-hover border-0 m-0" id="datatableDaftarPenyewa">
                             <thead>
                                 <tr>
