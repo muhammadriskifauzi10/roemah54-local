@@ -323,7 +323,7 @@ class MainController extends Controller
                 } catch (Exception $e) {
                     $response = [
                         'status' => 500,
-                        'message' => 'error',
+                        'message' => $e->getMessage(),
                     ];
 
                     DB::rollBack();
