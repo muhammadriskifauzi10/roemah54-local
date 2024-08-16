@@ -300,6 +300,7 @@ class SewaController extends Controller
             $pembayaran->total_bayar = $total_bayar;
             $pembayaran->kurang_bayar = intval($jumlah_pembayaran) - intval($total_bayar);
             $pembayaran->status_pembayaran = $status_pembayaran;
+            $pembayaran->status = 1;
             $pembayaran->operator_id = auth()->user()->id;
             $post = $pembayaran->save();
 
@@ -318,6 +319,7 @@ class SewaController extends Controller
                 'total_bayar' => $total_bayar,
                 'kurang_bayar' => intval($jumlah_pembayaran) - intval($total_bayar),
                 'status_pembayaran' => $status_pembayaran,
+                'status' => 1,
                 'operator_id' => auth()->user()->id,
                 'created_at' => date("Y-m-d H:i:s"),
                 'updated_at' => date("Y-m-d H:i:s"),
@@ -1174,6 +1176,7 @@ class SewaController extends Controller
                     $model_post_pembayaran->total_bayar = $total_bayar;
                     $model_post_pembayaran->kurang_bayar = intval($jumlah_pembayaran) - intval($total_bayar);
                     $model_post_pembayaran->status_pembayaran = $status_pembayaran;
+                    $model_post_pembayaran->status = 1;
                     $model_post_pembayaran->operator_id = auth()->user()->id;
                     $post = $model_post_pembayaran->save();
 
@@ -1194,6 +1197,7 @@ class SewaController extends Controller
                         'total_bayar' => $total_bayar,
                         'kurang_bayar' => intval($jumlah_pembayaran) - intval($total_bayar),
                         'status_pembayaran' => $status_pembayaran,
+                        'status' => 1,
                         'operator_id' => auth()->user()->id,
                         'created_at' => date("Y-m-d H:i:s"),
                         'updated_at' => date("Y-m-d H:i:s"),

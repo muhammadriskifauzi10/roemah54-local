@@ -28,7 +28,7 @@ return new class extends Migration
             $table->decimal('total_bayar', 15, 2)->nullable(); 
             $table->decimal('kurang_bayar', 15, 2)->nullable(); 
             $table->enum('status_pembayaran', ['failed', 'pending', 'completed'])->default('pending');
-            $table->tinyInteger('status')->default(1);
+            $table->tinyInteger('status')->default(0);
             $table->integer('operator_id');
             $table->timestamps();
         });

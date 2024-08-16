@@ -35,7 +35,7 @@
                                             $query->where('status', 1)->orWhere('status', 2);
                                         })->count() > 0)
                                     @foreach ($lantai->lokasis as $l)
-                                        @foreach (App\Models\Pembayaran::where('lokasi_id', $l->id)->where('status', '<>', 0)->get() as $p)
+                                        @foreach (App\Models\Pembayaran::where('tagih_id', 1)->where('lokasi_id', $l->id)->where('status', '<>', 0)->get() as $p)
                                             @if ($p->status_pembayaran == 'completed')
                                                 {{-- kamar terisi --}}
                                                 <a href="{{ route('detailpenyewa', $p->penyewa_id) }}"
