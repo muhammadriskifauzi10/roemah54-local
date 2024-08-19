@@ -88,7 +88,7 @@
                                             <div class="mt-2 d-flex align-items-center gap-4">
                                                 <div class="bg-success"
                                                     style="width: 20px; height: 20px; border-radius: 50px;"></div>
-                                                <strong class="black">{{ $row->lokasis->where('status', 1)->count() }}
+                                                <strong class="black">{{ $row->lokasis->whereIn('status', [1,2])->count() }}
                                                     Kamar Terisi</strong>
                                             </div>
                                             <div class="mt-1 d-flex align-items-center gap-4">
