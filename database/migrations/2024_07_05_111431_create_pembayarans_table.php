@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('penyewa_id')->nullable();
             $table->foreignId('lokasi_id')->nullable();
             $table->foreignId('tipekamar_id')->nullable();
+            $table->string('tipekamar', 50)->nullable();
             $table->foreignId('mitra_id')->nullable(); 
             $table->string('jenissewa')->nullable();
             $table->decimal('jumlah_pembayaran', 15, 2)->nullable();
