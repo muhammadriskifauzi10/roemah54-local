@@ -20,6 +20,9 @@ use App\Http\Controllers\Dashboard\Scan\MainController as ScanMainController;
 use App\Http\Controllers\Dashboard\SewaController;
 use App\Http\Controllers\Dashboard\Tipekamar\MainController as TipekamarMainController;
 use App\Http\Controllers\Dashboard\TransaksiController;
+use App\Models\Pembayaran;
+use App\Models\Tipekamar;
+use App\Models\Transaksi;
 use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +34,15 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+// Route::get('/tes', function () {
+//     foreach (Pembayaran::whereNotNull('tipekamar_id')->get() as $p) {
+//         Pembayaran::whereNotNull('tipekamar_id')->where('id', $p->id)->update([
+//             'tipekamar' => Tipekamar::where('id', $p->tipekamar_id)->first()->tipekamar
+//         ]);
+//     }
+// });
+
 // Route Auth
 Route::group(['middleware' => 'guest'], function () {
     Route::get('/', [LoginController::class, 'index'])->name('login');
@@ -46,7 +58,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/dasbor', [MainController::class, 'index'])->name('dasbor');
     Route::get('/dasbor/{lantai:id}', [MainController::class, 'detaildata'])->name('detaillantai');
     Route::get('/dasbor/detailpenyewa/{penyewa:id}', [MainController::class, 'detailpenyewa'])->name('detailpenyewa');
-    
+
     // Lantai
     Route::post('/tambahlantai', [MainController::class, 'create'])->name('postlantai');
     // lokasi
@@ -70,7 +82,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/dendacheckout/datatabledendacheckout', [DendacheckoutMainController::class, 'datatabledendacheckout'])->name('dendacheckout.datatabledendacheckout');
     Route::post('/dendacheckout/getmodalbayardenda', [DendacheckoutMainController::class, 'getmodalbayardenda'])->name('dendacheckout.getmodalbayardenda');
     Route::post('/dendacheckout/bayardenda', [DendacheckoutMainController::class, 'bayardenda'])->name('dendacheckout.bayardenda');
-    
+
     // Sewa
     Route::group(['middleware' => 'hassewa'], function () {
         Route::get('/sewa', [SewaController::class, 'index'])->name('sewa');

@@ -49,6 +49,7 @@
         $(document).ready(function() {
             tableTipeKamar = $("#datatableTipeKamar").DataTable({
                 processing: true,
+                paging: false,
                 ajax: {
                     url: "{{ route('tipekamar.datatabletipekamar') }}",
                     type: "POST",

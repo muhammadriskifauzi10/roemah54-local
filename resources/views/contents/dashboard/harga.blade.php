@@ -54,6 +54,7 @@
         $(document).ready(function() {
             tableHarga = $("#datatableHarga").DataTable({
                 processing: true,
+                paging: false,
                 ajax: {
                     url: "{{ route('datatableharga') }}",
                     type: "POST",

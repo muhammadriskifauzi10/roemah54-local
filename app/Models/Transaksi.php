@@ -15,7 +15,12 @@ class Transaksi extends Model
         return $this->hasOne(Tagih::class, 'id', 'tagih_id');
     }
 
-    // public function penyewas() {
-    //     return $this->hasOne(Penyewa::class, 'id', 'penyewa_id');
-    // }
+    public function penyewas() {
+        return $this->hasOne(Penyewa::class, 'id', 'penyewa_id');
+    }
+
+    public function lokasis()
+    {
+        return $this->hasOne(Lokasi::class, 'id', 'lokasi_id');
+    }
 }

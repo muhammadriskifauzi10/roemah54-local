@@ -57,28 +57,24 @@
                                                                 <tbody>
                                                                     <tr>
                                                                         <td>Nomor Kamar</td>
-                                                                        <td class="text-right" width="10">:</td>
                                                                         <td class="text-right fw-bold text-success">
                                                                             {{ $l->nomor_kamar }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Tipe Kamar</td>
-                                                                        <td class="text-right">:</td>
                                                                         <td class="text-right">
-                                                                            {{ $l->tipekamars->tipekamar }}
+                                                                            {{ $p->tipekamar }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Penyewa</td>
-                                                                        <td class="text-right">:</td>
                                                                         <td class="text-right">
                                                                             {{ $p->penyewas->namalengkap }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Periode</td>
-                                                                        <td class="text-right">:</td>
                                                                         <td class="text-right">
                                                                             {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
                                                                             <br>
@@ -87,7 +83,6 @@
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Jenis Sewa</td>
-                                                                        <td class="text-right">:</td>
                                                                         <td class="text-right">
                                                                             {{ $p->jenissewa }}
                                                                         </td>
@@ -144,28 +139,24 @@
                                                                 <tbody>
                                                                     <tr>
                                                                         <td>Nomor Kamar</td>
-                                                                        <td class="text-right" width="10">:</td>
                                                                         <td class="text-right fw-bold text-success">
                                                                             {{ $l->nomor_kamar }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Tipe Kamar</td>
-                                                                        <td class="text-right">:</td>
                                                                         <td class="text-right">
-                                                                            {{ $l->tipekamars->tipekamar }}
+                                                                            {{ $p->tipekamar }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Penyewa</td>
-                                                                        <td class="text-right">:</td>
                                                                         <td class="text-right">
                                                                             {{ $p->penyewas->namalengkap }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Periode</td>
-                                                                        <td class="text-right">:</td>
                                                                         <td class="text-right">
                                                                             {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
                                                                             <br>
@@ -174,7 +165,6 @@
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Jenis Sewa</td>
-                                                                        <td class="text-right">:</td>
                                                                         <td class="text-right">
                                                                             {{ $p->jenissewa }}
                                                                         </td>
@@ -496,14 +486,14 @@
                                 <div class="row">
                                     <div class="col-6">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="metode_pembayaran_token" id="cash"
+                                            <input class="form-check-input" type="radio" name="metode_pembayaran" id="cash"
                                                 value="Cash" checked>
                                             <label class="form-check-label" for="cash">
                                                 Cash
                                             </label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="metode_pembayaran_token" id="debit"
+                                            <input class="form-check-input" type="radio" name="metode_pembayaran" id="debit"
                                                 value="Debit">
                                             <label class="form-check-label" for="debit">
                                                 Debit
@@ -512,14 +502,14 @@
                                     </div>
                                     <div class="col-6">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="metode_pembayaran_token" id="qris"
+                                            <input class="form-check-input" type="radio" name="metode_pembayaran" id="qris"
                                                 value="QRIS">
                                             <label class="form-check-label" for="qris">
                                                 QRIS
                                             </label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="metode_pembayaran_token" id="transfer"
+                                            <input class="form-check-input" type="radio" name="metode_pembayaran" id="transfer"
                                                 value="Transfer">
                                             <label class="form-check-label" for="transfer">
                                                 Transfer

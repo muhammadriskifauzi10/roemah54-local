@@ -293,6 +293,7 @@ class SewaController extends Controller
             $pembayaran->mitra_id = $mitra;
             $pembayaran->lokasi_id = $kamar;
             $pembayaran->tipekamar_id = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->id;
+            $pembayaran->tipekamar = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->tipekamar;
             $pembayaran->jenissewa = $jenissewa;
             $pembayaran->jumlah_pembayaran = intval($jumlah_pembayaran) + intval($potongan_harga);
             $pembayaran->diskon = $diskon;
@@ -312,6 +313,7 @@ class SewaController extends Controller
                 'mitra_id' => $mitra,
                 'lokasi_id' => $kamar,
                 'tipekamar_id' => Tipekamar::where('id', $model_harga->tipekamar_id)->first()->id,
+                'tipekamar' => Tipekamar::where('id', $model_harga->tipekamar_id)->first()->tipekamar,
                 'jenissewa' => $jenissewa,
                 'jumlah_pembayaran' => intval($jumlah_pembayaran) + intval($potongan_harga),
                 'diskon' => $diskon,
@@ -856,7 +858,6 @@ class SewaController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
-
                     $model_post_pembayaran = new Pembayaran();
                     $model_post_pembayaran->tagih_id = 2;
                     $model_post_pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
@@ -893,20 +894,6 @@ class SewaController extends Controller
                     $model_post_tokenlistrik->operator_id = auth()->user()->id;
                     $model_post_tokenlistrik->save();
 
-                    // server
-                    DB::connection("mysqldua")->table("tokenlistriks")->insert([
-                        'tanggal_token' => date('Y-m-d H:i:s'),
-                        'penyewa_id' => $model_pembayaran->penyewa_id,
-                        'lokasi_id' => $model_pembayaran->lokasi_id,
-                        'jumlah_kwh_lama' => $jumlah_kwh_lama,
-                        'jumlah_kwh_baru' => $jumlah_kwh_baru,
-                        'jumlah_pembayaran' => str_replace('.', '', $jumlah_pembayaran),
-                        'keterangan' => $keterangan,
-                        'operator_id' => auth()->user()->id,
-                        'created_at' => date("Y-m-d H:i:s"),
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
                     $fotokwhlamatokenlistrik = "kwhlama" . "-" . $model_post_tokenlistrik->id . "." .  $foto_kwh_lama->getClientOriginalExtension();
                     $file = $foto_kwh_lama;
                     $tujuan_upload = 'img/fotokwhlamatokenlistrik';
@@ -917,8 +904,17 @@ class SewaController extends Controller
                     ]);
 
                     // server
-                    DB::connection("mysqldua")->table("tokenlistriks")->where('id', $model_post_tokenlistrik->id)->update([
+                    DB::connection("mysqldua")->table("tokenlistriks")->insert([
+                        'tanggal_token' => date('Y-m-d H:i:s'),
+                        'penyewa_id' => $model_pembayaran->penyewa_id,
+                        'lokasi_id' => $model_pembayaran->lokasi_id,
+                        'jumlah_kwh_lama' => $jumlah_kwh_lama,
+                        'jumlah_kwh_baru' => $jumlah_kwh_baru,
+                        'jumlah_pembayaran' => str_replace('.', '', $jumlah_pembayaran),
+                        'keterangan' => $keterangan,
                         'fotokwhlama' => $fotokwhlamatokenlistrik,
+                        'operator_id' => auth()->user()->id,
+                        'created_at' => date("Y-m-d H:i:s"),
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
@@ -945,6 +941,7 @@ class SewaController extends Controller
             return response()->json($response);
         }
     }
+    // baru
     // perpanjang
     public function getmodalperpanjangpembayarankamar()
     {
@@ -1169,6 +1166,7 @@ class SewaController extends Controller
                     $model_post_pembayaran->mitra_id = $model_pembayaran->mitra_id;
                     $model_post_pembayaran->lokasi_id = $model_pembayaran->lokasi_id;
                     $model_post_pembayaran->tipekamar_id = $model_pembayaran->tipekamar_id;
+                    $model_post_pembayaran->tipekamar = $model_pembayaran->tipekamar;
                     $model_post_pembayaran->jenissewa = $jenissewa;
                     $model_post_pembayaran->jumlah_pembayaran = intval($jumlah_pembayaran) + intval($potongan_harga);
                     $model_post_pembayaran->diskon = $diskon;
@@ -1190,6 +1188,7 @@ class SewaController extends Controller
                         'mitra_id' => $model_pembayaran->mitra_id,
                         'lokasi_id' => $model_pembayaran->lokasi_id,
                         'tipekamar_id' => $model_pembayaran->tipekamar_id,
+                        'tipekamar' => $model_pembayaran->tipekamar,
                         'jenissewa' => $jenissewa,
                         'jumlah_pembayaran' => intval($jumlah_pembayaran) + intval($potongan_harga),
                         'diskon' => $diskon,
@@ -1202,7 +1201,6 @@ class SewaController extends Controller
                         'created_at' => date("Y-m-d H:i:s"),
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
-
 
                     if ($post) {
                         if (intval($total_bayar) > 0) {
@@ -1267,6 +1265,7 @@ class SewaController extends Controller
                             'updated_at' => date("Y-m-d H:i:s"),
                         ]);
 
+
                         // denda checkout
                         $givenDateTime = Carbon::create($model_pembayaran->tanggal_keluar);
 
@@ -1330,6 +1329,7 @@ class SewaController extends Controller
                             'operator_id' => auth()->user()->id,
                             'updated_at' => date("Y-m-d H:i:s"),
                         ]);
+
 
                         // server
                         DB::connection("mysqldua")->table("pembayarans")->where('id', $model_pembayaran->id)->update([
