@@ -1166,7 +1166,7 @@ class SewaController extends Controller
                     $model_post_pembayaran->mitra_id = $model_pembayaran->mitra_id;
                     $model_post_pembayaran->lokasi_id = $model_pembayaran->lokasi_id;
                     $model_post_pembayaran->tipekamar_id = $model_pembayaran->tipekamar_id;
-                    $model_post_pembayaran->tipekamar = $model_pembayaran->tipekamar;
+                    $model_post_pembayaran->tipekamar = Tipekamar::where('id', $model_pembayaran->tipekamar_id)->first()->tipekamar;
                     $model_post_pembayaran->jenissewa = $jenissewa;
                     $model_post_pembayaran->jumlah_pembayaran = intval($jumlah_pembayaran) + intval($potongan_harga);
                     $model_post_pembayaran->diskon = $diskon;
@@ -1188,7 +1188,7 @@ class SewaController extends Controller
                         'mitra_id' => $model_pembayaran->mitra_id,
                         'lokasi_id' => $model_pembayaran->lokasi_id,
                         'tipekamar_id' => $model_pembayaran->tipekamar_id,
-                        'tipekamar' => $model_pembayaran->tipekamar,
+                        'tipekamar' => Tipekamar::where('id', $model_pembayaran->tipekamar_id)->first()->tipekamar,
                         'jenissewa' => $jenissewa,
                         'jumlah_pembayaran' => intval($jumlah_pembayaran) + intval($potongan_harga),
                         'diskon' => $diskon,
