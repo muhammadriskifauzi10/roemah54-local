@@ -64,7 +64,7 @@ class MainController extends Controller
 
             // tombol cetak kwitansi
             if ($row->tanggal_pembayaran && in_array($row->status_pembayaran, ['completed', 'pending'])) {
-                $cetakkwitansi = '
+                $cetakpembayaran = '
                 <a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
                         <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
@@ -73,7 +73,14 @@ class MainController extends Controller
                     Cetak Kwitansi
                 </a>';
             } else {
-                $cetakkwitansi = '';
+                $cetakpembayaran = '
+                 <a href="' . route('penyewaankamar.cetakinvoice', encrypt($row->id)) . '" class="btn btn-warning text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                    </svg>
+                    Cetak Invoice
+                </a>';
             }
 
             // status penyewa
@@ -126,7 +133,7 @@ class MainController extends Controller
 
             $aksi = '<div class="d-flex align-items-center justify-content-center gap-1">
             ' . $bayar . '
-            ' . $cetakkwitansi . '
+            ' . $cetakpembayaran . '
             ' . $pulangkantamu . '
             </div>';
 
@@ -200,6 +207,54 @@ class MainController extends Controller
         // Generate PDF
         $pdf = Pdf::loadView('contents.dashboard.penyewa.penyewaankamar.downloadpdf.cetakkwitansi', $data);
         return $pdf->stream('cetakkwitansi.pdf');
+        // return view('contents.dashboard.downloadpdf.cetakinvoice', $data);
+    }
+    public function cetakinvoice($id)
+    {
+        $id = decrypt($id);
+
+        if (!Pembayaran::where('id', $id)->exists()) {
+            abort(404);
+        }
+
+        $pembayaran = Pembayaran::where('id', $id)->first();
+
+        // Generate QR code as SVG
+        $qrcode = QrCode::format('svg')->size(200)->generate('https://example.com');
+
+        $data = [
+            'judul' => 'Penyewaan Kamar',
+            'pembayaran' => $pembayaran,
+            'qrcode' => $qrcode
+        ];
+
+        // Options and configuration for Dompdf
+        $options = new Options();
+        $options->set('defaultFont', 'Pacifico');
+
+        $dompdf = new Dompdf($options);
+
+        $dompdf->set_option('isFontSubsettingEnabled', true);
+
+        // Define font directory
+        $fontDir = storage_path('fonts');
+        if (!Storage::exists($fontDir)) {
+            Storage::makeDirectory($fontDir);
+        }
+        $dompdf->set_option('fontDir', [$fontDir]);
+
+        // Add custom fonts
+        $fontFile = $fontDir . '/pacifico_normal_fdc22bcc936095541e9d9b0e02dbdac0.ttf';
+        if (!file_exists($fontFile)) {
+            // Handle the case where the font file does not exist
+            abort(500, 'Font file not found');
+        }
+        $fontMetrics = $dompdf->getFontMetrics();
+        $fontMetrics->getFont('Pacifico', 'normal', $fontFile);
+
+        // Generate PDF
+        $pdf = Pdf::loadView('contents.dashboard.penyewa.penyewaankamar.downloadpdf.cetakinvoice', $data);
+        return $pdf->stream('cetakinvoice.pdf');
         // return view('contents.dashboard.downloadpdf.cetakinvoice', $data);
     }
     public function pulangkantamu()

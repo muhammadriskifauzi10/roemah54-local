@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Cetak Kwitansi</title>
+    <title>Cetak Invoice</title>
 
     <style>
         * {
@@ -65,9 +65,9 @@
             </td>
             <td rowspan="6" style="width: 50%; vertical-align: baseline;">
                 <span class="pacifio">
-                    <span class="pacifio border-bottom-solid">Kwitansi</span>
+                    <span class="pacifio border-bottom-solid">Faktur</span>
                     <br>
-                    Receipt
+                    Invoice
                 </span>
             </td>
         </tr>
@@ -103,7 +103,7 @@
     <table style="border: 2px solid black; margin-top: 10px;">
         <tr>
             <td colspan="6">
-                No.Kwitansi: <span class="border-bottom-solid">{{ $pembayaran->id }}</span>
+                No.Faktur: <span class="border-bottom-solid">{{ $pembayaran->id }}</span>
             </td>
         </tr>
         <tr>
