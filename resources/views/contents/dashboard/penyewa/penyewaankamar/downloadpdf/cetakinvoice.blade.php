@@ -56,8 +56,6 @@
 </head>
 
 <body>
-    {{-- <div class="invoice"> --}}
-    {{-- <div class="header" style="padding: 0px 10px;"> --}}
     <table>
         <tr>
             <td>
@@ -97,9 +95,7 @@
             </td>
         </tr>
     </table>
-    {{-- </div> --}}
-
-    {{-- <div class="content" style="padding: 20px 10px;"> --}}
+    
     <table style="border: 2px solid black; margin-top: 10px;">
         <tr>
             <td colspan="6">
@@ -134,7 +130,7 @@
                 @endphp
 
                 @foreach ($tipekamars as $row)
-                    @if ($row->id == $pembayaran->tipekamar_id)
+                    @if ($row->tipekamar == $pembayaran->tipekamar)
                         <span>{{ $row->tipekamar }}</span>
                     @else
                         <span><del>{{ $row->tipekamar }}</del></span>
@@ -194,7 +190,7 @@
                     class="border-bottom-solid">{{ $pembayaran->jumlah_pembayaran ? number_format($pembayaran->jumlah_pembayaran, '0', '.', '.') : '' }}</span>
             </td>
             <td colspan="3" rowspan="3" style="vertical-align: baseline; text-align: center;">
-                Medan, <span class="border-bottom-dashed">{{ \Carbon\Carbon::now()->translatedFormat('d M Y') }}</span>
+                Medan, <span class="border-bottom-dashed">{{ \Carbon\Carbon::parse($pembayaran->tanggal_keluar)->format('d/m/Y') }}</span>
                 <div style="margin-top: 10px;">
                     <<img
                         src="https://barcode.tec-it.com/barcode.ashx?data={{ $pembayaran->id }}&code=QRCode&translate-esc=on&dpi=150&eclevel=L"
@@ -218,7 +214,7 @@
         </tr>
         <tr>
             <td>
-                Total Bayar
+                Grand Total
             </td>
             <td style="text-align: right">
                 :
@@ -226,12 +222,10 @@
             <td>
                 Rp.
                 <span
-                    class="border-bottom-solid">{{ $pembayaran->total_bayar ? number_format($pembayaran->total_bayar, '0', '.', '.') : '' }}</span>
+                    class="border-bottom-solid">{{ $pembayaran->total_bayar ? number_format($pembayaran->jumlah_pembayaran - $pembayaran->potongan_harga, '0', '.', '.') : '' }}</span>
             </td>
         </tr>
     </table>
-    {{-- </div> --}}
-    {{-- </div> --}}
 </body>
 
 </html>

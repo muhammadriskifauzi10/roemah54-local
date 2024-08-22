@@ -56,8 +56,6 @@
 </head>
 
 <body>
-    {{-- <div class="invoice"> --}}
-    {{-- <div class="header" style="padding: 0px 10px;"> --}}
     <table>
         <tr>
             <td>
@@ -97,9 +95,7 @@
             </td>
         </tr>
     </table>
-    {{-- </div> --}}
-
-    {{-- <div class="content" style="padding: 20px 10px;"> --}}
+ 
     <table style="border: 2px solid black; margin-top: 10px;">
         <tr>
             <td colspan="6">
@@ -134,7 +130,7 @@
                 @endphp
 
                 @foreach ($tipekamars as $row)
-                    @if ($row->id == $pembayaran->tipekamar_id)
+                    @if ($row->tipekamar == $pembayaran->tipekamar)
                         <span>{{ $row->tipekamar }}</span>
                     @else
                         <span><del>{{ $row->tipekamar }}</del></span>
@@ -230,8 +226,6 @@
             </td>
         </tr>
     </table>
-    {{-- </div> --}}
-    {{-- </div> --}}
 </body>
 
 </html>
