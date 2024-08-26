@@ -53,6 +53,10 @@ class SewaController extends Controller
             $rulefotoktp = 'mimes:jpg,jpeg,png';
         }
 
+        request()->merge([
+            'total_bayar' => str_replace('.', '', request()->input('total_bayar')),
+        ]);
+
         $validator = Validator::make(request()->all(), [
             'tanggalmasuk' => 'required|date',
             'jumlahhari' => 'nullable|numeric',
