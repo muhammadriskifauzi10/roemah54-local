@@ -20,9 +20,6 @@ use App\Http\Controllers\Dashboard\Scan\MainController as ScanMainController;
 use App\Http\Controllers\Dashboard\SewaController;
 use App\Http\Controllers\Dashboard\Tipekamar\MainController as TipekamarMainController;
 use App\Http\Controllers\Dashboard\TransaksiController;
-use App\Models\Pembayaran;
-use App\Models\Tipekamar;
-use App\Models\Transaksi;
 use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
@@ -34,14 +31,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-// Route::get('/tes', function () {
-//     foreach (Pembayaran::whereNotNull('tipekamar_id')->get() as $p) {
-//         Pembayaran::whereNotNull('tipekamar_id')->where('id', $p->id)->update([
-//             'tipekamar' => Tipekamar::where('id', $p->tipekamar_id)->first()->tipekamar
-//         ]);
-//     }
-// });
 
 // Route Auth
 Route::group(['middleware' => 'guest'], function () {

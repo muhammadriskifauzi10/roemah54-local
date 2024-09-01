@@ -801,6 +801,7 @@ class SewaController extends Controller
             return response()->json($response);
         }
     }
+    // baru
     public function bayarisitokenkamar()
     {
         if (request()->ajax()) {
@@ -891,6 +892,7 @@ class SewaController extends Controller
 
                     $model_post_tokenlistrik = new Tokenlistrik();
                     $model_post_tokenlistrik->tanggal_token = date('Y-m-d H:i:s');
+                    $model_post_tokenlistrik->pembayaran_id = $model_pembayaran->id;
                     $model_post_tokenlistrik->penyewa_id = $model_pembayaran->penyewa_id;
                     $model_post_tokenlistrik->lokasi_id = $model_pembayaran->lokasi_id;
                     $model_post_tokenlistrik->jumlah_kwh_lama = $jumlah_kwh_lama;
@@ -912,6 +914,7 @@ class SewaController extends Controller
                     // server
                     DB::connection("mysqldua")->table("tokenlistriks")->insert([
                         'tanggal_token' => date('Y-m-d H:i:s'),
+                        'pembayaran_id' => $model_pembayaran->id,
                         'penyewa_id' => $model_pembayaran->penyewa_id,
                         'lokasi_id' => $model_pembayaran->lokasi_id,
                         'jumlah_kwh_lama' => $jumlah_kwh_lama,

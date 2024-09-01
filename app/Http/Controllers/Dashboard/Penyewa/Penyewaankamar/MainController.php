@@ -29,6 +29,7 @@ class MainController extends Controller
 
         return view('contents.dashboard.penyewa.penyewaankamar.main', $data);
     }
+    // baru
     public function datatablepenyewaankamar()
     {
         $minDate = request()->input('minDate');
@@ -51,7 +52,6 @@ class MainController extends Controller
             ->get();
 
         $output = [];
-        $no = 1;
         foreach ($penyewaankamar as $row) {
             // status pembayaran
             if ($row->status_pembayaran == "completed") {
@@ -135,14 +135,22 @@ class MainController extends Controller
                 $pulangkantamu = '';
             }
 
-            $aksi = '<div class="d-flex align-items-center justify-content-center gap-1">
-            ' . $bayar . '
-            ' . $cetakpembayaran . '
-            ' . $pulangkantamu . '
+            $aksi = '
+            <div class="dropdown-center">
+                <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+                <div class="dropdown-menu p-0">
+                    <div class="d-flex flex-column gap-2 p-2">
+                        ' . $bayar . '
+                        ' . $cetakpembayaran . '
+                        ' . $pulangkantamu . '
+                    </div>
+                </div>
             </div>';
 
             $output[] = [
-                'nomor' => '<strong>' . $no++ . '</strong>',
+                'aksi' => $aksi,
                 'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("Y-m-d H:i:s"),
                 'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("Y-m-d H:i:s"),
                 'nama_penyewa' => $row->penyewas->namalengkap,
@@ -157,7 +165,6 @@ class MainController extends Controller
                 'tanggal_pembayaran' => $row->tanggal_pembayaran ? Carbon::parse($row->tanggal_pembayaran)->format("Y-m-d H:i:s") : "-",
                 'kurang_bayar' => $row->kurang_bayar ? "RP. " . number_format($row->kurang_bayar, '0', '.', '.') : "RP. 0",
                 'status_pembayaran' => $status_pembayaran,
-                'aksi' => $aksi,
             ];
         }
 
