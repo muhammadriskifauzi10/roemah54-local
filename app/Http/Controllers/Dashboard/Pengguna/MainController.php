@@ -22,7 +22,7 @@ class MainController extends Controller
     }
     public function datatablepengguna()
     {
-        $pengguna = User::orderby('role_id', 'ASC')->get();
+        $pengguna = User::where('id', '<>', auth()->user()->id)->orderby('role_id', 'ASC')->get();
 
         $output = [];
         foreach ($pengguna as $row) {
