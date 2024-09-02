@@ -14,7 +14,7 @@
                 </nav>
 
                 <div class="mb-3">
-                    <a href="{{ route('tambahharga') }}" class="btn btn-dark">
+                    <a href="{{ route('harga.tambahharga') }}" class="btn btn-dark">
                         <span class="d-flex align-items-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
                                 class="bi bi-plus-lg" viewBox="0 0 16 16">
@@ -31,7 +31,6 @@
                         <table class="table table-light table-hover border-0 m-0" id="datatableHarga">
                             <thead>
                                 <tr>
-                                    <th scope="col">No</th>
                                     <th scope="col">Tipe Kamar</th>
                                     <th scope="col">Mitra</th>
                                     <th scope="col">Harian</th>
@@ -56,14 +55,12 @@
                 processing: true,
                 paging: false,
                 ajax: {
-                    url: "{{ route('datatableharga') }}",
+                    url: "{{ route('harga.datatableharga') }}",
                     type: "POST",
                     // dataSrc: ""
                     dataType: "json",
                 },
-                columns: [{
-                        data: "nomor",
-                    },
+                columns: [
                     {
                         data: "tipe_kamar",
                     },

@@ -184,12 +184,6 @@ h6 {
     text-align: right !important;
 }
 
-/* bootstrap */
-.dropdown-item:focus {
-    background-color: transparent;
-    color: var(--c-black);
-}
-
 /* Android */
 @media (max-width: 576px) {
 }

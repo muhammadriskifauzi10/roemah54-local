@@ -23,10 +23,8 @@ class MainController extends Controller
         $role = Role::orderby('created_at', 'ASC')->get();
 
         $output = [];
-        $no = 1;
         foreach ($role as $row) {
             $output[] = [
-                'nomor' => '<strong>' . $no++ . '</strong>',
                 'nama_role' => $row->role,
             ];
         }

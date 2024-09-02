@@ -31,7 +31,6 @@
                             style="width: 100%">
                             <thead>
                                 <tr>
-                                    <th scope="col">No</th>
                                     <th scope="col">Tipe Kamar</th>
                                 </tr>
                             </thead>
@@ -56,9 +55,7 @@
                     // dataSrc: ""
                     dataType: "json"
                 },
-                columns: [{
-                        data: "nomor",
-                    },
+                columns: [
                     {
                         data: "tipekamar",
                     },

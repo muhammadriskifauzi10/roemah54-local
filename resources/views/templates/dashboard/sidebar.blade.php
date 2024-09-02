@@ -16,55 +16,57 @@
                 class="list-group-item list-group-item-action border-0 {{ request()->is('dasbor*') ? 'active' : '' }}">
                 Dasbor
             </a>
-            <a href="{{ route('lokasi') }}"
+            {{-- <a href="{{ route('lokasi') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('lokasi*') ? 'active' : '' }}">
                 Daftar Lokasi
-            </a>
+            </a> --}}
 
             {{-- penyewa --}}
             <div class="fw-bold my-3">Penyewa</div>
-            <a href="{{ route('daftarpenyewa') }}" class="list-group-item list-group-item-action border-0 {{ request()->is('daftarpenyewa*') ? 'active' : '' }}">
+            <a href="{{ route('daftarpenyewa') }}"
+                class="list-group-item list-group-item-action border-0 {{ request()->is('daftarpenyewa*') ? 'active' : '' }}">
                 Daftar Penyewa
             </a>
             <a href="{{ route('penyewaankamar') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('penyewaankamar*') ? 'active' : '' }}">
                 Penyewaan Kamar
             </a>
-            <a href="{{ route('dendacheckout') }}" class="list-group-item list-group-item-action border-0 {{ request()->is('dendacheckout*') ? 'active' : '' }}">
+            {{-- <a href="{{ route('dendacheckout') }}"
+                class="list-group-item list-group-item-action border-0 {{ request()->is('dendacheckout*') ? 'active' : '' }}">
                 Denda Checkout
-            </a>
+            </a> --}}
 
             {{-- kamar --}}
             <div class="fw-bold my-3">Kamar</div>
-            <a href="{{ route('tipekamar') }}"
+            {{-- <a href="{{ route('tipekamar') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('tipekamar*') ? 'active' : '' }}">
                 Tipe Kamar
-            </a>
+            </a> --}}
             <a href="{{ route('kamar') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('kamar*') ? 'active' : '' }}">
                 Daftar Kamar
             </a>
-
-            {{-- bisnis --}}
-            <div class="fw-bold my-3">Layanan</div>
-            <a href="{{ route('ritel') }}"
-                class="list-group-item list-group-item-action border-0 {{ request()->is('ritel*') ? 'active' : '' }}">
-                Jasa / Penjualan Ritel
-            </a>
-
-            {{-- keuangan --}}
-            <div class="fw-bold my-3">keuangan</div>
             <a href="{{ route('harga') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('harga*') ? 'active' : '' }}">
                 Harga Kamar
             </a>
+
+            {{-- layanan --}}
+            {{-- <div class="fw-bold my-3">Layanan</div>
+            <a href="{{ route('ritel') }}"
+                class="list-group-item list-group-item-action border-0 {{ request()->is('ritel*') ? 'active' : '' }}">
+                Jasa / Penjualan Ritel
+            </a> --}}
+
+            {{-- laporan --}}
+            <div class="fw-bold my-3">Laporan</div>
             <a href="{{ route('transaksi') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('transaksi*') ? 'active' : '' }}">
                 Transaksi
             </a>
 
             {{-- inventaris --}}
-            <div class="fw-bold my-3">Inventaris</div>
+            {{-- <div class="fw-bold my-3">Inventaris</div>
             <a href="{{ route('inventaris.kategori') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('inventaris/kategori*') ? 'active' : '' }}">
                 Kategori
@@ -80,15 +82,15 @@
             <a href="{{ route('inventaris.log') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('inventaris/log*') ? 'active' : '' }}">
                 Log Barang Inventaris
-            </a>
+            </a> --}}
 
             {{-- manajemen pengguna --}}
             @if (auth()->user()->role_id == 1)
                 <div class="fw-bold my-3">Manajemen Pengguna</div>
-                <a href="{{ route('role') }}"
+                {{-- <a href="{{ route('role') }}"
                     class="list-group-item list-group-item-action border-0 {{ request()->is('role*') ? 'active' : '' }}">
                     Role
-                </a>
+                </a> --}}
                 <a href="{{ route('pengguna') }}"
                     class="list-group-item list-group-item-action border-0 {{ request()->is('pengguna*') ? 'active' : '' }}">
                     Pengguna

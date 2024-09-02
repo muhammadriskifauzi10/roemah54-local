@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Dashboard\Bisnis\Ritel\MainController as RitelMainController;
+use App\Http\Controllers\Dashboard\Harga\MainController as HargaMainController;
 use App\Http\Controllers\Dashboard\HargaController;
 use App\Http\Controllers\Dashboard\Inventaris\Barang\MainController as BarangMainController;
 use App\Http\Controllers\Dashboard\Inventaris\Kategori\MainController as KategoriMainController;
@@ -90,6 +91,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/selesaikanpembayarankamar', [SewaController::class, 'selesaikanpembayarankamar'])->name('postselesaikanpembayarankamar');
     Route::post('/bayarisitokenkamar', [SewaController::class, 'bayarisitokenkamar'])->name('postbayarisitokenkamar');
 
+    // kamar
     // tipekamar
     Route::get('/tipekamar', [TipekamarMainController::class, 'index'])->name('tipekamar');
     Route::post('/tipekamar/datatabletipekamar', [TipekamarMainController::class, 'datatabletipekamar'])->name('tipekamar.datatabletipekamar');
@@ -101,21 +103,21 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/kamar/tambahkamar', [KamarController::class, 'create'])->name('kamar.postkamar');
     Route::post('/kamar/getmodaleditkamar', [KamarController::class, 'getmodaleditkamar'])->name('kamar.getmodaleditkamar');
     Route::post('/kamar/postedittipekamar', [KamarController::class, 'edittipekamar'])->name('kamar.postedittipekamar');
+    // Harga
+    Route::get('/harga', [HargaMainController::class, 'index'])->name('harga');
+    Route::post('/harga/datatableharga', [HargaMainController::class, 'datatableharga'])->name('harga.datatableharga');
+    Route::get('/harga/tambahharga', [HargaMainController::class, 'tambahharga'])->name('harga.tambahharga');
+    Route::post('/harga/getselectharga', [HargaMainController::class, 'getselectharga'])->name('harga.getselectharga');
+    Route::post('/harga/tambahharga', [HargaMainController::class, 'create'])->name('harga.postharga');
 
-    // bisnis
+    // layanan
     // laundri
     Route::get('/ritel', [RitelMainController::class, 'index'])->name('ritel');
     Route::post('/ritel/datatableritel', [RitelMainController::class, 'datatableritel'])->name('ritel.datatableritel');
     Route::get('/ritel/tambahritel', [RitelMainController::class, 'tambahritel'])->name('ritel.tambahritel');
     Route::post('/ritel/tambahritel', [RitelMainController::class, 'create'])->name('ritel.posttambahritel');
 
-    // keuangan
-    // Harga
-    Route::get('/harga', [HargaController::class, 'index'])->name('harga');
-    Route::post('/datatableharga', [HargaController::class, 'datatableharga'])->name('datatableharga');
-    Route::get('/tambahharga', [HargaController::class, 'tambahharga'])->name('tambahharga');
-    Route::post('/getselectharga', [HargaController::class, 'getselectharga'])->name('getselectharga');
-    Route::post('/tambahharga', [HargaController::class, 'create'])->name('postharga');
+    // laporan
     // Transaksi
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi');
     Route::post('/datatabletransaksi', [TransaksiController::class, 'datatabletransaksi'])->name('datatabletransaksi');

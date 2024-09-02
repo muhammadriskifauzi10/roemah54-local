@@ -16,7 +16,7 @@
 
                 <div class="card border-0">
                     <div class="card-body">
-                        <form action="{{ route('postharga') }}" class="row" autocomplete="off" method="POST">
+                        <form action="{{ route('harga.postharga') }}" class="row" autocomplete="off" method="POST">
                             @csrf
                             <div class="row">
                                 {{-- tipe kamar --}}
@@ -156,7 +156,7 @@
             formData.append("mitra", $("#mitra").val());
 
             $.ajax({
-                url: "{{ route('getselectharga') }}",
+                url: "{{ route('harga.getselectharga') }}",
                 type: "POST",
                 data: formData,
                 processData: false,

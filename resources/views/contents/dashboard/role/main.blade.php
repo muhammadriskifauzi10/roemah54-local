@@ -30,7 +30,6 @@
                         <table class="table table-light table-hover border-0 m-0" id="datatableRole" style="width: 100%">
                             <thead>
                                 <tr>
-                                    <th scope="col">No</th>
                                     <th scope="col">Nama Role</th>
                                 </tr>
                             </thead>
@@ -54,9 +53,7 @@
                     // dataSrc: ""
                     dataType: "json"
                 },
-                columns: [{
-                        data: "nomor",
-                    },
+                columns: [
                     {
                         data: "nama_role",
                     },

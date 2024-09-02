@@ -20,7 +20,6 @@ class MainController extends Controller
             $daftarpenyewa = Penyewa::all();
 
             $output = [];
-            $no = 1;
             foreach ($daftarpenyewa as $row) {
                   // status pembayaran
                   if ($row->status == 1) {
@@ -30,7 +29,6 @@ class MainController extends Controller
                   }
 
                   $output[] = [
-                        'nomor' => '<strong>' . $no++ . '</strong>',
                         'nama_lengkap' => $row->namalengkap,
                         'no_ktp' => $row->noktp,
                         'no_hp' => $row->nohp,

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\Dashboard\Harga;
 
 use App\Http\Controllers\Controller;
 use App\Models\Harga;
@@ -9,8 +9,7 @@ use App\Models\Tipekamar;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-
-class HargaController extends Controller
+class MainController extends Controller
 {
     public function index()
     {
@@ -18,17 +17,15 @@ class HargaController extends Controller
             'judul' => 'Harga',
         ];
 
-        return view('contents.dashboard.harga', $data);
+        return view('contents.dashboard.harga.main', $data);
     }
     public function datatableharga()
     {
         $harga = Harga::orderBy('tipekamar_id', 'ASC')->orderBy('mitra_id', 'ASC')->get();
 
         $output = [];
-        $no = 1;
         foreach ($harga as $row) {
             $output[] = [
-                'nomor' => '<strong>' . $no++ . '</strong>',
                 'tipe_kamar' => $row->tipekamars->tipekamar,
                 'mitra' => $row->mitras->mitra,
                 'harian' => "RP. " . number_format($row->harian, '0', '.', '.'),
@@ -53,7 +50,7 @@ class HargaController extends Controller
             'mitra' => $mitra,
         ];
 
-        return view('contents.dashboard.tambahharga', $data);
+        return view('contents.dashboard.harga.tambah', $data);
     }
     public function create()
     {
@@ -135,7 +132,7 @@ class HargaController extends Controller
                     ]);
 
                     DB::commit();
-                    return redirect('/harga')->with('messageSuccess', 'Harga berhasil diperbarui!');
+                    return redirect()->route('harga')->with('messageSuccess', 'Harga berhasil diperbarui!');
                 }
             }
 
@@ -164,11 +161,11 @@ class HargaController extends Controller
 
             if ($post) {
                 DB::commit();
-                return redirect('/harga')->with('messageSuccess', 'Harga berhasil ditambahkan!');
+                return redirect()->route('harga')->with('messageSuccess', 'Harga berhasil ditambahkan!');
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return redirect('/harga')->with('messageFailed', 'Opps, terjadi kesalahan!');
+            return redirect()->route('harga')->with('messageFailed', 'Opps, terjadi kesalahan!');
         }
     }
     // ajax request

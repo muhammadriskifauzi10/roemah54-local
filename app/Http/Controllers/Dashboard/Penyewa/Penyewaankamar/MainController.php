@@ -29,7 +29,6 @@ class MainController extends Controller
 
         return view('contents.dashboard.penyewa.penyewaankamar.main', $data);
     }
-    // baru
     public function datatablepenyewaankamar()
     {
         $minDate = request()->input('minDate');
@@ -65,7 +64,7 @@ class MainController extends Controller
             // tombol cetak kwitansi
             if ($row->tanggal_pembayaran && in_array($row->status_pembayaran, ['completed', 'pending'])) {
                 $cetakpembayaran = '
-                <a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
+                <a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
                         <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
                         <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
@@ -92,7 +91,7 @@ class MainController extends Controller
                 $bayar = '';
                 if ($row->status == 1) {
                     $pulangkantamu = '
-                    <button type="button" class="btn btn-danger text-light fw-bold" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
+                    <button type="button" class="btn btn-danger text-light fw-bold d-flex align-items-center justify-content-center gap-1" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                             class="bi bi-person-raised-hand" viewBox="0 0 16 16">
                             <path
@@ -106,7 +105,7 @@ class MainController extends Controller
                 }
             } else if ($row->status_pembayaran == "pending") {
                 $bayar = '
-                <button type="button" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" onclick="openModalBayarKamar(event, ' . $row->id . ')" style="width: 180px;">
+                <button type="button" class="btn btn-success text-light fw-bold d-flex align-items-center justify-content-center gap-1" onclick="openModalBayarKamar(event, ' . $row->id . ')" style="width: 180px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                         class="bi bi-credit-card" viewBox="0 0 16 16">
                         <path
@@ -118,7 +117,7 @@ class MainController extends Controller
 
                 if ($row->status == 1) {
                     $pulangkantamu = '
-                    <button type="button" class="btn btn-danger text-light fw-bold" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
+                    <button type="button" class="btn btn-danger text-light fw-bold d-flex align-items-center justify-content-center gap-1" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                             class="bi bi-person-raised-hand" viewBox="0 0 16 16">
                             <path
@@ -136,18 +135,13 @@ class MainController extends Controller
             }
 
             $aksi = '
-            <div class="dropdown-center">
-                <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span class="visually-hidden">Toggle Dropdown</span>
-                </button>
-                <div class="dropdown-menu p-0">
-                    <div class="d-flex flex-column gap-2 p-2">
-                        ' . $bayar . '
-                        ' . $cetakpembayaran . '
-                        ' . $pulangkantamu . '
-                    </div>
-                </div>
-            </div>';
+            <div class="d-flex flex-column align-items-center justify-content-center gap-1">
+                ' . $bayar . '
+                ' . $cetakpembayaran . '
+                ' . $pulangkantamu . '
+            
+            </div>
+            ';
 
             $output[] = [
                 'aksi' => $aksi,

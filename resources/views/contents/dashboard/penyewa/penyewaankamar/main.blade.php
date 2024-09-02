@@ -49,7 +49,7 @@
                         <table class="table table-light table-hover border-0 m-0" id="datatablePenyewaanKamar">
                             <thead>
                                 <tr>
-                                    <th scope="col"></th>
+                                    <th scope="col" width="150"></th>
                                     <th scope="col">Tanggal Masuk</th>
                                     <th scope="col">Tanggal Keluar</th>
                                     <th scope="col">Nama Penyewa</th>
@@ -145,6 +145,10 @@
                     filename: "penyewaan_kamar",
                     className: 'btn btn-success',
                     exportOptions: {
+                        columns: function(idx, data, node) {
+                            // Mengecualikan kolom pertama (aksi) dari ekspor
+                            return idx !== 0;
+                        },
                         modifier: {
                             search: "none",
                         },
