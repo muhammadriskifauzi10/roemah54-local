@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('tokenlistriks', function (Blueprint $table) {
             $table->id();
             $table->dateTime('tanggal_token')->nullable();
+            $table->foreignId('pembayaran_id')->nullable();
             $table->foreignId('penyewa_id')->nullable();
             $table->foreignId('lokasi_id')->nullable();
             $table->decimal('jumlah_kwh_lama', 15, 2)->nullable();
