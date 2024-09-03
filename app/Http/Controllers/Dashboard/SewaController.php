@@ -917,6 +917,7 @@ class SewaController extends Controller
                 try {
                     DB::beginTransaction();
                     $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
+
                     $kamar = Lokasi::where('id', $model_pembayaran->lokasi_id)->first();
                     $model_harga = Harga::where("tipekamar_id", $kamar->tipekamar_id)->first();
 
@@ -1102,6 +1103,10 @@ class SewaController extends Controller
                             'status' => 0,
                             'operator_id' => auth()->user()->id,
                             'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
+
+                        Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->update([
+                            'status' => 0
                         ]);
                     }
 

@@ -306,12 +306,18 @@ class MainController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
-                    if (Pembayaran::where('penyewa_id', $model_pembayaran->penyewa_id)->where('status', 1)->count() < 1) {
-                        Penyewa::where('id', $model_pembayaran->penyewa_id)->update([
-                            'status' => 0,
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
+                    Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->update([
+                        'status' => 0
+                    ]);
+
+                    foreach (Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->get() as $row) {
+                        if (Pembayarandetail::where('penyewa_id', $row->penyewa_id)->where('status', 1)->count() < 1) {
+                            Penyewa::where('id', $row->penyewa_id)->update([
+                                'status' => 0,
+                                'operator_id' => auth()->user()->id,
+                                'updated_at' => date("Y-m-d H:i:s"),
+                            ]);
+                        }
                     }
 
                     // kosongkan kamar

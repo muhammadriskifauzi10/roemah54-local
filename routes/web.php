@@ -4,7 +4,6 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Dashboard\Bisnis\Ritel\MainController as RitelMainController;
 use App\Http\Controllers\Dashboard\Harga\MainController as HargaMainController;
-use App\Http\Controllers\Dashboard\HargaController;
 use App\Http\Controllers\Dashboard\Inventaris\Barang\MainController as BarangMainController;
 use App\Http\Controllers\Dashboard\Inventaris\Kategori\MainController as KategoriMainController;
 use App\Http\Controllers\Dashboard\Inventaris\Log\MainController as LogMainController;
@@ -21,9 +20,6 @@ use App\Http\Controllers\Dashboard\Scan\MainController as ScanMainController;
 use App\Http\Controllers\Dashboard\SewaController;
 use App\Http\Controllers\Dashboard\Tipekamar\MainController as TipekamarMainController;
 use App\Http\Controllers\Dashboard\TransaksiController;
-use App\Models\Pembayaran;
-use App\Models\Pembayarandetail;
-use App\Models\Penyewa;
 use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
@@ -35,32 +31,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-// pembayaran
-// Route::get('/p', function () {
-//     foreach (Pembayaran::all() as $row) {
-//         $pembayarandetail = new Pembayarandetail();
-//         $pembayarandetail->pembayaran_id = $row->id;
-//         $pembayarandetail->penyewa_id = $row->penyewa_id;
-//         $pembayarandetail->save();
-//     }
-// });
-// Route::get('/pen', function () {
-//     foreach (Pembayaran::all() as $row) {
-//         Pembayaran::where('id', $row->id)->update([
-//             'jumlah_penyewa' => 1
-//         ]);
-//     }
-// });
-// Route::get('/t', function () {
-//     foreach (Penyewa::all() as $row) {
-//         if (Pembayarandetail::where('penyewa_id', $row->id)->exists()) {
-//             Pembayarandetail::where('penyewa_id', $row->id)->update([
-//                 'status' => $row->status
-//             ]);
-//         }
-//     }
-// });
 
 // Route Auth
 Route::group(['middleware' => 'guest'], function () {
