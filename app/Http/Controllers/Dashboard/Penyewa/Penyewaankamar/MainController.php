@@ -327,37 +327,37 @@ class MainController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
-                    // denda checkout
-                    $givenDateTime = Carbon::create($model_pembayaran->tanggal_keluar);
+                    // // denda checkout
+                    // $givenDateTime = Carbon::create($model_pembayaran->tanggal_keluar);
 
-                    // Ambil waktu sekarang
-                    $now = Carbon::now();
+                    // // Ambil waktu sekarang
+                    // $now = Carbon::now();
 
-                    // Tentukan waktu batasan (15:00 pada tanggal yang sama)
-                    $limitTime = $givenDateTime->copy()->setHour(15)->setMinute(0)->setSecond(0);
+                    // // Tentukan waktu batasan (15:00 pada tanggal yang sama)
+                    // $limitTime = $givenDateTime->copy()->setHour(15)->setMinute(0)->setSecond(0);
 
-                    // Hitung pembayaran berdasarkan waktu sekarang dan waktu batasan
-                    if ($now->greaterThanOrEqualTo($givenDateTime) && $now->greaterThanOrEqualTo($limitTime)) {
-                        $model_denda_checkout = new Denda();
-                        $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
-                        $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
-                        $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
-                        $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
-                        $model_denda_checkout->tagih_id = 3;
-                        $model_denda_checkout->jumlah_uang = 100000;
-                        $model_denda_checkout->operator_id = auth()->user()->id;
-                        $model_denda_checkout->save();
-                    } elseif ($now->greaterThanOrEqualTo($givenDateTime) && $now->lessThan($limitTime)) {
-                        $model_denda_checkout = new Denda();
-                        $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
-                        $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
-                        $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
-                        $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
-                        $model_denda_checkout->tagih_id = 3;
-                        $model_denda_checkout->jumlah_uang = 50000;
-                        $model_denda_checkout->operator_id = auth()->user()->id;
-                        $model_denda_checkout->save();
-                    }
+                    // // Hitung pembayaran berdasarkan waktu sekarang dan waktu batasan
+                    // if ($now->greaterThanOrEqualTo($givenDateTime) && $now->greaterThanOrEqualTo($limitTime)) {
+                    //     $model_denda_checkout = new Denda();
+                    //     $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
+                    //     $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
+                    //     $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
+                    //     $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
+                    //     $model_denda_checkout->tagih_id = 3;
+                    //     $model_denda_checkout->jumlah_uang = 100000;
+                    //     $model_denda_checkout->operator_id = auth()->user()->id;
+                    //     $model_denda_checkout->save();
+                    // } elseif ($now->greaterThanOrEqualTo($givenDateTime) && $now->lessThan($limitTime)) {
+                    //     $model_denda_checkout = new Denda();
+                    //     $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
+                    //     $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
+                    //     $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
+                    //     $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
+                    //     $model_denda_checkout->tagih_id = 3;
+                    //     $model_denda_checkout->jumlah_uang = 50000;
+                    //     $model_denda_checkout->operator_id = auth()->user()->id;
+                    //     $model_denda_checkout->save();
+                    // }
 
                     $response = [
                         'status' => 200,
