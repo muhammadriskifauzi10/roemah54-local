@@ -23,10 +23,8 @@ class MainController extends Controller
         $tipekamar = Tipekamar::orderby('created_at', 'ASC')->get();
 
         $output = [];
-        $no = 1;
         foreach ($tipekamar as $row) {
             $output[] = [
-                'nomor' => '<strong>' . $no++ . '</strong>',
                 'tipekamar' => $row->tipekamar,
             ];
         }
@@ -55,14 +53,6 @@ class MainController extends Controller
                 Tipekamar::create([
                     'tipekamar' => Str::upper($tipekamar),
                     'operator_id' => auth()->user()->id
-                ]);
-
-                // server
-                DB::connection("mysqldua")->table("tipekamars")->insert([
-                    'tipekamar' => Str::upper($tipekamar),
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
                 ]);
 
                 $response = [

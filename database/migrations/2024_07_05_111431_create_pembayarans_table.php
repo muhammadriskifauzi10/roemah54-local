@@ -13,11 +13,9 @@ return new class extends Migration
     {
         Schema::create('pembayarans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tagih_id')->nullable();
             $table->dateTime('tanggal_pembayaran')->nullable();
             $table->dateTime('tanggal_masuk')->nullable();
             $table->dateTime('tanggal_keluar')->nullable();
-            $table->foreignId('penyewa_id')->nullable();
             $table->foreignId('lokasi_id')->nullable();
             $table->foreignId('tipekamar_id')->nullable();
             $table->string('tipekamar', 50)->nullable();
@@ -28,6 +26,7 @@ return new class extends Migration
             $table->decimal('potongan_harga', 15, 2)->nullable(); 
             $table->decimal('total_bayar', 15, 2)->nullable(); 
             $table->decimal('kurang_bayar', 15, 2)->nullable(); 
+            $table->integer('jumlah_penyewa')->default(1);
             $table->enum('status_pembayaran', ['failed', 'pending', 'completed'])->default('pending');
             $table->tinyInteger('status')->default(0);
             $table->integer('operator_id');

@@ -35,10 +35,10 @@
                                             $query->where('status', 1)->orWhere('status', 2);
                                         })->count() > 0)
                                     @foreach ($lantai->lokasis as $l)
-                                        @foreach (App\Models\Pembayaran::where('tagih_id', 1)->where('lokasi_id', $l->id)->where('status', '<>', 0)->get() as $p)
+                                        @foreach (App\Models\Pembayaran::where('lokasi_id', $l->id)->where('status', '<>', 0)->get() as $p)
                                             @if ($p->status_pembayaran == 'completed')
                                                 {{-- kamar terisi --}}
-                                                <a href="{{ route('detailpenyewa', $p->penyewa_id) }}"
+                                                <a href="{{ route('detailpenyewa', $p->id) }}"
                                                     class="col-xl-6 kamar text-decoration-none mb-4">
                                                     <div class="card border-0 rounded" style="height: 100%">
                                                         @if (\Carbon\Carbon::now() > \Carbon\Carbon::parse($p->tanggal_keluar))
@@ -67,17 +67,21 @@
                                                                             {{ $p->tipekamar }}
                                                                         </td>
                                                                     </tr>
-                                                                    <tr>
+                                                                    {{-- <tr>
                                                                         <td>Penyewa</td>
                                                                         <td class="text-right">
                                                                             {{ $p->penyewas->namalengkap }}
                                                                         </td>
-                                                                    </tr>
+                                                                    </tr> --}}
                                                                     <tr>
-                                                                        <td>Periode</td>
+                                                                        <td>Tanggal Masuk</td>
                                                                         <td class="text-right">
                                                                             {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
-                                                                            <br>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Tanggal Keluar</td>
+                                                                        <td class="text-right">
                                                                             {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
                                                                         </td>
                                                                     </tr>
@@ -85,6 +89,12 @@
                                                                         <td>Jenis Sewa</td>
                                                                         <td class="text-right">
                                                                             {{ $p->jenissewa }}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Jumlah Penyewa</td>
+                                                                        <td class="text-right">
+                                                                            {{ $p->jumlah_penyewa }} Orang
                                                                         </td>
                                                                     </tr>
                                                                 </tbody>
@@ -128,7 +138,7 @@
                                                 </a>
                                             @elseif ($p->status_pembayaran == 'pending')
                                                 {{-- booking / belum lunas --}}
-                                                <a href="{{ route('detailpenyewa', $p->penyewa_id) }}"
+                                                <a href="{{ route('detailpenyewa', $p->id) }}"
                                                     class="col-xl-6 kamar text-decoration-none mb-4">
                                                     <div class="card border-0 rounded" style="height: 100%">
                                                         <div class="card-header bg-warning text-light text-center fw-bold">
@@ -149,17 +159,21 @@
                                                                             {{ $p->tipekamar }}
                                                                         </td>
                                                                     </tr>
-                                                                    <tr>
+                                                                    {{-- <tr>
                                                                         <td>Penyewa</td>
                                                                         <td class="text-right">
                                                                             {{ $p->penyewas->namalengkap }}
                                                                         </td>
-                                                                    </tr>
+                                                                    </tr> --}}
                                                                     <tr>
-                                                                        <td>Periode</td>
+                                                                        <td>Tanggal Masuk</td>
                                                                         <td class="text-right">
                                                                             {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
-                                                                            <br>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Tanggal Keluar</td>
+                                                                        <td class="text-right">
                                                                             {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
                                                                         </td>
                                                                     </tr>
@@ -167,6 +181,12 @@
                                                                         <td>Jenis Sewa</td>
                                                                         <td class="text-right">
                                                                             {{ $p->jenissewa }}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Jumlah Penyewa</td>
+                                                                        <td class="text-right">
+                                                                            {{ $p->jumlah_penyewa }} Orang
                                                                         </td>
                                                                     </tr>
                                                                 </tbody>

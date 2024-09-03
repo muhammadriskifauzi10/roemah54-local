@@ -25,6 +25,7 @@ class MainController extends Controller
         $pengguna = User::where('id', '<>', auth()->user()->id)->orderby('role_id', 'ASC')->get();
 
         $output = [];
+        $nomor = 1;
         foreach ($pengguna as $row) {
 
             $aksi = '<div class="d-flex flex-column align-items-center justify-content-center gap-1">
@@ -44,10 +45,11 @@ class MainController extends Controller
                    </div>';
 
             $output[] = [
-                'aksi' => $aksi,
+                'nomor' => "<strong>" . $nomor++ . "</strong>",
                 'role' => $row->roles->role,
                 'nama_pengguna' => $row->username,
                 'status' => $row->status == 1 ? '<span class="badge bg-green">Aktif</span>' : '<span class="badge bg-red">Nonaktif</span>',
+                'aksi' => $aksi,
             ];
         }
 
@@ -108,17 +110,6 @@ class MainController extends Controller
                 'password' => bcrypt($password)
             ]);
 
-            // server
-            DB::connection("mysqldua")->table("users")->insert([
-                'role_id' => $role,
-                'username' => $nama_pengguna,
-                'slug' => Str::slug($nama_pengguna),
-                'email' => Str::lower(preg_replace('/\s+/', '', $nama_pengguna) . "@gmail.com"),
-                'password' => bcrypt($password),
-                'created_at' => date("Y-m-d H:i:s"),
-                'updated_at' => date("Y-m-d H:i:s"),
-            ]);
-
             if ($post) {
                 DB::commit();
                 return redirect()->route('pengguna')->with('messageSuccess', 'Pengguna berhasil ditambahkan!');
@@ -168,12 +159,6 @@ class MainController extends Controller
                     'updated_at' => date("Y-m-d H:i:s"),
                 ]);
 
-                // server
-                DB::connection("mysqldua")->table("users")->where('id', $pengguna_id)->update([
-                    'status' => 0,
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
                 $response = [
                     'status' => 200,
                     'message' => 'success',
@@ -203,12 +188,6 @@ class MainController extends Controller
 
                 // user
                 User::where('id', $pengguna_id)->update([
-                    'status' => 1,
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
-                // server
-                DB::connection("mysqldua")->table("users")->where('id', $pengguna_id)->update([
                     'status' => 1,
                     'updated_at' => date("Y-m-d H:i:s"),
                 ]);
@@ -286,17 +265,6 @@ class MainController extends Controller
                 'slug' => Str::slug($nama_baru),
                 'email' => Str::lower(preg_replace('/\s+/', '', $nama_baru) . "@gmail.com"),
                 'password' => bcrypt($password)
-            ]);
-
-            // server
-            DB::connection("mysqldua")->table("users")->where('id', $id)->update([
-                'role_id' => $role,
-                'username' => $nama_baru,
-                'slug' => Str::slug($nama_baru),
-                'email' => Str::lower(preg_replace('/\s+/', '', $nama_baru) . "@gmail.com"),
-                'password' => bcrypt($password),
-                'created_at' => date("Y-m-d H:i:s"),
-                'updated_at' => date("Y-m-d H:i:s"),
             ]);
 
             if ($update) {

@@ -21,6 +21,8 @@ use App\Http\Controllers\Dashboard\Scan\MainController as ScanMainController;
 use App\Http\Controllers\Dashboard\SewaController;
 use App\Http\Controllers\Dashboard\Tipekamar\MainController as TipekamarMainController;
 use App\Http\Controllers\Dashboard\TransaksiController;
+use App\Models\Pembayaran;
+use App\Models\Pembayarandetail;
 use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +34,23 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+// pembayaran
+// Route::get('/p', function () {
+//     foreach (Pembayaran::all() as $row) {
+//         $pembayarandetail = new Pembayarandetail();
+//         $pembayarandetail->pembayaran_id = $row->id;
+//         $pembayarandetail->penyewa_id = $row->penyewa_id;
+//         $pembayarandetail->save();
+//     }
+// });
+// Route::get('/pen', function () {
+//     foreach (Pembayaran::all() as $row) {
+//         Pembayaran::where('id', $row->id)->update([
+//             'jumlah_penyewa' => 1
+//         ]);
+//     }
+// });
 
 // Route Auth
 Route::group(['middleware' => 'guest'], function () {
@@ -64,6 +83,7 @@ Route::group(['middleware' => 'auth'], function () {
     // Penyewaan Kamar
     Route::get('/penyewaankamar', [PenyewaankamarMainController::class, 'index'])->name('penyewaankamar');
     Route::post('/penyewaankamar/datatablepenyewaankamar', [PenyewaankamarMainController::class, 'datatablepenyewaankamar'])->name('penyewaankamar.datatablepenyewaankamar');
+    Route::get('/penyewaankamar/detail/{id}', [PenyewaankamarMainController::class, 'detail'])->name('penyewaankamar.detail');
     Route::get('/penyewaankamar/cetakkwitansi/{id}', [PenyewaankamarMainController::class, 'cetakkwitansi'])->name('penyewaankamar.cetakkwitansi');
     Route::get('/penyewaankamar/cetakinvoice/{id}', [PenyewaankamarMainController::class, 'cetakinvoice'])->name('penyewaankamar.cetakinvoice');
     Route::post('/penyewaankamar/pulangkantamu', [PenyewaankamarMainController::class, 'pulangkantamu'])->name('penyewaankamar.pulangkantamu');

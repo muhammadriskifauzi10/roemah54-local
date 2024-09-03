@@ -9,6 +9,7 @@ use App\Models\Tipekamar;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+
 class MainController extends Controller
 {
     public function index()
@@ -24,8 +25,10 @@ class MainController extends Controller
         $harga = Harga::orderBy('tipekamar_id', 'ASC')->orderBy('mitra_id', 'ASC')->get();
 
         $output = [];
+        $nomor = 1;
         foreach ($harga as $row) {
             $output[] = [
+                'nomor' => "<strong>" . $nomor++ . "</strong>",
                 'tipe_kamar' => $row->tipekamars->tipekamar,
                 'mitra' => $row->mitras->mitra,
                 'harian' => "RP. " . number_format($row->harian, '0', '.', '.'),
@@ -121,16 +124,6 @@ class MainController extends Controller
                 ]);
 
                 if ($update) {
-                    // server
-                    DB::connection("mysqldua")->table("hargas")->where('tipekamar_id', (int)$tipe)->where('mitra_id', (int)$mitra)->update([
-                        'harian' => $harian ? str_replace('.', '', $harian) : 0,
-                        'mingguan' => $mingguan ? str_replace('.', '', $mingguan) : 0,
-                        'hari14' => $hari14 ? str_replace('.', '', $hari14) : 0,
-                        'bulanan' => $bulanan ? str_replace('.', '', $bulanan) : 0,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
                     DB::commit();
                     return redirect()->route('harga')->with('messageSuccess', 'Harga berhasil diperbarui!');
                 }
@@ -146,26 +139,13 @@ class MainController extends Controller
                 'operator_id' => auth()->user()->id
             ]);
 
-            // server
-            DB::connection("mysqldua")->table("hargas")->insert([
-                'tipekamar_id' => $tipe,
-                'mitra_id' => $mitra,
-                'harian' => $harian ? str_replace('.', '', $harian) : 0,
-                'mingguan' => $mingguan ? str_replace('.', '', $mingguan) : 0,
-                'hari14' => $hari14 ? str_replace('.', '', $hari14) : 0,
-                'bulanan' => $bulanan ? str_replace('.', '', $bulanan) : 0,
-                'operator_id' => auth()->user()->id,
-                'created_at' => date("Y-m-d H:i:s"),
-                'updated_at' => date("Y-m-d H:i:s"),
-            ]);
-
             if ($post) {
                 DB::commit();
                 return redirect()->route('harga')->with('messageSuccess', 'Harga berhasil ditambahkan!');
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return redirect()->route('harga')->with('messageFailed', 'Opps, terjadi kesalahan!');
+            return redirect('/harga')->with('messageFailed', 'Opps, terjadi kesalahan!');
         }
     }
     // ajax request

@@ -9,6 +9,7 @@ use App\Models\Lokasi;
 use App\Models\Lantai;
 use App\Models\Mitra;
 use App\Models\Pembayaran;
+use App\Models\Pembayarandetail;
 use App\Models\Penyewa;
 use App\Models\Tipekamar;
 use App\Models\Tokenlistrik;
@@ -52,10 +53,6 @@ class SewaController extends Controller
         } else {
             $rulefotoktp = 'mimes:jpg,jpeg,png';
         }
-
-        request()->merge([
-            'total_bayar' => str_replace('.', '', request()->input('total_bayar')),
-        ]);
 
         $validator = Validator::make(request()->all(), [
             'tanggalmasuk' => 'required|date',
@@ -166,18 +163,6 @@ class SewaController extends Controller
                     'fotoktp' => $fotoktp,
                     'updated_at' => date("Y-m-d H:i:s"),
                 ]);
-
-                // server
-                DB::connection("mysqldua")->table("penyewas")->insert([
-                    'namalengkap' => $namalengkap,
-                    'noktp' => $noktp,
-                    'nohp' => $nohp,
-                    'alamat' => $alamat,
-                    'fotoktp' => $fotoktp,
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
             } else {
                 $penyewa = Penyewa::where('noktp', $noktp)->first();
 
@@ -196,18 +181,6 @@ class SewaController extends Controller
                 }
 
                 Penyewa::where('id', $penyewa->id)->update([
-                    'namalengkap' => $namalengkap,
-                    'noktp' => $noktp,
-                    'nohp' => $nohp,
-                    'alamat' => $alamat,
-                    'fotoktp' => $fotoktp,
-                    'status' => 1,
-                    'operator_id' => auth()->user()->id,
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
-                // server
-                DB::connection("mysqldua")->table("penyewas")->where('id', $penyewa->id)->update([
                     'namalengkap' => $namalengkap,
                     'noktp' => $noktp,
                     'nohp' => $nohp,
@@ -287,13 +260,13 @@ class SewaController extends Controller
             }
 
             $pembayaran = new Pembayaran();
-            $pembayaran->tagih_id = 1;
+            // $pembayaran->tagih_id = 1;
             if (intval($total_bayar) > 0) {
                 $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
             }
             $pembayaran->tanggal_masuk = $tanggalmasuk_format;
             $pembayaran->tanggal_keluar = $tenggatwaktu;
-            $pembayaran->penyewa_id = $penyewa->id;
+            // $pembayaran->penyewa_id = $penyewa->id;
             $pembayaran->mitra_id = $mitra;
             $pembayaran->lokasi_id = $kamar;
             $pembayaran->tipekamar_id = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->id;
@@ -309,29 +282,13 @@ class SewaController extends Controller
             $pembayaran->operator_id = auth()->user()->id;
             $post = $pembayaran->save();
 
-            // server
-            DB::connection("mysqldua")->table("pembayarans")->insert([
-                'tanggal_masuk' => $tanggalmasuk_format,
-                'tanggal_keluar' => $tenggatwaktu,
-                'penyewa_id' => $penyewa->id,
-                'mitra_id' => $mitra,
-                'lokasi_id' => $kamar,
-                'tipekamar_id' => Tipekamar::where('id', $model_harga->tipekamar_id)->first()->id,
-                'tipekamar' => Tipekamar::where('id', $model_harga->tipekamar_id)->first()->tipekamar,
-                'jenissewa' => $jenissewa,
-                'jumlah_pembayaran' => intval($jumlah_pembayaran) + intval($potongan_harga),
-                'diskon' => $diskon,
-                'potongan_harga' => intval($potongan_harga),
-                'total_bayar' => $total_bayar,
-                'kurang_bayar' => intval($jumlah_pembayaran) - intval($total_bayar),
-                'status_pembayaran' => $status_pembayaran,
-                'status' => 1,
-                'operator_id' => auth()->user()->id,
-                'created_at' => date("Y-m-d H:i:s"),
-                'updated_at' => date("Y-m-d H:i:s"),
-            ]);
-
             if ($post) {
+
+                // pembayaran detail
+                $pembayarandetail = new Pembayarandetail();
+                $pembayarandetail->pembayaran_id = $pembayaran->id;
+                $pembayarandetail->penyewa_id = $penyewa->id;
+                $pembayarandetail->save();
 
                 if (intval($total_bayar) > 0) {
                     // Generate no transaksi
@@ -365,29 +322,9 @@ class SewaController extends Controller
                     $transaksi->metode_pembayaran = $metode_pembayaran;
                     $transaksi->operator_id = auth()->user()->id;
                     $transaksi->save();
-
-                    // server
-                    DB::connection("mysqldua")->table("transaksis")->insert([
-                        'no_transaksi' => $no_transaksi,
-                        'tagih_id' => 1,
-                        'pembayaran_id' => $pembayaran->id,
-                        'tanggal_transaksi' => date('Y-m-d H:i:s'),
-                        'jumlah_uang' => $total_bayar,
-                        'metode_pembayaran' => $metode_pembayaran,
-                        'operator_id' => auth()->user()->id,
-                        'created_at' => date("Y-m-d H:i:s"),
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
                 }
 
                 Lokasi::where('id', $kamar)->update([
-                    'status' => $status_kamar,
-                    'operator_id' => auth()->user()->id,
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
-                // server
-                DB::connection("mysqldua")->table("lokasis")->where('id', $kamar)->update([
                     'status' => $status_kamar,
                     'operator_id' => auth()->user()->id,
                     'updated_at' => date("Y-m-d H:i:s"),
@@ -419,23 +356,8 @@ class SewaController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
-                    // server
-                    DB::connection("mysqldua")->table("pembayarans")->where('id', $model_pembayaran->id)->update([
-                        'status_pembayaran' => 'failed',
-                        'status' => 0,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
                     if (Pembayaran::where('penyewa_id', $model_pembayaran->penyewa_id)->where('status', 1)->count() < 1) {
                         Penyewa::where('id', $model_pembayaran->penyewa_id)->update([
-                            'status' => 0,
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
-
-                        // server
-                        DB::connection("mysqldua")->table("penyewas")->where('id', $model_pembayaran->penyewa_id)->update([
                             'status' => 0,
                             'operator_id' => auth()->user()->id,
                             'updated_at' => date("Y-m-d H:i:s"),
@@ -443,13 +365,6 @@ class SewaController extends Controller
                     }
 
                     Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
-                        'status' => 0,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
-                    // server
-                    DB::connection("mysqldua")->table("lokasis")->where('id', $model_pembayaran->lokasi_id)->update([
                         'status' => 0,
                         'operator_id' => auth()->user()->id,
                         'updated_at' => date("Y-m-d H:i:s"),
@@ -686,41 +601,13 @@ class SewaController extends Controller
                             'updated_at' => date("Y-m-d H:i:s"),
                         ]);
 
-                        // server
-                        DB::connection("mysqldua")->table("pembayarans")->where('id', $model_pembayaran->id)->update([
-                            'tanggal_pembayaran' => date('Y-m-d H:i:s'),
-                            'potongan_harga' => $tot_potongan,
-                            'total_bayar' => $tot_bayar,
-                            'kurang_bayar' => $tot_kurangbayar,
-                            'status_pembayaran' => 'completed',
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
-
                         Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
-                            'status' => 1,
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
-
-                        // server
-                        DB::connection("mysqldua")->table("lokasis")->where('id', $model_pembayaran->lokasi_id)->update([
                             'status' => 1,
                             'operator_id' => auth()->user()->id,
                             'updated_at' => date("Y-m-d H:i:s"),
                         ]);
                     } else {
                         DB::table('pembayarans')->where('id', $model_pembayaran->id)->update([
-                            'tanggal_pembayaran' => date('Y-m-d H:i:s'),
-                            'potongan_harga' => $tot_potongan,
-                            'total_bayar' => $tot_bayar,
-                            'kurang_bayar' => $tot_kurangbayar,
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
-
-                        // server
-                        DB::connection("mysqldua")->table("pembayarans")->where('id', $model_pembayaran->id)->update([
                             'tanggal_pembayaran' => date('Y-m-d H:i:s'),
                             'potongan_harga' => $tot_potongan,
                             'total_bayar' => $tot_bayar,
@@ -754,29 +641,15 @@ class SewaController extends Controller
                         $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
 
                         $transaksi = new Transaksi();
+                        $transaksi->pembayaran_id = $model_pembayaran->id;
                         $transaksi->no_transaksi = $no_transaksi;
                         $transaksi->tagih_id = 1;
-                        $transaksi->pembayaran_id = $model_pembayaran->id;
                         $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
                         $transaksi->jumlah_uang = str_replace('.', '', $pembayaran);
                         $transaksi->metode_pembayaran = $metode_pembayaran;
                         $transaksi->tipe = "pemasukan";
                         $transaksi->operator_id = auth()->user()->id;
                         $transaksi->save();
-
-                        // server
-                        DB::connection("mysqldua")->table("transaksis")->insert([
-                            'no_transaksi' => $no_transaksi,
-                            'tagih_id' => 1,
-                            'pembayaran_id' => $model_pembayaran->id,
-                            'tanggal_transaksi' => date('Y-m-d H:i:s'),
-                            'jumlah_uang' => str_replace('.', '', $pembayaran),
-                            'metode_pembayaran' => $metode_pembayaran,
-                            'tipe' => "pemasukan",
-                            'operator_id' => auth()->user()->id,
-                            'created_at' => date("Y-m-d H:i:s"),
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
                     }
 
                     DB::commit();
@@ -801,7 +674,6 @@ class SewaController extends Controller
             return response()->json($response);
         }
     }
-    // baru
     public function bayarisitokenkamar()
     {
         if (request()->ajax()) {
@@ -841,9 +713,9 @@ class SewaController extends Controller
                     $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
 
                     $transaksi = new Transaksi();
+                    $transaksi->pembayaran_id = $model_pembayaran->id;
                     $transaksi->no_transaksi = $no_transaksi;
                     $transaksi->tagih_id = 2;
-                    $transaksi->pembayaran_id = $model_pembayaran->id;
                     $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
                     $transaksi->jumlah_uang = str_replace('.', '', $jumlah_pembayaran);
                     $transaksi->metode_pembayaran = $metode_pembayaran;
@@ -851,48 +723,20 @@ class SewaController extends Controller
                     $transaksi->operator_id = auth()->user()->id;
                     $transaksi->save();
 
-                    // server
-                    DB::connection("mysqldua")->table("transaksis")->insert([
-                        'no_transaksi' => $no_transaksi,
-                        'tagih_id' => 2,
-                        'pembayaran_id' => $model_pembayaran->id,
-                        'tanggal_transaksi' => date('Y-m-d H:i:s'),
-                        'jumlah_uang' => str_replace('.', '', $jumlah_pembayaran),
-                        'metode_pembayaran' => $metode_pembayaran,
-                        'tipe' => "pengeluaran",
-                        'operator_id' => auth()->user()->id,
-                        'created_at' => date("Y-m-d H:i:s"),
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
-                    $model_post_pembayaran = new Pembayaran();
-                    $model_post_pembayaran->tagih_id = 2;
-                    $model_post_pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
-                    $model_post_pembayaran->penyewa_id = $model_pembayaran->penyewa_id;
-                    $model_post_pembayaran->lokasi_id = $model_pembayaran->lokasi_id;
-                    $model_post_pembayaran->jumlah_pembayaran = str_replace('.', '', $jumlah_pembayaran);
-                    $model_post_pembayaran->total_bayar = str_replace('.', '', $jumlah_pembayaran);
-                    $model_post_pembayaran->status_pembayaran = 'completed';
-                    $model_post_pembayaran->operator_id = auth()->user()->id;
-                    $model_post_pembayaran->save();
-
-                    // server
-                    DB::connection("mysqldua")->table("pembayarans")->insert([
-                        'tagih_id' => 2,
-                        'tanggal_pembayaran' => date('Y-m-d H:i:s'),
-                        'penyewa_id' => $model_pembayaran->penyewa_id,
-                        'lokasi_id' => $model_pembayaran->lokasi_id,
-                        'jumlah_pembayaran' => str_replace('.', '', $jumlah_pembayaran),
-                        'total_bayar' => str_replace('.', '', $jumlah_pembayaran),
-                        'status_pembayaran' => 'completed',
-                        'operator_id' => auth()->user()->id,
-                        'created_at' => date("Y-m-d H:i:s"),
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
+                    // $model_post_pembayaran = new Pembayaran();
+                    // $model_post_pembayaran->tagih_id = 2;
+                    // $model_post_pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
+                    // $model_post_pembayaran->penyewa_id = $model_pembayaran->penyewa_id;
+                    // $model_post_pembayaran->lokasi_id = $model_pembayaran->lokasi_id;
+                    // $model_post_pembayaran->jumlah_pembayaran = str_replace('.', '', $jumlah_pembayaran);
+                    // $model_post_pembayaran->total_bayar = str_replace('.', '', $jumlah_pembayaran);
+                    // $model_post_pembayaran->status_pembayaran = 'completed';
+                    // $model_post_pembayaran->operator_id = auth()->user()->id;
+                    // $model_post_pembayaran->save();
 
                     $model_post_tokenlistrik = new Tokenlistrik();
-                    $model_post_tokenlistrik->tanggal_token = date('Y-m-d H:i:s');
                     $model_post_tokenlistrik->pembayaran_id = $model_pembayaran->id;
+                    $model_post_tokenlistrik->tanggal_token = date('Y-m-d H:i:s');
                     $model_post_tokenlistrik->penyewa_id = $model_pembayaran->penyewa_id;
                     $model_post_tokenlistrik->lokasi_id = $model_pembayaran->lokasi_id;
                     $model_post_tokenlistrik->jumlah_kwh_lama = $jumlah_kwh_lama;
@@ -909,22 +753,6 @@ class SewaController extends Controller
 
                     Tokenlistrik::where('id', $model_post_tokenlistrik->id)->update([
                         'fotokwhlama' => $fotokwhlamatokenlistrik
-                    ]);
-
-                    // server
-                    DB::connection("mysqldua")->table("tokenlistriks")->insert([
-                        'tanggal_token' => date('Y-m-d H:i:s'),
-                        'pembayaran_id' => $model_pembayaran->id,
-                        'penyewa_id' => $model_pembayaran->penyewa_id,
-                        'lokasi_id' => $model_pembayaran->lokasi_id,
-                        'jumlah_kwh_lama' => $jumlah_kwh_lama,
-                        'jumlah_kwh_baru' => $jumlah_kwh_baru,
-                        'jumlah_pembayaran' => str_replace('.', '', $jumlah_pembayaran),
-                        'keterangan' => $keterangan,
-                        'fotokwhlama' => $fotokwhlamatokenlistrik,
-                        'operator_id' => auth()->user()->id,
-                        'created_at' => date("Y-m-d H:i:s"),
-                        'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
                     DB::commit();
@@ -1162,16 +990,12 @@ class SewaController extends Controller
                     }
 
                     $model_post_pembayaran = new Pembayaran();
-                    $model_post_pembayaran->tagih_id = 1;
                     if (intval($total_bayar) > 0) {
                         $model_post_pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
-                        $tanggal_pembayaran = date('Y-m-d H:i:s');
-                    } else {
-                        $tanggal_pembayaran = NULL;
                     }
                     $model_post_pembayaran->tanggal_masuk = $tanggalmasuk;
                     $model_post_pembayaran->tanggal_keluar = $tenggatwaktu;
-                    $model_post_pembayaran->penyewa_id = $model_pembayaran->penyewa_id;
+                    // $model_post_pembayaran->penyewa_id = $model_pembayaran->penyewa_id;
                     $model_post_pembayaran->mitra_id = $model_pembayaran->mitra_id;
                     $model_post_pembayaran->lokasi_id = $model_pembayaran->lokasi_id;
                     $model_post_pembayaran->tipekamar_id = $model_pembayaran->tipekamar_id;
@@ -1187,31 +1011,13 @@ class SewaController extends Controller
                     $model_post_pembayaran->operator_id = auth()->user()->id;
                     $post = $model_post_pembayaran->save();
 
-                    // server
-                    DB::connection("mysqldua")->table("pembayarans")->insert([
-                        'tagih_id' => 1,
-                        'tanggal_pembayaran' => $tanggal_pembayaran,
-                        'tanggal_masuk' => $tanggalmasuk,
-                        'tanggal_keluar' => $tenggatwaktu,
-                        'penyewa_id' => $model_pembayaran->penyewa_id,
-                        'mitra_id' => $model_pembayaran->mitra_id,
-                        'lokasi_id' => $model_pembayaran->lokasi_id,
-                        'tipekamar_id' => $model_pembayaran->tipekamar_id,
-                        'tipekamar' => Tipekamar::where('id', $model_pembayaran->tipekamar_id)->first()->tipekamar,
-                        'jenissewa' => $jenissewa,
-                        'jumlah_pembayaran' => intval($jumlah_pembayaran) + intval($potongan_harga),
-                        'diskon' => $diskon,
-                        'potongan_harga' => intval($potongan_harga),
-                        'total_bayar' => $total_bayar,
-                        'kurang_bayar' => intval($jumlah_pembayaran) - intval($total_bayar),
-                        'status_pembayaran' => $status_pembayaran,
-                        'status' => 1,
-                        'operator_id' => auth()->user()->id,
-                        'created_at' => date("Y-m-d H:i:s"),
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
                     if ($post) {
+                        // pembayaran detail
+                        $pembayarandetail = new Pembayarandetail();
+                        $pembayarandetail->pembayaran_id = $model_post_pembayaran->id;
+                        $pembayarandetail->penyewa_id = $model_pembayaran->penyewa_id;
+                        $pembayarandetail->save();
+
                         if (intval($total_bayar) > 0) {
                             // Generate no transaksi
                             $tahun = date('Y');
@@ -1236,29 +1042,15 @@ class SewaController extends Controller
                             $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
 
                             $transaksi = new Transaksi();
+                            $transaksi->pembayaran_id = $model_post_pembayaran->id;
                             $transaksi->no_transaksi = $no_transaksi;
                             $transaksi->tagih_id = 1;
-                            $transaksi->pembayaran_id = $model_post_pembayaran->id;
                             $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
                             $transaksi->jumlah_uang = $total_bayar;
                             $transaksi->metode_pembayaran = $metode_pembayaran;
                             $transaksi->tipe = "pemasukan";
                             $transaksi->operator_id = auth()->user()->id;
                             $transaksi->save();
-
-                            // server
-                            DB::connection("mysqldua")->table("transaksis")->insert([
-                                'no_transaksi' => $no_transaksi,
-                                'tagih_id' => 1,
-                                'pembayaran_id' => $model_post_pembayaran->id,
-                                'tanggal_transaksi' => date('Y-m-d H:i:s'),
-                                'jumlah_uang' => $total_bayar,
-                                'metode_pembayaran' => $metode_pembayaran,
-                                'tipe' => "pemasukan",
-                                'operator_id' => auth()->user()->id,
-                                'created_at' => date("Y-m-d H:i:s"),
-                                'updated_at' => date("Y-m-d H:i:s"),
-                            ]);
                         }
 
                         Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
@@ -1267,81 +1059,39 @@ class SewaController extends Controller
                             'updated_at' => date("Y-m-d H:i:s"),
                         ]);
 
-                        // server
-                        DB::connection("mysqldua")->table("lokasis")->where('id', $model_pembayaran->lokasi_id)->update([
-                            'status' => $status_kamar,
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
+                        // // denda checkout
+                        // $givenDateTime = Carbon::create($model_pembayaran->tanggal_keluar);
 
+                        // // Ambil waktu sekarang
+                        // $now = Carbon::now();
 
-                        // denda checkout
-                        $givenDateTime = Carbon::create($model_pembayaran->tanggal_keluar);
+                        // // Tentukan waktu batasan (15:00 pada tanggal yang sama)
+                        // $limitTime = $givenDateTime->copy()->setHour(15)->setMinute(0)->setSecond(0);
 
-                        // Ambil waktu sekarang
-                        $now = Carbon::now();
-
-                        // Tentukan waktu batasan (15:00 pada tanggal yang sama)
-                        $limitTime = $givenDateTime->copy()->setHour(15)->setMinute(0)->setSecond(0);
-
-                        // Hitung pembayaran berdasarkan waktu sekarang dan waktu batasan
-                        if ($now->greaterThanOrEqualTo($givenDateTime) && $now->greaterThanOrEqualTo($limitTime)) {
-                            $model_denda_checkout = new Denda();
-                            $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
-                            $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
-                            $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
-                            $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
-                            $model_denda_checkout->tagih_id = 3;
-                            $model_denda_checkout->jumlah_uang = 100000;
-                            $model_denda_checkout->operator_id = auth()->user()->id;
-                            $model_denda_checkout->save();
-
-                            // server
-                            DB::connection("mysqldua")->table("dendas")->insert([
-                                'tanggal_denda' => date('Y-m-d H:i:s'),
-                                'pembayaran_id' => $model_pembayaran->id,
-                                'penyewa_id' => $model_pembayaran->penyewa_id,
-                                'lokasi_id' => $model_pembayaran->lokasi_id,
-                                'tagih_id' => 3,
-                                'jumlah_uang' => 100000,
-                                'operator_id' => auth()->user()->id,
-                                'created_at' => date("Y-m-d H:i:s"),
-                                'updated_at' => date("Y-m-d H:i:s"),
-                            ]);
-                        } elseif ($now->greaterThanOrEqualTo($givenDateTime) && $now->lessThan($limitTime)) {
-                            $model_denda_checkout = new Denda();
-                            $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
-                            $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
-                            $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
-                            $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
-                            $model_denda_checkout->tagih_id = 3;
-                            $model_denda_checkout->jumlah_uang = 50000;
-                            $model_denda_checkout->operator_id = auth()->user()->id;
-                            $model_denda_checkout->save();
-
-                            // server
-                            DB::connection("mysqldua")->table("dendas")->insert([
-                                'tanggal_denda' => date('Y-m-d H:i:s'),
-                                'pembayaran_id' => $model_pembayaran->id,
-                                'penyewa_id' => $model_pembayaran->penyewa_id,
-                                'lokasi_id' => $model_pembayaran->lokasi_id,
-                                'tagih_id' => 3,
-                                'jumlah_uang' => 50000,
-                                'operator_id' => auth()->user()->id,
-                                'created_at' => date("Y-m-d H:i:s"),
-                                'updated_at' => date("Y-m-d H:i:s"),
-                            ]);
-                        }
+                        // // Hitung pembayaran berdasarkan waktu sekarang dan waktu batasan
+                        // if ($now->greaterThanOrEqualTo($givenDateTime) && $now->greaterThanOrEqualTo($limitTime)) {
+                        //     $model_denda_checkout = new Denda();
+                        //     $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
+                        //     $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
+                        //     $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
+                        //     $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
+                        //     $model_denda_checkout->tagih_id = 3;
+                        //     $model_denda_checkout->jumlah_uang = 100000;
+                        //     $model_denda_checkout->operator_id = auth()->user()->id;
+                        //     $model_denda_checkout->save();
+                        // } elseif ($now->greaterThanOrEqualTo($givenDateTime) && $now->lessThan($limitTime)) {
+                        //     $model_denda_checkout = new Denda();
+                        //     $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
+                        //     $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
+                        //     $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
+                        //     $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
+                        //     $model_denda_checkout->tagih_id = 3;
+                        //     $model_denda_checkout->jumlah_uang = 50000;
+                        //     $model_denda_checkout->operator_id = auth()->user()->id;
+                        //     $model_denda_checkout->save();
+                        // }
 
                         Pembayaran::where('id', $model_pembayaran->id)->update([
-                            'status' => 0,
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
-
-
-                        // server
-                        DB::connection("mysqldua")->table("pembayarans")->where('id', $model_pembayaran->id)->update([
                             'status' => 0,
                             'operator_id' => auth()->user()->id,
                             'updated_at' => date("Y-m-d H:i:s"),

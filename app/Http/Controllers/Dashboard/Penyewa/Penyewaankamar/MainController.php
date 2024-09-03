@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Denda;
 use App\Models\Lokasi;
 use App\Models\Pembayaran;
+use App\Models\Pembayarandetail;
 use App\Models\Penyewa;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -46,11 +47,11 @@ class MainController extends Controller
             ->when($status_pembayaran !== "Pilih Status Pembayaran", function ($query) use ($status_pembayaran) {
                 $query->where('status_pembayaran', $status_pembayaran);
             })
-            ->where('tagih_id', 1)
             ->orderBy('tanggal_masuk', 'DESC')
             ->get();
 
         $output = [];
+        $nomor = 1;
         foreach ($penyewaankamar as $row) {
             // status pembayaran
             if ($row->status_pembayaran == "completed") {
@@ -136,6 +137,13 @@ class MainController extends Controller
 
             $aksi = '
             <div class="d-flex flex-column align-items-center justify-content-center gap-1">
+                <a href="' . route('penyewaankamar.detail', $row->id) . '" class="btn btn-info text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                    </svg>    
+                    Detail
+                </a>
                 ' . $bayar . '
                 ' . $cetakpembayaran . '
                 ' . $pulangkantamu . '
@@ -144,10 +152,9 @@ class MainController extends Controller
             ';
 
             $output[] = [
-                'aksi' => $aksi,
+                'nomor' => "<strong>" . $nomor++ . "</strong>",
                 'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("Y-m-d H:i:s"),
                 'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("Y-m-d H:i:s"),
-                'nama_penyewa' => $row->penyewas->namalengkap,
                 'nomor_kamar' => $row->lokasis->nomor_kamar,
                 'tipe_kamar' => $row->tipekamar,
                 'mitra' => $row->mitras->mitra,
@@ -158,13 +165,34 @@ class MainController extends Controller
                 'total_bayar' => $row->total_bayar ? "RP. " . number_format($row->total_bayar, '0', '.', '.') : "RP. 0",
                 'tanggal_pembayaran' => $row->tanggal_pembayaran ? Carbon::parse($row->tanggal_pembayaran)->format("Y-m-d H:i:s") : "-",
                 'kurang_bayar' => $row->kurang_bayar ? "RP. " . number_format($row->kurang_bayar, '0', '.', '.') : "RP. 0",
+                'jumlah_penyewa' => $row->jumlah_penyewa . ' Orang',
                 'status_pembayaran' => $status_pembayaran,
+                'aksi' => $aksi,
             ];
         }
 
         return response()->json([
             'data' => $output
         ]);
+    }
+    public function detail($id)
+    {
+        if (!Pembayaran::where('id', $id)->exists()) {
+            abort(404);
+        }
+
+        $pembayaran = Pembayaran::findorfail($id);
+        $pembayaran_detail = Pembayarandetail::where('pembayaran_id', $pembayaran->id)->get();
+
+        $kamar = Lokasi::where('id', $pembayaran->lokasi_id)->first();
+        $data = [
+            'judul' => 'Detail Penyewa',
+            'pembayaran' => $pembayaran,
+            'pembayaran_detail' => $pembayaran_detail,
+            'kamar' => $kamar,
+        ];
+
+        return view('contents.dashboard.penyewa.penyewaankamar.detailpenyewa', $data);
     }
     public function cetakkwitansi($id)
     {
@@ -278,22 +306,8 @@ class MainController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
-                    // server
-                    DB::connection("mysqldua")->table("pembayarans")->where('id', $model_pembayaran->id)->update([
-                        'status' => 0,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
                     if (Pembayaran::where('penyewa_id', $model_pembayaran->penyewa_id)->where('status', 1)->count() < 1) {
                         Penyewa::where('id', $model_pembayaran->penyewa_id)->update([
-                            'status' => 0,
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
-
-                        // server
-                        DB::connection("mysqldua")->table("penyewas")->where('id', $model_pembayaran->penyewa_id)->update([
                             'status' => 0,
                             'operator_id' => auth()->user()->id,
                             'updated_at' => date("Y-m-d H:i:s"),
@@ -302,13 +316,6 @@ class MainController extends Controller
 
                     // kosongkan kamar
                     Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
-                        'status' => 0,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
-                    // server
-                    DB::connection("mysqldua")->table("lokasis")->where('id', $model_pembayaran->lokasi_id)->update([
                         'status' => 0,
                         'operator_id' => auth()->user()->id,
                         'updated_at' => date("Y-m-d H:i:s"),
@@ -334,19 +341,6 @@ class MainController extends Controller
                         $model_denda_checkout->jumlah_uang = 100000;
                         $model_denda_checkout->operator_id = auth()->user()->id;
                         $model_denda_checkout->save();
-
-                        // server
-                        DB::connection("mysqldua")->table("dendas")->insert([
-                            'tanggal_denda' => date('Y-m-d H:i:s'),
-                            'pembayaran_id' => $model_pembayaran->id,
-                            'penyewa_id' => $model_pembayaran->penyewa_id,
-                            'lokasi_id' => $model_pembayaran->lokasi_id,
-                            'tagih_id' => 3,
-                            'jumlah_uang' => 100000,
-                            'operator_id' => auth()->user()->id,
-                            'created_at' => date("Y-m-d H:i:s"),
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
                     } elseif ($now->greaterThanOrEqualTo($givenDateTime) && $now->lessThan($limitTime)) {
                         $model_denda_checkout = new Denda();
                         $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
@@ -357,19 +351,6 @@ class MainController extends Controller
                         $model_denda_checkout->jumlah_uang = 50000;
                         $model_denda_checkout->operator_id = auth()->user()->id;
                         $model_denda_checkout->save();
-
-                        // server
-                        DB::connection("mysqldua")->table("dendas")->insert([
-                            'tanggal_denda' => date('Y-m-d H:i:s'),
-                            'pembayaran_id' => $model_pembayaran->id,
-                            'penyewa_id' => $model_pembayaran->penyewa_id,
-                            'lokasi_id' => $model_pembayaran->lokasi_id,
-                            'tagih_id' => 3,
-                            'jumlah_uang' => 50000,
-                            'operator_id' => auth()->user()->id,
-                            'created_at' => date("Y-m-d H:i:s"),
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
                     }
 
                     $response = [
@@ -382,7 +363,7 @@ class MainController extends Controller
                 } catch (Exception $e) {
                     $response = [
                         'status' => 500,
-                        'message' => $e->getMessage(),
+                        'message' => 'error',
                     ];
 
                     DB::rollBack();

@@ -55,14 +55,6 @@ class MainController extends Controller
                     'operator_id' => auth()->user()->id
                 ]);
 
-                // server
-                DB::connection("mysqldua")->table("roles")->insert([
-                    'role' => Str::title($role),
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
                 $response = [
                     'status' => 200,
                     'message' => 'success',

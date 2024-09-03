@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Lantai;
 use App\Models\Lokasi;
+use App\Models\Pembayaran;
+use App\Models\Pembayarandetail;
 use App\Models\Penyewa;
 use App\Models\Transaksi;
 use Carbon\Carbon;
@@ -73,14 +75,6 @@ class MainController extends Controller
                     'operator_id' => auth()->user()->id
                 ]);
 
-                // server
-                DB::connection("mysqldua")->table("lantais")->insert([
-                    'namalantai' => "Lantai " . Lantai::all()->count() + 1,
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
                 $response = [
                     'status' => 200,
                     'message' => 'success',
@@ -99,28 +93,47 @@ class MainController extends Controller
             }
         }
     }
-    public function detailpenyewa(Penyewa $penyewa)
+    public function detailpenyewa($id)
     {
-        if ($penyewa->status == 0) {
+        if (!Pembayaran::where('id', $id)->exists()) {
             abort(404);
         }
+        
+        $pembayaran = Pembayaran::findorfail($id);
+        $pembayaran_detail = Pembayarandetail::where('pembayaran_id', $pembayaran->id)->get();
 
-        if ($penyewa->transaksisewa_kamars) {
-            $kamar = Lokasi::where('id', $penyewa->transaksisewa_kamars->lokasi_id)->first();
-            if ($kamar->status == 1 || $kamar->status == 2) {
-                $data = [
-                    'judul' => 'Detail Penyewa',
-                    'penyewa' => $penyewa,
-                    'kamar' => $kamar,
-                    // 'tenggatwaktu' => $tenggatwaktu
-                ];
+        $kamar = Lokasi::where('id', $pembayaran->lokasi_id)->first();
+        $data = [
+            'judul' => 'Detail Penyewa',
+            'pembayaran' => $pembayaran,
+            'pembayaran_detail' => $pembayaran_detail,
+            'kamar' => $kamar,
+        ];
 
-                return view('contents.dashboard.penyewa.penyewaankamar.detailpenyewa', $data);
-            } else {
-                abort(404);
-            }
-        } else {
-            abort(404);
-        }
+        return view('contents.dashboard.penyewa.penyewaankamar.detailpenyewa', $data);
     }
+    // public function detailpenyewa(Penyewa $penyewa)
+    // {
+    //     if ($penyewa->status == 0) {
+    //         abort(404);
+    //     }
+
+    //     if ($penyewa->transaksisewa_kamars) {
+    //         $kamar = Lokasi::where('id', $penyewa->transaksisewa_kamars->lokasi_id)->first();
+    //         if ($kamar->status == 1 || $kamar->status == 2) {
+    //             $data = [
+    //                 'judul' => 'Detail Penyewa',
+    //                 'penyewa' => $penyewa,
+    //                 'kamar' => $kamar,
+    //                 // 'tenggatwaktu' => $tenggatwaktu
+    //             ];
+
+    //             return view('contents.dashboard.penyewa.penyewaankamar.detailpenyewa', $data);
+    //         } else {
+    //             abort(404);
+    //         }
+    //     } else {
+    //         abort(404);
+    //     }
+    // }
 }

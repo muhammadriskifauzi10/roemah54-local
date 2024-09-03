@@ -263,29 +263,12 @@ class MainController extends Controller
                     'updated_at' => date("Y-m-d H:i:s"),
                 ]);
 
-                // server
-                DB::connection("mysqldua")->table("baranginventaris")->where('id', (int)$baranginventaris)->update([
-                    'jumlah_terpakai' => intval($model_baranginventaris->jumlah_terpakai) + intval($jumlah),
-                    'operator_id' => auth()->user()->id,
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
                 $model_penggunaanbaranginventaris = new Penggunaanbaranginventaris();
                 $model_penggunaanbaranginventaris->baranginventaris_id = $baranginventaris;
                 $model_penggunaanbaranginventaris->lokasi_id = $lokasi;
                 $model_penggunaanbaranginventaris->jumlah = intval($jumlah);
                 $model_penggunaanbaranginventaris->operator_id = auth()->user()->id;
                 $post = $model_penggunaanbaranginventaris->save();
-
-                // server
-                DB::connection("mysqldua")->table("penggunaanbaranginventaris")->insert([
-                    'baranginventaris_id' => $baranginventaris,
-                    'lokasi_id' => $lokasi,
-                    'jumlah' => intval($jumlah),
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
 
                 if ($post) {
 
@@ -306,14 +289,6 @@ class MainController extends Controller
                             'label' => Str::lower($parts[0]),
                         ]);
 
-                        // server
-                        DB::connection("mysqldua")->table("penggunaanbaranginventaris")->where('id', (int)$model_penggunaanbaranginventaris->id)->update([
-                            'no_barcode' => $no_barcode,
-                            'label' => Str::lower($parts[0]),
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
-
                         $logbaranginventaris->no_barcode = $no_barcode;
                         $logbaranginventaris->label = Str::lower($parts[0]);
 
@@ -332,23 +307,6 @@ class MainController extends Controller
                     $logbaranginventaris->log = 3;
                     $logbaranginventaris->operator_id = auth()->user()->id;
                     $logbaranginventaris->save();
-
-                    // server
-                    DB::connection("mysqldua")->table("logbaranginventaris")->insert([
-                        'tanggal_log' => date('Y-m-d H:i:s'),
-                        'baranginventaris_id' => $model_baranginventaris->id,
-                        'no_barcode' => $server_no_barcode,
-                        'label' => $server_label,
-                        'tanggal_masuk' => $model_baranginventaris->tanggal_masuk,
-                        'kategoribaranginventaris_id' => $model_baranginventaris->kategoribaranginventaris_id,
-                        'nama' => $model_baranginventaris->nama,
-                        'jumlah' => intval($jumlah),
-                        'asallokasi_id' => $lokasi,
-                        'log' => 3,
-                        'operator_id' => auth()->user()->id,
-                        'created_at' => date("Y-m-d H:i:s"),
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
 
                     $response = [
                         'status' => 200,
@@ -495,13 +453,6 @@ class MainController extends Controller
                     'updated_at' => date("Y-m-d H:i:s"),
                 ]);
 
-                // server
-                DB::connection("mysqldua")->table("penggunaanbaranginventaris")->where('id', (int)$penggunaanbarang_id)->update([
-                    'lokasi_id' => $tujuanmutasi,
-                    'operator_id' => auth()->user()->id,
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
                 if ($update) {
                     // log
                     $logbaranginventaris = new Logbaranginventaris();
@@ -517,13 +468,6 @@ class MainController extends Controller
                         $no_barcode = $parts[0] . '-' . $model_penggunaanbaranginventaris->label . '-' . 'lokasi' . $tujuanmutasi;
 
                         Penggunaanbaranginventaris::where('id', (int)$model_penggunaanbaranginventaris->id)->update([
-                            'no_barcode' => $no_barcode,
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
-
-                        // server
-                        DB::connection("mysqldua")->table("penggunaanbaranginventaris")->where('id', (int)$model_penggunaanbaranginventaris->id)->update([
                             'no_barcode' => $no_barcode,
                             'operator_id' => auth()->user()->id,
                             'updated_at' => date("Y-m-d H:i:s"),
@@ -547,23 +491,6 @@ class MainController extends Controller
                     $logbaranginventaris->log = 4;
                     $logbaranginventaris->operator_id = auth()->user()->id;
                     $logbaranginventaris->save();
-
-                    // server
-                    DB::connection("mysqldua")->table("logbaranginventaris")->insert([
-                        'tanggal_log' => date('Y-m-d H:i:s'),
-                        'baranginventaris_id' => $model_baranginventaris->id,
-                        'no_barcode' => $server_no_barcode,
-                        'label' => $server_label,
-                        'kategoribaranginventaris_id' => $model_baranginventaris->kategoribaranginventaris_id,
-                        'nama' => $model_baranginventaris->nama,
-                        'jumlah' => $model_penggunaanbaranginventaris->jumlah,
-                        'asallokasi_id' => $model_penggunaanbaranginventaris->lokasi_id,
-                        'tujuanlokasi_id' => $tujuanmutasi,
-                        'log' => 4,
-                        'operator_id' => auth()->user()->id,
-                        'created_at' => date("Y-m-d H:i:s"),
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
 
                     $response = [
                         'status' => 200,
@@ -684,18 +611,8 @@ class MainController extends Controller
                     'updated_at' => date("Y-m-d H:i:s"),
                 ]);
 
-                // server
-                DB::connection("mysqldua")->table("baranginventaris")->where('id', $model_baranginventaris->id)->update([
-                    'jumlah_terpakai' => 0,
-                    'operator_id' => auth()->user()->id,
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
                 // penggunaan barang inventaris
                 Penggunaanbaranginventaris::where('id', $model_penggunaanbaranginventaris->id)->delete();
-
-                // server
-                DB::connection("mysqldua")->table("penggunaanbaranginventaris")->where('id', $model_penggunaanbaranginventaris->id)->delete();
 
                 // log
                 $logbaranginventaris = new Logbaranginventaris();
@@ -720,22 +637,6 @@ class MainController extends Controller
                 $logbaranginventaris->log = 5;
                 $logbaranginventaris->operator_id = auth()->user()->id;
                 $logbaranginventaris->save();
-
-                // server
-                DB::connection("mysqldua")->table("logbaranginventaris")->insert([
-                    'tanggal_log' => date('Y-m-d H:i:s'),
-                    'baranginventaris_id' => $model_baranginventaris->id,
-                    'no_barcode' => $server_no_barcode,
-                    'label' => $server_label,
-                    'kategoribaranginventaris_id' => $model_baranginventaris->kategoribaranginventaris_id,
-                    'nama' => $model_baranginventaris->nama,
-                    'jumlah' => $model_penggunaanbaranginventaris->jumlah,
-                    'asallokasi_id' => $model_penggunaanbaranginventaris->lokasi_id,
-                    'log' => 5,
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
 
                 $response = [
                     'status' => 200,

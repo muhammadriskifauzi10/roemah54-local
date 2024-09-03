@@ -21,11 +21,13 @@ class KamarController extends Controller
 
         return view('contents.dashboard.kamar.main', $data);
     }
+    // Ajax Request
     public function datatablekamar()
     {
         $kamar = Lokasi::where('jenisruangan_id', 2)->orderby('lantai_id', 'ASC')->get();
 
         $output = [];
+        $nomor = 1;
         foreach ($kamar as $row) {
             if ($row->status == 1) {
                 $status = "<strong class='badge bg-success fw-bold'>Terisi</strong>";
@@ -55,12 +57,13 @@ class KamarController extends Controller
             ';
 
             $output[] = [
-                'aksi' => $aksi,
+                'nomor' => "<strong>" . $nomor++ . "</strong>",
                 'lantai' => $row->lantais->namalantai,
                 'nomor_kamar' => $row->nomor_kamar,
                 'tipe_kamar' => $row->tipekamars->tipekamar,
                 'token_listrik' => $row->token_listrik,
                 'status' => $status,
+                'aksi' => $aksi,
             ];
         }
 
@@ -142,6 +145,78 @@ class KamarController extends Controller
 
         return response()->json($response);
     }
+    public function create()
+    {
+        if (request()->ajax()) {
+            try {
+                $lantai = htmlspecialchars(request()->input('lantai'), ENT_QUOTES, 'UTF-8');
+                $tipekamar = htmlspecialchars(request()->input('tipekamar'), ENT_QUOTES, 'UTF-8');
+                $token_listrik = htmlspecialchars(request()->input('token_listrik'), ENT_QUOTES, 'UTF-8');
+
+                $validator = Validator::make(request()->all(), [
+                    'lantai' => [
+                        function ($attribute, $value, $fail) {
+                            if (!Lantai::where('id', (int)$value)->exists()) {
+                                $fail('Kolom ini wajib dipilih');
+                            }
+                        },
+                    ],
+                    'tipekamar' => [
+                        function ($attribute, $value, $fail) {
+                            if (!Tipekamar::where('id', (int)$value)->exists()) {
+                                $fail('Kolom ini wajib dipilih');
+                            }
+                        },
+                    ],
+                    'token_listrik' => ['required', 'unique:lokasis,token_listrik']
+                ], [
+                    'token_listrik.required' => 'Kolom ini wajib diisi',
+                    'token_listrik.unique' => 'Kolom ini sudah terdaftar',
+                ]);
+
+                if ($validator->fails()) {
+                    $response = [
+                        'status' => 400,
+                        'message' => 'opps',
+                        'dataError' => $validator->errors()
+                    ];
+
+                    return response()->json($response);
+                }
+
+                if (Lokasi::where('jenisruangan_id', 2)->get()->count() > 0) {
+                    $nomor_kamar =  Lokasi::where('jenisruangan_id', 2)->latest()->first()->nomor_kamar + 1;
+                } else {
+                    $nomor_kamar = 1;
+                }
+
+                Lokasi::create([
+                    'jenisruangan_id' => 2,
+                    'lantai_id' => $lantai,
+                    'nomor_kamar' => $nomor_kamar,
+                    'tipekamar_id' => $tipekamar,
+                    'token_listrik' => $token_listrik,
+                    'operator_id' => auth()->user()->id
+                ]);
+
+                $response = [
+                    'status' => 200,
+                    'message' => 'success',
+                ];
+
+                DB::commit();
+                return response()->json($response);
+            } catch (Exception $e) {
+                $response = [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ];
+
+                DB::rollBack();
+                return response()->json($response);
+            }
+        }
+    }
     public function getmodaleditkamar()
     {
         if (request()->ajax()) {
@@ -203,89 +278,6 @@ class KamarController extends Controller
 
         return response()->json($response);
     }
-    public function create()
-    {
-        if (request()->ajax()) {
-            try {
-                $lantai = htmlspecialchars(request()->input('lantai'), ENT_QUOTES, 'UTF-8');
-                $tipekamar = htmlspecialchars(request()->input('tipekamar'), ENT_QUOTES, 'UTF-8');
-                $token_listrik = htmlspecialchars(request()->input('token_listrik'), ENT_QUOTES, 'UTF-8');
-
-                $validator = Validator::make(request()->all(), [
-                    'lantai' => [
-                        function ($attribute, $value, $fail) {
-                            if (!Lantai::where('id', (int)$value)->exists()) {
-                                $fail('Kolom ini wajib dipilih');
-                            }
-                        },
-                    ],
-                    'tipekamar' => [
-                        function ($attribute, $value, $fail) {
-                            if (!Tipekamar::where('id', (int)$value)->exists()) {
-                                $fail('Kolom ini wajib dipilih');
-                            }
-                        },
-                    ],
-                    'token_listrik' => ['required', 'unique:lokasis,token_listrik']
-                ], [
-                    'token_listrik.required' => 'Kolom ini wajib diisi',
-                    'token_listrik.unique' => 'Kolom ini sudah terdaftar',
-                ]);
-
-                if ($validator->fails()) {
-                    $response = [
-                        'status' => 400,
-                        'message' => 'opps',
-                        'dataError' => $validator->errors()
-                    ];
-
-                    return response()->json($response);
-                }
-
-                if (Lokasi::where('jenisruangan_id', 2)->get()->count() > 0) {
-                    $nomor_kamar =  Lokasi::where('jenisruangan_id', 2)->latest()->first()->nomor_kamar + 1;
-                } else {
-                    $nomor_kamar = 1;
-                }
-
-                Lokasi::create([
-                    'jenisruangan_id' => 2,
-                    'lantai_id' => $lantai,
-                    'nomor_kamar' => $nomor_kamar,
-                    'tipekamar_id' => $tipekamar,
-                    'token_listrik' => $token_listrik,
-                    'operator_id' => auth()->user()->id
-                ]);
-
-                // server
-                DB::connection("mysqldua")->table("lokasis")->insert([
-                    'lantai_id' => $lantai,
-                    'nomor_kamar' => $nomor_kamar,
-                    'tipekamar_id' => $tipekamar,
-                    'token_listrik' => $token_listrik,
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
-                $response = [
-                    'status' => 200,
-                    'message' => 'success',
-                ];
-
-                DB::commit();
-                return response()->json($response);
-            } catch (Exception $e) {
-                $response = [
-                    'status' => 500,
-                    'message' => $e->getMessage(),
-                ];
-
-                DB::rollBack();
-                return response()->json($response);
-            }
-        }
-    }
     public function edittipekamar()
     {
         if (request()->ajax()) {
@@ -328,14 +320,6 @@ class KamarController extends Controller
                     }
 
                     Lokasi::where('id', $kamar_id)->update([
-                        'tipekamar_id' => $tipekamar_id,
-                        'token_listrik' => $token_listrik,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
-                    // server
-                    DB::connection("mysqldua")->table("lokasis")->where('id', $kamar_id)->update([
                         'tipekamar_id' => $tipekamar_id,
                         'token_listrik' => $token_listrik,
                         'operator_id' => auth()->user()->id,

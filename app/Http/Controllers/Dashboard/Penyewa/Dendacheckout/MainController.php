@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard\Penyewa\Dendacheckout;
 
 use App\Http\Controllers\Controller;
 use App\Models\Denda;
+use App\Models\Pembayaran;
 use App\Models\Transaksi;
 use Carbon\Carbon;
 use Exception;
@@ -178,13 +179,6 @@ class MainController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
-                    // server
-                    DB::connection("mysqldua")->table("dendas")->where('id', $model_denda->id)->update([
-                        'status_pembayaran' => 1,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
-
                     // Generate no transaksi
                     $tahun = date('Y');
                     $bulan = date('m');
@@ -217,20 +211,6 @@ class MainController extends Controller
                     $transaksi->tipe = "pemasukan";
                     $transaksi->operator_id = auth()->user()->id;
                     $transaksi->save();
-
-                    // server
-                    DB::connection("mysqldua")->table("transaksis")->insert([
-                        'no_transaksi' => $no_transaksi,
-                        'tagih_id' => 3,
-                        'pembayaran_id' => $pembayaran_id,
-                        'tanggal_transaksi' => date('Y-m-d H:i:s'),
-                        'jumlah_uang' => intval($model_denda->jumlah_uang),
-                        'metode_pembayaran' => $metode_pembayaran,
-                        'tipe' => "pemasukan",
-                        'operator_id' => auth()->user()->id,
-                        'created_at' => date("Y-m-d H:i:s"),
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
 
                     $response = [
                         'status' => 200,

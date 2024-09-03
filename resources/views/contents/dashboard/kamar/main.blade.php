@@ -30,12 +30,13 @@
                         <table class="table table-light table-hover border-0 m-0" id="datatableKamar">
                             <thead>
                                 <tr>
-                                    <th scope="col" width="150"></th>
+                                    <th scope="col">No</th>
                                     <th scope="col">Lantai</th>
                                     <th scope="col">Nomor Kamar</th>
                                     <th scope="col">Tipe Kamar</th>
                                     <th scope="col">Token Listrik</th>
                                     <th scope="col">Status</th>
+                                    <th scope="col" width="150"></th>
                                 </tr>
                             </thead>
                         </table>
@@ -60,7 +61,7 @@
                     dataType: "json",
                 },
                 columns: [{
-                        data: "aksi",
+                        data: "nomor",
                     },
                     {
                         data: "lantai",
@@ -76,6 +77,9 @@
                     },
                     {
                         data: "status",
+                    },
+                    {
+                        data: "aksi",
                     },
                 ],
                 // "order": [

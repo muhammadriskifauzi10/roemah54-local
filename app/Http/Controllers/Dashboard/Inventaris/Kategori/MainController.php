@@ -57,14 +57,6 @@ class MainController extends Controller
                 $kategoribaranginventaris->operator_id = auth()->user()->id;
                 $kategoribaranginventaris->save();
 
-                // server
-                DB::connection("mysqldua")->table("kategoribaranginventaris")->insert([
-                    'nama' => Str::title($kategori),
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
                 $response = [
                     'status' => 200,
                     'message' => 'success',

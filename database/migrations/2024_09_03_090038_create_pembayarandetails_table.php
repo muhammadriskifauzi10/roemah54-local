@@ -11,17 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dendas', function (Blueprint $table) {
+        Schema::create('pembayarandetails', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pembayaran_id')->nullable();
-            $table->dateTime('tanggal_denda')->nullable();
             $table->foreignId('penyewa_id')->nullable();
-            $table->foreignId('lokasi_id')->nullable();
-            $table->foreignId('tagih_id')->nullable();
-            $table->decimal('jumlah_uang', 15, 2)->nullable();
-            $table->text('keterangan')->nullable();
-            $table->integer('operator_id');
-            $table->integer('status_pembayaran')->default(2);
             $table->timestamps();
         });
     }
@@ -31,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dendas');
+        Schema::dropIfExists('pembayarandetails');
     }
 };

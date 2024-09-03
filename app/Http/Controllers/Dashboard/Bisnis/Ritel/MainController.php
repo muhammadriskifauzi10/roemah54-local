@@ -150,20 +150,6 @@ class MainController extends Controller
             $model_post_pembayaran->operator_id = auth()->user()->id;
             $model_post_pembayaran->save();
 
-            // server
-            DB::connection("mysqldua")->table("pembayarans")->insert([
-                'tagih_id' => $jenis_ritel,
-                'tanggal_pembayaran' => date('Y-m-d H:i:s'),
-                'penyewa_id' => $model_pembayaran->penyewa_id,
-                'lokasi_id' => $model_pembayaran->lokasi_id,
-                'jumlah_pembayaran' => intval($jumlah_pembayaran),
-                'total_bayar' => intval($jumlah_pembayaran),
-                'status_pembayaran' => 'completed',
-                'operator_id' => auth()->user()->id,
-                'created_at' => date("Y-m-d H:i:s"),
-                'updated_at' => date("Y-m-d H:i:s"),
-            ]);
-
             // ritel
             $model_post_ritel = new Ritel();
             $model_post_ritel->tanggal_ritel = date('Y-m-d H:i:s');
@@ -175,20 +161,6 @@ class MainController extends Controller
             $model_post_ritel->keterangan = $keterangan;
             $model_post_ritel->operator_id = auth()->user()->id;
             $post = $model_post_ritel->save();
-
-            // server
-            DB::connection("mysqldua")->table("ritels")->insert([
-                'tanggal_ritel' => date('Y-m-d H:i:s'),
-                'penyewa_id' => $model_pembayaran->penyewa_id,
-                'lokasi_id' => $model_pembayaran->lokasi_id,
-                'jenis_ritel' => $jenis_ritel,
-                'kiloan' => $kiloan,
-                'jumlah_pembayaran' => intval($jumlah_pembayaran),
-                'keterangan' => $keterangan,
-                'operator_id' => auth()->user()->id,
-                'created_at' => date("Y-m-d H:i:s"),
-                'updated_at' => date("Y-m-d H:i:s"),
-            ]);
 
             if ($post) {
                 // Generate no transaksi
@@ -224,20 +196,6 @@ class MainController extends Controller
                 $model_post_transaksi->tipe = "pemasukan";
                 $model_post_transaksi->operator_id = auth()->user()->id;
                 $model_post_transaksi->save();
-
-                // server
-                DB::connection("mysqldua")->table("transaksis")->insert([
-                    'no_transaksi' => $no_transaksi,
-                    'tagih_id' => $jenis_ritel,
-                    'pembayaran_id' => $model_post_pembayaran->id,
-                    'tanggal_transaksi' => date('Y-m-d H:i:s'),
-                    'jumlah_uang' => intval($jumlah_pembayaran),
-                    'metode_pembayaran' => $metode_pembayaran,
-                    'tipe' => "pemasukan",
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
             }
 
             DB::commit();

@@ -141,21 +141,6 @@ class MainController extends Controller
             $baranginventaris->operator_id = auth()->user()->id;
             $post = $baranginventaris->save();
 
-            // server
-            DB::connection("mysqldua")->table("baranginventaris")->insert([
-                'tanggal_masuk' => $tanggalmasuk_format,
-                'kategoribaranginventaris_id' => $kategori,
-                'nama' => $nama,
-                'deskripsi' => $deskripsi,
-                'harga' => intval($harga),
-                'jumlah' => $jumlah,
-                'total_harga' => intval($total_harga),
-                'satuan' => Str::upper($satuan),
-                'operator_id' => auth()->user()->id,
-                'created_at' => date("Y-m-d H:i:s"),
-                'updated_at' => date("Y-m-d H:i:s"),
-            ]);
-
             if ($post) {
                 // log
                 $logbaranginventaris = new Logbaranginventaris();
@@ -172,24 +157,6 @@ class MainController extends Controller
                 $logbaranginventaris->log = 1;
                 $logbaranginventaris->operator_id = auth()->user()->id;
                 $logbaranginventaris->save();
-
-                // server
-                DB::connection("mysqldua")->table("logbaranginventaris")->insert([
-                    'tanggal_log' => date('Y-m-d H:i:s'),
-                    'baranginventaris_id' => $baranginventaris->id,
-                    'tanggal_masuk' => $tanggalmasuk_format,
-                    'kategoribaranginventaris_id' => $kategori,
-                    'nama' => $nama,
-                    'deskripsi' => $deskripsi,
-                    'harga' => intval($harga),
-                    'jumlah' => $jumlah,
-                    'total_harga' => intval($total_harga),
-                    'satuan' => Str::upper($satuan),
-                    'log' => 1,
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
 
                 DB::commit();
                 return redirect()->route('inventaris.barang')->with('messageSuccess', 'Barang Inventaris berhasil ditambahkan!');
@@ -297,20 +264,6 @@ class MainController extends Controller
                 'operator_id' => auth()->user()->id,
             ]);
 
-            // server
-            DB::connection("mysqldua")->table("baranginventaris")->where('id', $id)->update([
-                'tanggal_masuk' => $tanggalmasuk_format,
-                'kategoribaranginventaris_id' => $kategori,
-                'nama' => $nama,
-                'deskripsi' => $deskripsi,
-                'harga' => intval($harga),
-                'jumlah' => $jumlahbaru,
-                'total_harga' => intval($total_harga),
-                'satuan' => Str::upper($satuan),
-                'operator_id' => auth()->user()->id,
-                'updated_at' => date("Y-m-d H:i:s"),
-            ]);
-
             if ($update) {
                 // log
                 $logbaranginventaris = new Logbaranginventaris();
@@ -327,25 +280,6 @@ class MainController extends Controller
                 $logbaranginventaris->log = 2;
                 $logbaranginventaris->operator_id = auth()->user()->id;
                 $logbaranginventaris->save();
-
-                // server
-                DB::connection("mysqldua")->table("logbaranginventaris")->insert([
-                    'tanggal_log' => date('Y-m-d H:i:s'),
-                    'baranginventaris_id' => $id,
-                    'tanggal_masuk' => $tanggalmasuk_format,
-                    'kategoribaranginventaris_id' => $kategori,
-                    'nama' => $nama,
-                    'deskripsi' => $deskripsi,
-                    'harga' => intval($harga),
-                    'jumlah' => $jumlah,
-                    'total_harga' => intval($total_harga),
-                    'satuan' => Str::upper($satuan),
-                    'log' => 2,
-                    'operator_id' => auth()->user()->id,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-
 
                 DB::commit();
                 return redirect()->route('inventaris.barang')->with('messageSuccess', 'Barang Inventaris berhasil ditambahkan!');
