@@ -348,6 +348,7 @@ class SewaController extends Controller
                 try {
                     DB::beginTransaction();
                     $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
+                    // $model_pembayaran_detail = Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->first();
 
                     Pembayaran::where('id', $model_pembayaran->id)->update([
                         'status_pembayaran' => 'failed',
@@ -356,12 +357,18 @@ class SewaController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
-                    if (Pembayaran::where('penyewa_id', $model_pembayaran->penyewa_id)->where('status', 1)->count() < 1) {
-                        Penyewa::where('id', $model_pembayaran->penyewa_id)->update([
-                            'status' => 0,
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
+                    Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->update([
+                        'status' => 0
+                    ]);
+
+                    foreach (Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->get() as $row) {
+                        if (Pembayarandetail::where('penyewa_id', $row->penyewa_id)->where('status', 1)->count() < 1) {
+                            Penyewa::where('id', $row->penyewa_id)->update([
+                                'status' => 0,
+                                'operator_id' => auth()->user()->id,
+                                'updated_at' => date("Y-m-d H:i:s"),
+                            ]);
+                        }
                     }
 
                     Lokasi::where('id', $model_pembayaran->lokasi_id)->update([

@@ -23,6 +23,7 @@ use App\Http\Controllers\Dashboard\Tipekamar\MainController as TipekamarMainCont
 use App\Http\Controllers\Dashboard\TransaksiController;
 use App\Models\Pembayaran;
 use App\Models\Pembayarandetail;
+use App\Models\Penyewa;
 use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
@@ -49,6 +50,15 @@ use Illuminate\Support\Facades\Route;
 //         Pembayaran::where('id', $row->id)->update([
 //             'jumlah_penyewa' => 1
 //         ]);
+//     }
+// });
+// Route::get('/t', function () {
+//     foreach (Penyewa::all() as $row) {
+//         if (Pembayarandetail::where('penyewa_id', $row->id)->exists()) {
+//             Pembayarandetail::where('penyewa_id', $row->id)->update([
+//                 'status' => $row->status
+//             ]);
+//         }
 //     }
 // });
 
