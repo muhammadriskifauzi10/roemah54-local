@@ -95,7 +95,7 @@
             </td>
         </tr>
     </table>
- 
+
     <table style="border: 2px solid black; margin-top: 10px;">
         <tr>
             <td colspan="6">
@@ -104,16 +104,30 @@
         </tr>
         <tr>
             <td>
-                <span class="border-bottom-solid">Nama</span> <br>
-                Name
+                <span class="border-bottom-solid">Jumlah Penyewa</span> <br>
+                Number Of Tenants
             </td>
             <td style="text-align: right">
                 :
             </td>
             <td colspan="4">
-                <span class="border-bottom-dashed">{{ ucwords($pembayaran->penyewas->namalengkap) }}</span>
+                <span class="border-bottom-solid">{{ $pembayaran->jumlah_penyewa }} Orang</span>
             </td>
         </tr>
+        @foreach (App\Models\Pembayarandetail::where('pembayaran_id', $pembayaran->id)->get() as $row)
+            <tr>
+                <td>
+                    <span class="border-bottom-solid">Nama</span> <br>
+                    Name
+                </td>
+                <td style="text-align: right">
+                    :
+                </td>
+                <td colspan="4">
+                    <span class="border-bottom-solid">{{ ucwords($row->penyewas->namalengkap) }}</span>
+                </td>
+            </tr>
+        @endforeach
         <tr>
             <td>
                 <span class="border-bottom-solid">Type Kamar</span> <br>
