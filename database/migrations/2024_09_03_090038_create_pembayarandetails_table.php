@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pembayaran_id')->nullable();
             $table->foreignId('penyewa_id')->nullable();
+            $table->tinyInteger('status')->default(1);
             $table->timestamps();
         });
     }
