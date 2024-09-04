@@ -20,6 +20,9 @@ use App\Http\Controllers\Dashboard\Scan\MainController as ScanMainController;
 use App\Http\Controllers\Dashboard\SewaController;
 use App\Http\Controllers\Dashboard\Tipekamar\MainController as TipekamarMainController;
 use App\Http\Controllers\Dashboard\TransaksiController;
+use App\Models\Pembayaran;
+use App\Models\Pembayarandetail;
+use App\Models\Transaksi;
 use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +34,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
 // Route Auth
 Route::group(['middleware' => 'guest'], function () {
     Route::get('/', [LoginController::class, 'index'])->name('login');

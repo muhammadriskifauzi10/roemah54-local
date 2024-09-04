@@ -91,12 +91,6 @@
                                                                             {{ $p->jenissewa }}
                                                                         </td>
                                                                     </tr>
-                                                                    <tr>
-                                                                        <td>Jumlah Penyewa</td>
-                                                                        <td class="text-right">
-                                                                            {{ $p->jumlah_penyewa }} Orang
-                                                                        </td>
-                                                                    </tr>
                                                                 </tbody>
                                                             </table>
                                                             <div
@@ -181,12 +175,6 @@
                                                                         <td>Jenis Sewa</td>
                                                                         <td class="text-right">
                                                                             {{ $p->jenissewa }}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>Jumlah Penyewa</td>
-                                                                        <td class="text-right">
-                                                                            {{ $p->jumlah_penyewa }} Orang
                                                                         </td>
                                                                     </tr>
                                                                 </tbody>

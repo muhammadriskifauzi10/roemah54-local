@@ -144,6 +144,17 @@ class SewaController extends Controller
                 $total_bayar = 0;
             }
 
+            if (intval($total_bayar) > 0) {
+                if ($metode_pembayaran == "None") {
+                    return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
+                }
+            }
+            else {
+                if ($metode_pembayaran == "None") {
+                    return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
+                }
+            }
+
             if (!Penyewa::where('noktp', $noktp)->exists()) {
                 $penyewa = Penyewa::create([
                     'namalengkap' => $namalengkap,
@@ -283,13 +294,13 @@ class SewaController extends Controller
             $post = $pembayaran->save();
 
             if ($post) {
-
                 // pembayaran detail
                 $pembayarandetail = new Pembayarandetail();
                 $pembayarandetail->pembayaran_id = $pembayaran->id;
                 $pembayarandetail->penyewa_id = $penyewa->id;
+                $pembayarandetail->total_bayar = $total_bayar;
                 $pembayarandetail->save();
-
+                
                 if (intval($total_bayar) > 0) {
                     // Generate no transaksi
                     $tahun = date('Y');
@@ -1024,6 +1035,7 @@ class SewaController extends Controller
                         $pembayarandetail = new Pembayarandetail();
                         $pembayarandetail->pembayaran_id = $model_post_pembayaran->id;
                         $pembayarandetail->penyewa_id = $model_pembayaran->penyewa_id;
+                        $pembayarandetail->total_bayar = $total_bayar;
                         $pembayarandetail->save();
 
                         if (intval($total_bayar) > 0) {

@@ -20,11 +20,11 @@
                         <form action="{{ route('authenticate') }}" method="POST" autocomplete="off">
                             @csrf
                             <div class="mb-3">
-                                <label for="username" class="form-label">Nama Pengguna</label>
+                                <label for="username" class="form-label fw-bold">Nama Pengguna</label>
                                 <input type="username" class="form-control" name="username" id="username" autofocus />
                             </div>
                             <div class="mb-3">
-                                <label for="password" class="form-label">Kata Sandi</label>
+                                <label for="password" class="form-label fw-bold">Kata Sandi</label>
                                 <input type="password" class="form-control" name="password" id="password" />
                             </div>
                             <div class="d-flex mt-4 mb-0">

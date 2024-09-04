@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pembayaran_id')->nullable();
             $table->string('no_transaksi')->unique();
+            $table->foreignId('penyewa_id')->nullable();
             $table->foreignId('tagih_id')->nullable();
             $table->dateTime('tanggal_transaksi');
             $table->decimal('jumlah_uang', 15, 2);

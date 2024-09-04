@@ -62,7 +62,7 @@
                                     <th scope="col">Total Bayar</th>
                                     <th scope="col">Tanggal Pembayaran</th>
                                     <th scope="col">Kurang Bayar</th>
-                                    <th scope="col">Jumlah Penyewa</th>
+                                    {{-- <th scope="col">Jumlah Penyewa</th> --}}
                                     <th scope="col">Status Pembayaran</th>
                                     <th scope="col" width="150"></th>
                                 </tr>
@@ -132,9 +132,9 @@
                     {
                         data: "kurang_bayar",
                     },
-                    {
-                        data: "jumlah_penyewa",
-                    },
+                    // {
+                    //     data: "jumlah_penyewa",
+                    // },
                     {
                         data: "status_pembayaran",
                     },

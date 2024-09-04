@@ -227,20 +227,29 @@
 
                                     {{-- tipe pembayaran --}}
                                     <div class="mb-3">
-                                        <label for="cash" class="form-label fw-bold">
+                                        <label for="none" class="form-label fw-bold">
                                             Tipe Pembayaran
                                         </label>
                                         <div class="row">
-                                            <div class="col-lg-3">
+                                            <div class="col-lg-2">
                                                 <div class="form-check">
                                                     <input class="form-check-input" type="radio"
-                                                        name="metode_pembayaran" id="cash" value="Cash" checked>
+                                                        name="metode_pembayaran" id="none" value="None" checked>
+                                                    <label class="form-check-label" for="none">
+                                                        Tidak Ada
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio"
+                                                        name="metode_pembayaran" id="cash" value="Cash">
                                                     <label class="form-check-label" for="cash">
                                                         Cash
                                                     </label>
                                                 </div>
                                             </div>
-                                            <div class="col-lg-3">
+                                            <div class="col-lg-2">
                                                 <div class="form-check">
                                                     <input class="form-check-input" type="radio"
                                                         name="metode_pembayaran" id="debit" value="Debit">
@@ -249,7 +258,7 @@
                                                     </label>
                                                 </div>
                                             </div>
-                                            <div class="col-lg-3">
+                                            <div class="col-lg-2">
                                                 <div class="form-check">
                                                     <input class="form-check-input" type="radio"
                                                         name="metode_pembayaran" id="qris" value="QRIS">
@@ -258,7 +267,7 @@
                                                     </label>
                                                 </div>
                                             </div>
-                                            <div class="col-lg-3">
+                                            <div class="col-lg-2">
                                                 <div class="form-check">
                                                     <input class="form-check-input" type="radio"
                                                         name="metode_pembayaran" id="transfer" value="Transfer">

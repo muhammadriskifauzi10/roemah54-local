@@ -116,20 +116,20 @@ class MainController extends Controller
                     Bayar
                 </button>';
 
-                if ($row->status == 1) {
-                    $pulangkantamu = '
-                    <button type="button" class="btn btn-danger text-light fw-bold d-flex align-items-center justify-content-center gap-1" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                            class="bi bi-person-raised-hand" viewBox="0 0 16 16">
-                            <path
-                                d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
-                            <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
-                        </svg>
-                        Pulangkan Tamu
-                    </button>';
-                } else {
+                // if ($row->status == 1) {
+                //     $pulangkantamu = '
+                //     <button type="button" class="btn btn-danger text-light fw-bold d-flex align-items-center justify-content-center gap-1" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
+                //         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                //             class="bi bi-person-raised-hand" viewBox="0 0 16 16">
+                //             <path
+                //                 d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
+                //             <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                //         </svg>
+                //         Pulangkan Tamu
+                //     </button>';
+                // } else {
                     $pulangkantamu = '';
-                }
+                // }
             } elseif ($row->status_pembayaran == "failed") {
                 $bayar = '';
                 $pulangkantamu = '';
@@ -165,7 +165,7 @@ class MainController extends Controller
                 'total_bayar' => $row->total_bayar ? "RP. " . number_format($row->total_bayar, '0', '.', '.') : "RP. 0",
                 'tanggal_pembayaran' => $row->tanggal_pembayaran ? Carbon::parse($row->tanggal_pembayaran)->format("Y-m-d H:i:s") : "-",
                 'kurang_bayar' => $row->kurang_bayar ? "RP. " . number_format($row->kurang_bayar, '0', '.', '.') : "RP. 0",
-                'jumlah_penyewa' => $row->jumlah_penyewa . ' Orang',
+                // 'jumlah_penyewa' => $row->jumlah_penyewa . ' Orang',
                 'status_pembayaran' => $status_pembayaran,
                 'aksi' => $aksi,
             ];
