@@ -298,7 +298,6 @@ class SewaController extends Controller
                 $pembayarandetail = new Pembayarandetail();
                 $pembayarandetail->pembayaran_id = $pembayaran->id;
                 $pembayarandetail->penyewa_id = $penyewa->id;
-                $pembayarandetail->total_bayar = $total_bayar;
                 $pembayarandetail->save();
                 
                 if (intval($total_bayar) > 0) {
@@ -1035,7 +1034,6 @@ class SewaController extends Controller
                         $pembayarandetail = new Pembayarandetail();
                         $pembayarandetail->pembayaran_id = $model_post_pembayaran->id;
                         $pembayarandetail->penyewa_id = $model_pembayaran->penyewa_id;
-                        $pembayarandetail->total_bayar = $total_bayar;
                         $pembayarandetail->save();
 
                         if (intval($total_bayar) > 0) {

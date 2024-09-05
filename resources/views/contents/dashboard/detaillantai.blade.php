@@ -38,7 +38,7 @@
                                         @foreach (App\Models\Pembayaran::where('lokasi_id', $l->id)->where('status', '<>', 0)->get() as $p)
                                             @if ($p->status_pembayaran == 'completed')
                                                 {{-- kamar terisi --}}
-                                                <a href="{{ route('detailpenyewa', $p->id) }}"
+                                                <a href="{{ route('dasbor.detailpenyewa', $p->id) }}"
                                                     class="col-xl-6 kamar text-decoration-none mb-4">
                                                     <div class="card border-0 rounded" style="height: 100%">
                                                         @if (\Carbon\Carbon::now() > \Carbon\Carbon::parse($p->tanggal_keluar))
@@ -132,7 +132,7 @@
                                                 </a>
                                             @elseif ($p->status_pembayaran == 'pending')
                                                 {{-- booking / belum lunas --}}
-                                                <a href="{{ route('detailpenyewa', $p->id) }}"
+                                                <a href="{{ route('dasbor.detailpenyewa', $p->id) }}"
                                                     class="col-xl-6 kamar text-decoration-none mb-4">
                                                     <div class="card border-0 rounded" style="height: 100%">
                                                         <div class="card-header bg-warning text-light text-center fw-bold">

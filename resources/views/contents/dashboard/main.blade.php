@@ -34,7 +34,7 @@
                 @if ($lantai->count() > 0)
                     <div class="row">
                         @foreach ($lantai as $row)
-                            <a href="{{ route('detaillantai', $row->id) }}"
+                            <a href="{{ route('dasbor.detaillantai', $row->id) }}"
                                 class="col-xl-12 lantai text-decoration-none mb-4">
                                 <div class="card border-0 rounded" style="height: 100%">
                                     <div class="card-header bg-green text-light text-center fw-bold">

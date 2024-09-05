@@ -20,9 +20,6 @@ use App\Http\Controllers\Dashboard\Scan\MainController as ScanMainController;
 use App\Http\Controllers\Dashboard\SewaController;
 use App\Http\Controllers\Dashboard\Tipekamar\MainController as TipekamarMainController;
 use App\Http\Controllers\Dashboard\TransaksiController;
-use App\Models\Pembayaran;
-use App\Models\Pembayarandetail;
-use App\Models\Transaksi;
 use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +31,15 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+// Route::get('/tes', function () {
+//     foreach (Pembayarandetail::all() as $row) {
+//         Transaksi::where('pembayaran_id', $row->pembayaran_id)->update([
+//             'penyewa_id' => $row->penyewa_id,
+//         ]);
+//     }
+// });
+
 // Route Auth
 Route::group(['middleware' => 'guest'], function () {
     Route::get('/', [LoginController::class, 'index'])->name('login');
@@ -44,14 +50,16 @@ Route::group(['middleware' => 'guest'], function () {
 Route::group(['middleware' => 'auth'], function () {
     Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
+    // Lantai
+    Route::post('/tambahlantai', [MainController::class, 'create'])->name('postlantai');
+    
     // menu utama
     // dasbor
     Route::get('/dasbor', [MainController::class, 'index'])->name('dasbor');
-    Route::get('/dasbor/{lantai:id}', [MainController::class, 'detaildata'])->name('detaillantai');
-    Route::get('/dasbor/detailpenyewa/{penyewa:id}', [MainController::class, 'detailpenyewa'])->name('detailpenyewa');
+    Route::get('/dasbor/{lantai:id}', [MainController::class, 'detaildata'])->name('dasbor.detaillantai');
+    Route::get('/dasbor/detailpenyewa/{penyewa:id}', [MainController::class, 'detailpenyewa'])->name('dasbor.detailpenyewa');
+    Route::post('/dasbor/tambahpenyewa', [MainController::class, 'tambahpenyewa'])->name('dasbor.tambahpenyewa');
 
-    // Lantai
-    Route::post('/tambahlantai', [MainController::class, 'create'])->name('postlantai');
     // lokasi
     Route::get('/lokasi', [LokasiMainController::class, 'index'])->name('lokasi');
     Route::post('/lokasi/datatablelokasi', [LokasiMainController::class, 'datatablelokasi'])->name('lokasi.datatablelokasi');

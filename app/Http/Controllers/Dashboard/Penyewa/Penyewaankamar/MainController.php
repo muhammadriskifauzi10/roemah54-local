@@ -8,6 +8,7 @@ use App\Models\Lokasi;
 use App\Models\Pembayaran;
 use App\Models\Pembayarandetail;
 use App\Models\Penyewa;
+use App\Models\Tipekamar;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Dompdf\Dompdf;
@@ -185,11 +186,14 @@ class MainController extends Controller
         $pembayaran_detail = Pembayarandetail::where('pembayaran_id', $pembayaran->id)->get();
 
         $kamar = Lokasi::where('id', $pembayaran->lokasi_id)->first();
+        $tipekamar = Tipekamar::where('id', $pembayaran->tipekamar_id)->first();
+        
         $data = [
             'judul' => 'Detail Penyewa',
             'pembayaran' => $pembayaran,
             'pembayaran_detail' => $pembayaran_detail,
             'kamar' => $kamar,
+            'tipekamar' => $tipekamar,
         ];
 
         return view('contents.dashboard.penyewa.penyewaankamar.detailpenyewa', $data);
