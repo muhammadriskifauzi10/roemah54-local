@@ -147,8 +147,8 @@ class MainController extends Controller
 
             $output[] = [
                 'nomor' => "<strong>" . $nomor++ . "</strong>",
-                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("Y-m-d H:i:s"),
-                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("Y-m-d H:i:s"),
+                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("d-m-Y H:i:s"),
+                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("d-m-Y H:i:s"),
                 'nomor_kamar' => $row->lokasis->nomor_kamar,
                 'tipe_kamar' => $row->tipekamar,
                 'mitra' => $row->mitras->mitra,

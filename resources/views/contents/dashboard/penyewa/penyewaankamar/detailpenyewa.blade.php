@@ -53,14 +53,14 @@
                                     <th scope="row" class="text-left">Tanggal Masuk</th>
                                     <th scope="row" class="text-right">:</th>
                                     <th scope="row" class="text-left">
-                                        {{ \Carbon\Carbon::parse($pembayaran->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
+                                        {{ \Carbon\Carbon::parse($pembayaran->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
                                     </th>
                                 </tr>
                                 <tr>
                                     <th scope="row" class="text-left">Tanggal Keluar</th>
                                     <th scope="row" class="text-right">:</th>
                                     <th scope="row" class="text-left">
-                                        {{ \Carbon\Carbon::parse($pembayaran->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
+                                        {{ \Carbon\Carbon::parse($pembayaran->tanggal_keluar)->translatedFormat('l, d-m-Y H:i:s') }}
                                     </th>
                                 </tr>
                                 <tr>
