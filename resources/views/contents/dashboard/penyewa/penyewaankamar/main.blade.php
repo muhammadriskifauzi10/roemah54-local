@@ -17,25 +17,15 @@
                 <div class="card border-0">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-xl-3 mb-3">
+                            <div class="col-xl-4 mb-3">
                                 <label for="minDate" class="form-label fw-600">Min Tanggal Masuk</label>
                                 <input type="date" class="form-control" id="minDate" value="{{ date('Y-m-01') }}">
                             </div>
-                            <div class="col-xl-3 mb-3">
+                            <div class="col-xl-4 mb-3">
                                 <label for="maxDate" class="form-label fw-600">Max Tanggal Masuk</label>
                                 <input type="date" class="form-control" id="maxDate" value="{{ date('Y-m-d') }}">
                             </div>
-                            <div class="col-xl-3 mb-3">
-                                <label for="penyewa" class="form-label">Pilih Penyewa</label>
-                                <select class="form-select form-select-2" name="penyewa" id="penyewa"
-                                    style="width: 100%;">
-                                    <option>Pilih Penyewa</option>
-                                    @foreach ($penyewa as $row)
-                                        <option value="{{ $row->id }}">{{ $row->namalengkap }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-xl-3 mb-3">
+                            <div class="col-xl-4 mb-3">
                                 <label for="status_pembayaran" class="form-label">Status Pembayaran</label>
                                 <select class="form-select form-select-2" name="status_pembayaran" id="status_pembayaran"
                                     style="width: 100%;">
@@ -89,7 +79,6 @@
                     data: function(d) {
                         d.minDate = $("#minDate").val();
                         d.maxDate = $("#maxDate").val();
-                        d.penyewa = $("#penyewa").val();
                         d.status_pembayaran = $("#status_pembayaran").val();
                     },
                 },
@@ -190,12 +179,12 @@
         });
 
         // bayar kamar
-        function openModalBayarKamar(e, transaksi_id) {
+        function openModalBayarKamar(e, pembayaran_id) {
             e.preventDefault()
 
             var formData = new FormData();
             formData.append("token", $("#token").val());
-            formData.append("transaksi_id", transaksi_id);
+            formData.append("pembayaran_id", pembayaran_id);
 
             $.ajax({
                 url: "{{ route('getmodalselesaikanpembayarankamar') }}",
@@ -207,22 +196,30 @@
                     $("#universalModalContent").empty();
                     $("#universalModalContent").addClass("modal-dialog-centered");
                     $("#universalModalContent").append(`
-                    <div class="modal-content">
-                        <div class="modal-body">
-                            <div class="loading">
-                                <span class="dots pulse1"></span>
-                                <span class="dots pulse2"></span>
-                                <span class="dots pulse3"></span>
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div class="loading">
+                                    <span class="dots pulse1"></span>
+                                    <span class="dots pulse2"></span>
+                                    <span class="dots pulse3"></span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    `);
+                        `);
                     $("#universalModal").modal("show");
                 },
                 success: function(response) {
                     if (response.message == "success") {
                         setTimeout(function() {
                             $("#universalModalContent").html(response.dataHTML.trim());
+
+                            // select 2
+                            $(".form-select-2").select2({
+                                dropdownParent: $("#universalModal"),
+                                theme: "bootstrap-5",
+                                // selectionCssClass: "select2--small",
+                                // dropdownCssClass: "select2--small",
+                            });
 
                             // Money
                             $('.formatrupiah').maskMoney({
@@ -241,9 +238,19 @@
 
             let error = 0;
 
-            if (($("#total_bayar").val() == "" || $("#total_bayar").val() == 0) && ($("#potongan_harga")
-                    .val() == "" || $(
-                        "#potongan_harga").val() == 0)) {
+            if ($("#penyewa").val() == "Pilih Penyewa") {
+                // penyewa
+                $("#penyewa").addClass("is-invalid")
+                $("#errorPenyewa").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                // penyewa
+                $("#penyewa").removeClass("is-invalid")
+                $("#errorPenyewa").text("")
+            }
+
+            if (($("#total_bayar").val() == "" || $("#total_bayar").val() == 0) && ($("#potongan_harga").val() == "" || $(
+                    "#potongan_harga").val() == 0)) {
                 // total bayar
                 $("#total_bayar").addClass("is-invalid")
                 $("#errorTotalBayar").text("Kolom ini wajib diisi")
@@ -267,7 +274,8 @@
 
                 var formData = new FormData();
                 formData.append("token", $("#token").val());
-                formData.append("transaksi_id", $("#transaksi_id").val());
+                formData.append("pembayaran_id", $("#pembayaran_id").val());
+                formData.append("penyewa", $("#penyewa").val());
                 formData.append("total_bayar", $("#total_bayar").val());
                 formData.append("potongan_harga", $("#potongan_harga").val());
                 formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
@@ -299,6 +307,7 @@
                 });
             }
         }
+
 
         // pulangkan tamu
         function requestPulangkanTamu(id) {

@@ -22,11 +22,8 @@ class MainController extends Controller
 {
     public function index()
     {
-        $penyewa = Penyewa::all();
-
         $data = [
             'judul' => 'Penyewaan Kamar',
-            'penyewa' => $penyewa,
         ];
 
         return view('contents.dashboard.penyewa.penyewaankamar.main', $data);
@@ -35,16 +32,12 @@ class MainController extends Controller
     {
         $minDate = request()->input('minDate');
         $maxDate = request()->input('maxDate');
-        $penyewa = request()->input('penyewa');
         $status_pembayaran = request()->input('status_pembayaran');
 
         $penyewaankamar = Pembayaran::when($minDate && $maxDate, function ($query) use ($minDate, $maxDate) {
             $query->whereDate('tanggal_masuk', '>=', $minDate)
                 ->whereDate('tanggal_masuk', '<=', $maxDate);
         })
-            ->when($penyewa !== "Pilih Penyewa", function ($query) use ($penyewa) {
-                $query->where('penyewa_id', $penyewa);
-            })
             ->when($status_pembayaran !== "Pilih Status Pembayaran", function ($query) use ($status_pembayaran) {
                 $query->where('status_pembayaran', $status_pembayaran);
             })

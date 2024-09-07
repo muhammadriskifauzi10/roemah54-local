@@ -316,12 +316,12 @@
         }
 
         // bayar kamar
-        function openModalBayarKamar(e, transaksi_id) {
+        function openModalBayarKamar(e, pembayaran_id) {
             e.preventDefault()
 
             var formData = new FormData();
             formData.append("token", $("#token").val());
-            formData.append("transaksi_id", transaksi_id);
+            formData.append("pembayaran_id", pembayaran_id);
 
             $.ajax({
                 url: "{{ route('getmodalselesaikanpembayarankamar') }}",
@@ -350,6 +350,14 @@
                         setTimeout(function() {
                             $("#universalModalContent").html(response.dataHTML.trim());
 
+                            // select 2
+                            $(".form-select-2").select2({
+                                dropdownParent: $("#universalModal"),
+                                theme: "bootstrap-5",
+                                // selectionCssClass: "select2--small",
+                                // dropdownCssClass: "select2--small",
+                            });
+
                             // Money
                             $('.formatrupiah').maskMoney({
                                 allowNegative: false,
@@ -366,6 +374,17 @@
             e.preventDefault()
 
             let error = 0;
+
+            if ($("#penyewa").val() == "Pilih Penyewa") {
+                // penyewa
+                $("#penyewa").addClass("is-invalid")
+                $("#errorPenyewa").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                // penyewa
+                $("#penyewa").removeClass("is-invalid")
+                $("#errorPenyewa").text("")
+            }
 
             if (($("#total_bayar").val() == "" || $("#total_bayar").val() == 0) && ($("#potongan_harga").val() == "" || $(
                     "#potongan_harga").val() == 0)) {
@@ -392,7 +411,8 @@
 
                 var formData = new FormData();
                 formData.append("token", $("#token").val());
-                formData.append("transaksi_id", $("#transaksi_id").val());
+                formData.append("pembayaran_id", $("#pembayaran_id").val());
+                formData.append("penyewa", $("#penyewa").val());
                 formData.append("total_bayar", $("#total_bayar").val());
                 formData.append("potongan_harga", $("#potongan_harga").val());
                 formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
@@ -700,6 +720,18 @@
             e.preventDefault()
 
             let error = 0;
+
+            if ($("#penyewa").val() == "Pilih Penyewa") {
+                // penyewa
+                $("#penyewa").addClass("is-invalid")
+                $("#errorPenyewa").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                // penyewa
+                $("#penyewa").removeClass("is-invalid")
+                $("#errorPenyewa").text("")
+            }
+
             if ($("#jenissewa").val() === "Pilih Jenis Sewa") {
                 $("#jenissewa").addClass("is-invalid")
                 $("#errorJenisSewa").text("Kolom ini wajib diisi")
@@ -715,6 +747,7 @@
                 var formData = new FormData();
                 formData.append("token", $("#token").val());
                 formData.append("pembayaran_id", $("#pembayaran_id").val());
+                formData.append("penyewa", $("#penyewa").val());
                 formData.append("jenissewa", $("#jenissewa").val());
                 formData.append("jumlahhari", $("#jumlahhari").val());
                 formData.append("total_bayar", $("#total_bayar").val());

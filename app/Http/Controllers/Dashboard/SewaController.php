@@ -148,8 +148,7 @@ class SewaController extends Controller
                 if ($metode_pembayaran == "None") {
                     return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
                 }
-            }
-            else {
+            } else {
                 if ($metode_pembayaran == "None") {
                     return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
                 }
@@ -299,7 +298,7 @@ class SewaController extends Controller
                 $pembayarandetail->pembayaran_id = $pembayaran->id;
                 $pembayarandetail->penyewa_id = $penyewa->id;
                 $pembayarandetail->save();
-                
+
                 if (intval($total_bayar) > 0) {
                     // Generate no transaksi
                     $tahun = date('Y');
@@ -325,6 +324,7 @@ class SewaController extends Controller
 
                     $transaksi = new Transaksi();
                     $transaksi->no_transaksi = $no_transaksi;
+                    $transaksi->penyewa_id = $penyewa->id;
                     $transaksi->tagih_id = 1;
                     $transaksi->pembayaran_id = $pembayaran->id;
                     $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
@@ -416,9 +416,9 @@ class SewaController extends Controller
     public function getmodalselesaikanpembayarankamar()
     {
         if (request()->ajax()) {
-            $transaksi_id = htmlspecialchars(request()->input('transaksi_id'), ENT_QUOTES, 'UTF-8');
-            if (Pembayaran::where('id', $transaksi_id)->exists()) {
-                $model_pembayaran = Pembayaran::where('id', $transaksi_id)->first();
+            $pembayaran_id = htmlspecialchars(request()->input('pembayaran_id'), ENT_QUOTES, 'UTF-8');
+            if (Pembayaran::where('id', $pembayaran_id)->exists()) {
+                $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
 
                 if ($model_pembayaran->diskon != 0) {
                     $label = '
@@ -468,6 +468,38 @@ class SewaController extends Controller
                     }
                 }
 
+                if ($model_pembayaran->jumlah_penyewa > 1) {
+                    $optionpenyewa = [];
+
+                    foreach (
+                        Pembayarandetail::join('penyewas as p', 'pembayarandetails.penyewa_id', '=', 'p.id')
+                            ->select(
+                                'p.id',
+                                'p.namalengkap',
+                            )
+                            ->where('pembayarandetails.pembayaran_id', $model_pembayaran->id)
+                            ->get() as $row
+                    ) {
+                        $optionpenyewa[] = ' <option value="' . $row->id . '">' . $row->namalengkap . '</option>';
+                    }
+
+                    $from = '
+                    <div class="mb-3">
+                        <label for="penyewa" class="form-label fw-bold">Penyewa <sup class="text-danger">*</sup></label>
+                        <select class="form-select form-select-2"
+                            name="penyewa" id="penyewa" style="width: 100%;">
+                            <option>Pilih Penyewa</option>
+                            ' . implode(" ", $optionpenyewa) . '
+                        </select>
+                        <span class="text-danger" id="errorPenyewa"></span>
+                    </div>
+                    ';
+                } else {
+                    $model_pembayaran_detail = Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->first();
+
+                    $from = '<input type="hidden" name="penyewa" value="' . $model_pembayaran_detail->penyewa_id . '" id="penyewa">';
+                }
+
                 if (auth()->user()->role_id == 1 || auth()->user()->role_id == 3) {
                     $potongan_harga = '
                     <div class="mb-3">
@@ -488,7 +520,7 @@ class SewaController extends Controller
                 $dataHTML = '
                 <form class="modal-content" onsubmit="requestSelesaikanPembayaranKamar(event)" autocomplete="off">
                     <input type="hidden" name="__token" value="' . request()->input('token') . '" id="token">
-                    <input type="hidden" name="transaksi_id" value="' . $model_pembayaran->id . '" id="transaksi_id">
+                    <input type="hidden" name="pembayaran_id" value="' . $model_pembayaran->id . '" id="pembayaran_id">
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="universalModalLabel">Bayar Kamar</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -511,6 +543,7 @@ class SewaController extends Controller
                                 </tbody>
                             </table>
                         </div>
+                        ' . $from . '
                         <div class="mb-3">
                             <label for="total_bayar" class="form-label fw-bold">Total Bayar <sup class="text-danger">*</sup></label>
                             <div class="input-group" style="z-index: 0;">
@@ -561,11 +594,11 @@ class SewaController extends Controller
                             </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success w-100" id="btnRequest">
-                            Ya
-                        </button>
+                        <div>
+                            <button type="submit" class="btn btn-success w-100" id="btnRequest">
+                                Ya
+                            </button>
+                        </div>
                     </div>
                 </form>
                 ';
@@ -588,7 +621,8 @@ class SewaController extends Controller
     public function selesaikanpembayarankamar()
     {
         if (request()->ajax()) {
-            $transaksi_id = htmlspecialchars(request()->input('transaksi_id'), ENT_QUOTES, 'UTF-8');
+            $pembayaran_id = htmlspecialchars(request()->input('pembayaran_id'), ENT_QUOTES, 'UTF-8');
+            $penyewa = request()->input('penyewa');
             $total_bayar = htmlspecialchars(request()->input('total_bayar'), ENT_QUOTES, 'UTF-8');
             $potongan_harga = htmlspecialchars(request()->input('potongan_harga'), ENT_QUOTES, 'UTF-8');
 
@@ -596,10 +630,10 @@ class SewaController extends Controller
             $pembayaran = $total_bayar ? str_replace('.', '', $total_bayar) : 0;
             $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), ENT_QUOTES, 'UTF-8');
 
-            if (Pembayaran::where('id', $transaksi_id)->exists()) {
+            if (Pembayaran::where('id', $pembayaran_id)->exists()) {
                 try {
                     DB::beginTransaction();
-                    $model_pembayaran = Pembayaran::where('id', $transaksi_id)->first();
+                    $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
 
                     $jumlah_pembayaran = intval($model_pembayaran->jumlah_pembayaran) - (intval($model_pembayaran->potongan_harga) + intval($potongan));
 
@@ -654,12 +688,18 @@ class SewaController extends Controller
                             $nomor = 0;
                         }
 
+                        if (Penyewa::where('id', $penyewa)->exists()) {
+                            $penyewa = $penyewa;
+                        } else {
+                            $penyewa = NULL;
+                        }
+
                         // yymmddxxxxxx
                         $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
-
                         $transaksi = new Transaksi();
                         $transaksi->pembayaran_id = $model_pembayaran->id;
                         $transaksi->no_transaksi = $no_transaksi;
+                        $transaksi->penyewa_id = $penyewa;
                         $transaksi->tagih_id = 1;
                         $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
                         $transaksi->jumlah_uang = str_replace('.', '', $pembayaran);
@@ -740,21 +780,9 @@ class SewaController extends Controller
                     $transaksi->operator_id = auth()->user()->id;
                     $transaksi->save();
 
-                    // $model_post_pembayaran = new Pembayaran();
-                    // $model_post_pembayaran->tagih_id = 2;
-                    // $model_post_pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
-                    // $model_post_pembayaran->penyewa_id = $model_pembayaran->penyewa_id;
-                    // $model_post_pembayaran->lokasi_id = $model_pembayaran->lokasi_id;
-                    // $model_post_pembayaran->jumlah_pembayaran = str_replace('.', '', $jumlah_pembayaran);
-                    // $model_post_pembayaran->total_bayar = str_replace('.', '', $jumlah_pembayaran);
-                    // $model_post_pembayaran->status_pembayaran = 'completed';
-                    // $model_post_pembayaran->operator_id = auth()->user()->id;
-                    // $model_post_pembayaran->save();
-
                     $model_post_tokenlistrik = new Tokenlistrik();
                     $model_post_tokenlistrik->pembayaran_id = $model_pembayaran->id;
                     $model_post_tokenlistrik->tanggal_token = date('Y-m-d H:i:s');
-                    $model_post_tokenlistrik->penyewa_id = $model_pembayaran->penyewa_id;
                     $model_post_tokenlistrik->lokasi_id = $model_pembayaran->lokasi_id;
                     $model_post_tokenlistrik->jumlah_kwh_lama = $jumlah_kwh_lama;
                     $model_post_tokenlistrik->jumlah_kwh_baru = $jumlah_kwh_baru;
@@ -811,6 +839,38 @@ class SewaController extends Controller
                     'Bulanan',
                 ];
 
+                if ($model_pembayaran->jumlah_penyewa > 1) {
+                    $optionpenyewa = [];
+
+                    foreach (
+                        Pembayarandetail::join('penyewas as p', 'pembayarandetails.penyewa_id', '=', 'p.id')
+                            ->select(
+                                'p.id',
+                                'p.namalengkap',
+                            )
+                            ->where('pembayarandetails.pembayaran_id', $model_pembayaran->id)
+                            ->get() as $row
+                    ) {
+                        $optionpenyewa[] = ' <option value="' . $row->id . '">' . $row->namalengkap . '</option>';
+                    }
+
+                    $from = '
+                    <div class="mb-3">
+                        <label for="penyewa" class="form-label fw-bold">Penyewa <sup class="text-danger">*</sup></label>
+                        <select class="form-select form-select-2"
+                            name="penyewa" id="penyewa" style="width: 100%;">
+                            <option>Pilih Penyewa</option>
+                            ' . implode(" ", $optionpenyewa) . '
+                        </select>
+                        <span class="text-danger" id="errorPenyewa"></span>
+                    </div>
+                    ';
+                } else {
+                    $model_pembayaran_detail = Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->first();
+
+                    $from = '<input type="hidden" name="penyewa" value="' . $model_pembayaran_detail->penyewa_id . '" id="penyewa">';
+                }
+
                 $selectjenissewa = [];
                 foreach ($jenissewa as $value) {
                     $selected = $value == $model_pembayaran->jenissewa ? "selected" : "";
@@ -826,6 +886,7 @@ class SewaController extends Controller
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        ' . $from . '
                         <div class="mb-3">
                             <label for="jenissewa" class="form-label fw-bold">Pilih Jenis Sewa</label>
                             <select class="form-select form-select-2"
@@ -919,6 +980,7 @@ class SewaController extends Controller
     {
         if (request()->ajax()) {
             $pembayaran_id = htmlspecialchars(request()->input('pembayaran_id'), ENT_QUOTES, 'UTF-8');
+            $penyewa = request()->input('penyewa');
             $jenissewa = request()->input('jenissewa');
             $jumlahhari = htmlspecialchars(request()->input('jumlahhari'), true);
             $total_bayar = htmlspecialchars(request()->input('total_bayar'), true);
@@ -1013,7 +1075,6 @@ class SewaController extends Controller
                     }
                     $model_post_pembayaran->tanggal_masuk = $tanggalmasuk;
                     $model_post_pembayaran->tanggal_keluar = $tenggatwaktu;
-                    // $model_post_pembayaran->penyewa_id = $model_pembayaran->penyewa_id;
                     $model_post_pembayaran->mitra_id = $model_pembayaran->mitra_id;
                     $model_post_pembayaran->lokasi_id = $model_pembayaran->lokasi_id;
                     $model_post_pembayaran->tipekamar_id = $model_pembayaran->tipekamar_id;
@@ -1024,17 +1085,28 @@ class SewaController extends Controller
                     $model_post_pembayaran->potongan_harga = intval($potongan_harga);
                     $model_post_pembayaran->total_bayar = $total_bayar;
                     $model_post_pembayaran->kurang_bayar = intval($jumlah_pembayaran) - intval($total_bayar);
+                    $model_post_pembayaran->jumlah_penyewa = Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->get()->count();
                     $model_post_pembayaran->status_pembayaran = $status_pembayaran;
                     $model_post_pembayaran->status = 1;
                     $model_post_pembayaran->operator_id = auth()->user()->id;
                     $post = $model_post_pembayaran->save();
 
                     if ($post) {
-                        // pembayaran detail
-                        $pembayarandetail = new Pembayarandetail();
-                        $pembayarandetail->pembayaran_id = $model_post_pembayaran->id;
-                        $pembayarandetail->penyewa_id = $model_pembayaran->penyewa_id;
-                        $pembayarandetail->save();
+                        if ($model_pembayaran->jumlah_penyewa > 1) {
+                            foreach (Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->get() as $row) {
+                                // pembayaran detail
+                                $pembayarandetail = new Pembayarandetail();
+                                $pembayarandetail->pembayaran_id = $model_post_pembayaran->id;
+                                $pembayarandetail->penyewa_id = $row->penyewa_id;
+                                $pembayarandetail->save();
+                            }
+                        } else {
+                            // pembayaran detail
+                            $pembayarandetail = new Pembayarandetail();
+                            $pembayarandetail->pembayaran_id = $model_post_pembayaran->id;
+                            $pembayarandetail->penyewa_id = $model_post_pembayaran->penyewa_id;
+                            $pembayarandetail->save();
+                        }
 
                         if (intval($total_bayar) > 0) {
                             // Generate no transaksi
@@ -1056,12 +1128,18 @@ class SewaController extends Controller
                                 $nomor = 0;
                             }
 
+                            if (Penyewa::where('id', $penyewa)->exists()) {
+                                $penyewa = $penyewa;
+                            } else {
+                                $penyewa = NULL;
+                            }
+
                             // yymmddxxxxxx
                             $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
-
                             $transaksi = new Transaksi();
                             $transaksi->pembayaran_id = $model_post_pembayaran->id;
                             $transaksi->no_transaksi = $no_transaksi;
+                            $transaksi->penyewa_id = $penyewa;
                             $transaksi->tagih_id = 1;
                             $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
                             $transaksi->jumlah_uang = $total_bayar;

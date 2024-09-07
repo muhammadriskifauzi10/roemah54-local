@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pembayaran_id')->nullable();
             $table->dateTime('tanggal_token')->nullable();
-            $table->foreignId('penyewa_id')->nullable();
             $table->foreignId('lokasi_id')->nullable();
             $table->decimal('jumlah_kwh_lama', 15, 2)->nullable();
             $table->decimal('jumlah_kwh_baru', 15, 2)->nullable();
