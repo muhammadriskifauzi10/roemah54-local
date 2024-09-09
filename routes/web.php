@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Dashboard\Bisnis\Ritel\MainController as RitelMainController;
 use App\Http\Controllers\Dashboard\Harga\MainController as HargaMainController;
+use App\Http\Controllers\Dashboard\HargaController;
 use App\Http\Controllers\Dashboard\Inventaris\Barang\MainController as BarangMainController;
 use App\Http\Controllers\Dashboard\Inventaris\Kategori\MainController as KategoriMainController;
 use App\Http\Controllers\Dashboard\Inventaris\Log\MainController as LogMainController;
@@ -32,14 +33,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::get('/tes', function () {
-//     foreach (Pembayarandetail::all() as $row) {
-//         Transaksi::where('pembayaran_id', $row->pembayaran_id)->update([
-//             'penyewa_id' => $row->penyewa_id,
-//         ]);
-//     }
-// });
-
 // Route Auth
 Route::group(['middleware' => 'guest'], function () {
     Route::get('/', [LoginController::class, 'index'])->name('login');
@@ -50,16 +43,14 @@ Route::group(['middleware' => 'guest'], function () {
 Route::group(['middleware' => 'auth'], function () {
     Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
-    // Lantai
-    Route::post('/tambahlantai', [MainController::class, 'create'])->name('postlantai');
-    
     // menu utama
     // dasbor
     Route::get('/dasbor', [MainController::class, 'index'])->name('dasbor');
-    Route::get('/dasbor/{lantai:id}', [MainController::class, 'detaildata'])->name('dasbor.detaillantai');
-    Route::get('/dasbor/detailpenyewa/{penyewa:id}', [MainController::class, 'detailpenyewa'])->name('dasbor.detailpenyewa');
-    Route::post('/dasbor/tambahpenyewa', [MainController::class, 'tambahpenyewa'])->name('dasbor.tambahpenyewa');
+    Route::get('/dasbor/{lantai:id}', [MainController::class, 'detaildata'])->name('detaillantai');
+    Route::get('/dasbor/detailpenyewa/{penyewa:id}', [MainController::class, 'detailpenyewa'])->name('detailpenyewa');
 
+    // Lantai
+    Route::post('/tambahlantai', [MainController::class, 'create'])->name('postlantai');
     // lokasi
     Route::get('/lokasi', [LokasiMainController::class, 'index'])->name('lokasi');
     Route::post('/lokasi/datatablelokasi', [LokasiMainController::class, 'datatablelokasi'])->name('lokasi.datatablelokasi');
@@ -73,7 +64,6 @@ Route::group(['middleware' => 'auth'], function () {
     // Penyewaan Kamar
     Route::get('/penyewaankamar', [PenyewaankamarMainController::class, 'index'])->name('penyewaankamar');
     Route::post('/penyewaankamar/datatablepenyewaankamar', [PenyewaankamarMainController::class, 'datatablepenyewaankamar'])->name('penyewaankamar.datatablepenyewaankamar');
-    Route::get('/penyewaankamar/detail/{id}', [PenyewaankamarMainController::class, 'detail'])->name('penyewaankamar.detail');
     Route::get('/penyewaankamar/cetakkwitansi/{id}', [PenyewaankamarMainController::class, 'cetakkwitansi'])->name('penyewaankamar.cetakkwitansi');
     Route::get('/penyewaankamar/cetakinvoice/{id}', [PenyewaankamarMainController::class, 'cetakinvoice'])->name('penyewaankamar.cetakinvoice');
     Route::post('/penyewaankamar/pulangkantamu', [PenyewaankamarMainController::class, 'pulangkantamu'])->name('penyewaankamar.pulangkantamu');
