@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('transaksis', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pembayaran_id')->nullable();
             $table->string('no_transaksi')->unique();
-            $table->foreignId('penyewa_id')->nullable();
             $table->foreignId('tagih_id')->nullable();
+            $table->foreignId('pembayaran_id')->nullable();
             $table->dateTime('tanggal_transaksi');
             $table->decimal('jumlah_uang', 15, 2);
             $table->string('metode_pembayaran');

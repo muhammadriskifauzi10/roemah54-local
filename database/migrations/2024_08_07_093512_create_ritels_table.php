@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('ritels', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pembayaran_id')->nullable();
             $table->dateTime('tanggal_ritel')->nullable();
             $table->foreignId('penyewa_id')->nullable();
             $table->foreignId('lokasi_id')->nullable();

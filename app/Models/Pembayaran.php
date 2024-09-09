@@ -9,7 +9,12 @@ class Pembayaran extends Model
 {
     protected $table = 'pembayarans';
     protected $primaryKey = 'id';
-    
+
+    public function penyewas()
+    {
+        return $this->hasOne(Penyewa::class, 'id', 'penyewa_id');
+    }
+
     public function lokasis()
     {
         return $this->hasOne(Lokasi::class, 'id', 'lokasi_id');

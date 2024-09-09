@@ -6,9 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Denda;
 use App\Models\Lokasi;
 use App\Models\Pembayaran;
-use App\Models\Pembayarandetail;
 use App\Models\Penyewa;
-use App\Models\Tipekamar;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Dompdf\Dompdf;
@@ -22,8 +20,11 @@ class MainController extends Controller
 {
     public function index()
     {
+        $penyewa = Penyewa::all();
+
         $data = [
             'judul' => 'Penyewaan Kamar',
+            'penyewa' => $penyewa,
         ];
 
         return view('contents.dashboard.penyewa.penyewaankamar.main', $data);
@@ -32,20 +33,24 @@ class MainController extends Controller
     {
         $minDate = request()->input('minDate');
         $maxDate = request()->input('maxDate');
+        $penyewa = request()->input('penyewa');
         $status_pembayaran = request()->input('status_pembayaran');
 
         $penyewaankamar = Pembayaran::when($minDate && $maxDate, function ($query) use ($minDate, $maxDate) {
             $query->whereDate('tanggal_masuk', '>=', $minDate)
                 ->whereDate('tanggal_masuk', '<=', $maxDate);
         })
+            ->when($penyewa !== "Pilih Penyewa", function ($query) use ($penyewa) {
+                $query->where('penyewa_id', $penyewa);
+            })
             ->when($status_pembayaran !== "Pilih Status Pembayaran", function ($query) use ($status_pembayaran) {
                 $query->where('status_pembayaran', $status_pembayaran);
             })
+            ->where('tagih_id', 1)
             ->orderBy('tanggal_masuk', 'DESC')
             ->get();
 
         $output = [];
-        $nomor = 1;
         foreach ($penyewaankamar as $row) {
             // status pembayaran
             if ($row->status_pembayaran == "completed") {
@@ -110,20 +115,20 @@ class MainController extends Controller
                     Bayar
                 </button>';
 
-                // if ($row->status == 1) {
-                //     $pulangkantamu = '
-                //     <button type="button" class="btn btn-danger text-light fw-bold d-flex align-items-center justify-content-center gap-1" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
-                //         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                //             class="bi bi-person-raised-hand" viewBox="0 0 16 16">
-                //             <path
-                //                 d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
-                //             <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
-                //         </svg>
-                //         Pulangkan Tamu
-                //     </button>';
-                // } else {
+                if ($row->status == 1) {
+                    $pulangkantamu = '
+                    <button type="button" class="btn btn-danger text-light fw-bold d-flex align-items-center justify-content-center gap-1" onclick="requestPulangkanTamu(' . $row->id . ')" style="width: 180px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-person-raised-hand" viewBox="0 0 16 16">
+                            <path
+                                d="M6 6.207v9.043a.75.75 0 0 0 1.5 0V10.5a.5.5 0 0 1 1 0v4.75a.75.75 0 0 0 1.5 0v-8.5a.25.25 0 1 1 .5 0v2.5a.75.75 0 0 0 1.5 0V6.5a3 3 0 0 0-3-3H6.236a1 1 0 0 1-.447-.106l-.33-.165A.83.83 0 0 1 5 2.488V.75a.75.75 0 0 0-1.5 0v2.083c0 .715.404 1.37 1.044 1.689L5.5 5c.32.32.5.754.5 1.207" />
+                            <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                        </svg>
+                        Pulangkan Tamu
+                    </button>';
+                } else {
                     $pulangkantamu = '';
-                // }
+                }
             } elseif ($row->status_pembayaran == "failed") {
                 $bayar = '';
                 $pulangkantamu = '';
@@ -131,13 +136,6 @@ class MainController extends Controller
 
             $aksi = '
             <div class="d-flex flex-column align-items-center justify-content-center gap-1">
-                <a href="' . route('penyewaankamar.detail', $row->id) . '" class="btn btn-info text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
-                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                    </svg>    
-                    Detail
-                </a>
                 ' . $bayar . '
                 ' . $cetakpembayaran . '
                 ' . $pulangkantamu . '
@@ -146,9 +144,10 @@ class MainController extends Controller
             ';
 
             $output[] = [
-                'nomor' => "<strong>" . $nomor++ . "</strong>",
-                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("d-m-Y H:i:s"),
-                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("d-m-Y H:i:s"),
+                'aksi' => $aksi,
+                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("Y-m-d H:i:s"),
+                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("Y-m-d H:i:s"),
+                'nama_penyewa' => $row->penyewas->namalengkap,
                 'nomor_kamar' => $row->lokasis->nomor_kamar,
                 'tipe_kamar' => $row->tipekamar,
                 'mitra' => $row->mitras->mitra,
@@ -159,37 +158,13 @@ class MainController extends Controller
                 'total_bayar' => $row->total_bayar ? "RP. " . number_format($row->total_bayar, '0', '.', '.') : "RP. 0",
                 'tanggal_pembayaran' => $row->tanggal_pembayaran ? Carbon::parse($row->tanggal_pembayaran)->format("Y-m-d H:i:s") : "-",
                 'kurang_bayar' => $row->kurang_bayar ? "RP. " . number_format($row->kurang_bayar, '0', '.', '.') : "RP. 0",
-                // 'jumlah_penyewa' => $row->jumlah_penyewa . ' Orang',
                 'status_pembayaran' => $status_pembayaran,
-                'aksi' => $aksi,
             ];
         }
 
         return response()->json([
             'data' => $output
         ]);
-    }
-    public function detail($id)
-    {
-        if (!Pembayaran::where('id', $id)->exists()) {
-            abort(404);
-        }
-
-        $pembayaran = Pembayaran::findorfail($id);
-        $pembayaran_detail = Pembayarandetail::where('pembayaran_id', $pembayaran->id)->get();
-
-        $kamar = Lokasi::where('id', $pembayaran->lokasi_id)->first();
-        $tipekamar = Tipekamar::where('id', $pembayaran->tipekamar_id)->first();
-        
-        $data = [
-            'judul' => 'Detail Penyewa',
-            'pembayaran' => $pembayaran,
-            'pembayaran_detail' => $pembayaran_detail,
-            'kamar' => $kamar,
-            'tipekamar' => $tipekamar,
-        ];
-
-        return view('contents.dashboard.penyewa.penyewaankamar.detailpenyewa', $data);
     }
     public function cetakkwitansi($id)
     {
@@ -303,18 +278,12 @@ class MainController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
-                    Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->update([
-                        'status' => 0
-                    ]);
-
-                    foreach (Pembayarandetail::where('pembayaran_id', $model_pembayaran->id)->get() as $row) {
-                        if (Pembayarandetail::where('penyewa_id', $row->penyewa_id)->where('status', 1)->count() < 1) {
-                            Penyewa::where('id', $row->penyewa_id)->update([
-                                'status' => 0,
-                                'operator_id' => auth()->user()->id,
-                                'updated_at' => date("Y-m-d H:i:s"),
-                            ]);
-                        }
+                    if (Pembayaran::where('penyewa_id', $model_pembayaran->penyewa_id)->where('status', 1)->count() < 1) {
+                        Penyewa::where('id', $model_pembayaran->penyewa_id)->update([
+                            'status' => 0,
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
                     }
 
                     // kosongkan kamar
@@ -324,37 +293,37 @@ class MainController extends Controller
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
 
-                    // // denda checkout
-                    // $givenDateTime = Carbon::create($model_pembayaran->tanggal_keluar);
+                    // denda checkout
+                    $givenDateTime = Carbon::create($model_pembayaran->tanggal_keluar);
 
-                    // // Ambil waktu sekarang
-                    // $now = Carbon::now();
+                    // Ambil waktu sekarang
+                    $now = Carbon::now();
 
-                    // // Tentukan waktu batasan (15:00 pada tanggal yang sama)
-                    // $limitTime = $givenDateTime->copy()->setHour(15)->setMinute(0)->setSecond(0);
+                    // Tentukan waktu batasan (15:00 pada tanggal yang sama)
+                    $limitTime = $givenDateTime->copy()->setHour(15)->setMinute(0)->setSecond(0);
 
-                    // // Hitung pembayaran berdasarkan waktu sekarang dan waktu batasan
-                    // if ($now->greaterThanOrEqualTo($givenDateTime) && $now->greaterThanOrEqualTo($limitTime)) {
-                    //     $model_denda_checkout = new Denda();
-                    //     $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
-                    //     $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
-                    //     $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
-                    //     $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
-                    //     $model_denda_checkout->tagih_id = 3;
-                    //     $model_denda_checkout->jumlah_uang = 100000;
-                    //     $model_denda_checkout->operator_id = auth()->user()->id;
-                    //     $model_denda_checkout->save();
-                    // } elseif ($now->greaterThanOrEqualTo($givenDateTime) && $now->lessThan($limitTime)) {
-                    //     $model_denda_checkout = new Denda();
-                    //     $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
-                    //     $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
-                    //     $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
-                    //     $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
-                    //     $model_denda_checkout->tagih_id = 3;
-                    //     $model_denda_checkout->jumlah_uang = 50000;
-                    //     $model_denda_checkout->operator_id = auth()->user()->id;
-                    //     $model_denda_checkout->save();
-                    // }
+                    // Hitung pembayaran berdasarkan waktu sekarang dan waktu batasan
+                    if ($now->greaterThanOrEqualTo($givenDateTime) && $now->greaterThanOrEqualTo($limitTime)) {
+                        $model_denda_checkout = new Denda();
+                        $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
+                        $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
+                        $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
+                        $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
+                        $model_denda_checkout->tagih_id = 3;
+                        $model_denda_checkout->jumlah_uang = 100000;
+                        $model_denda_checkout->operator_id = auth()->user()->id;
+                        $model_denda_checkout->save();
+                    } elseif ($now->greaterThanOrEqualTo($givenDateTime) && $now->lessThan($limitTime)) {
+                        $model_denda_checkout = new Denda();
+                        $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
+                        $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
+                        $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
+                        $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
+                        $model_denda_checkout->tagih_id = 3;
+                        $model_denda_checkout->jumlah_uang = 50000;
+                        $model_denda_checkout->operator_id = auth()->user()->id;
+                        $model_denda_checkout->save();
+                    }
 
                     $response = [
                         'status' => 200,
@@ -366,7 +335,7 @@ class MainController extends Controller
                 } catch (Exception $e) {
                     $response = [
                         'status' => 500,
-                        'message' => 'error',
+                        'message' => $e->getMessage(),
                     ];
 
                     DB::rollBack();

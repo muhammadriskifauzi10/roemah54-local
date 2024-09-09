@@ -35,10 +35,10 @@
                                             $query->where('status', 1)->orWhere('status', 2);
                                         })->count() > 0)
                                     @foreach ($lantai->lokasis as $l)
-                                        @foreach (App\Models\Pembayaran::where('lokasi_id', $l->id)->where('status', '<>', 0)->get() as $p)
+                                        @foreach (App\Models\Pembayaran::where('tagih_id', 1)->where('lokasi_id', $l->id)->where('status', '<>', 0)->get() as $p)
                                             @if ($p->status_pembayaran == 'completed')
                                                 {{-- kamar terisi --}}
-                                                <a href="{{ route('dasbor.detailpenyewa', $p->id) }}"
+                                                <a href="{{ route('detailpenyewa', $p->penyewa_id) }}"
                                                     class="col-xl-6 kamar text-decoration-none mb-4">
                                                     <div class="card border-0 rounded" style="height: 100%">
                                                         @if (\Carbon\Carbon::now() > \Carbon\Carbon::parse($p->tanggal_keluar))
@@ -67,22 +67,18 @@
                                                                             {{ $p->tipekamar }}
                                                                         </td>
                                                                     </tr>
-                                                                    {{-- <tr>
+                                                                    <tr>
                                                                         <td>Penyewa</td>
                                                                         <td class="text-right">
                                                                             {{ $p->penyewas->namalengkap }}
                                                                         </td>
-                                                                    </tr> --}}
-                                                                    <tr>
-                                                                        <td>Tanggal Masuk</td>
-                                                                        <td class="text-right">
-                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
-                                                                        </td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>Tanggal Keluar</td>
+                                                                        <td>Periode</td>
                                                                         <td class="text-right">
-                                                                            {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, d-m-Y H:i:s') }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
+                                                                            <br>
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
@@ -132,7 +128,7 @@
                                                 </a>
                                             @elseif ($p->status_pembayaran == 'pending')
                                                 {{-- booking / belum lunas --}}
-                                                <a href="{{ route('dasbor.detailpenyewa', $p->id) }}"
+                                                <a href="{{ route('detailpenyewa', $p->penyewa_id) }}"
                                                     class="col-xl-6 kamar text-decoration-none mb-4">
                                                     <div class="card border-0 rounded" style="height: 100%">
                                                         <div class="card-header bg-warning text-light text-center fw-bold">
@@ -153,22 +149,18 @@
                                                                             {{ $p->tipekamar }}
                                                                         </td>
                                                                     </tr>
-                                                                    {{-- <tr>
+                                                                    <tr>
                                                                         <td>Penyewa</td>
                                                                         <td class="text-right">
                                                                             {{ $p->penyewas->namalengkap }}
                                                                         </td>
-                                                                    </tr> --}}
-                                                                    <tr>
-                                                                        <td>Tanggal Masuk</td>
-                                                                        <td class="text-right">
-                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
-                                                                        </td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>Tanggal Keluar</td>
+                                                                        <td>Periode</td>
                                                                         <td class="text-right">
-                                                                            {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, d-m-Y H:i:s') }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
+                                                                            <br>
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
@@ -316,12 +308,12 @@
         }
 
         // bayar kamar
-        function openModalBayarKamar(e, pembayaran_id) {
+        function openModalBayarKamar(e, transaksi_id) {
             e.preventDefault()
 
             var formData = new FormData();
             formData.append("token", $("#token").val());
-            formData.append("pembayaran_id", pembayaran_id);
+            formData.append("transaksi_id", transaksi_id);
 
             $.ajax({
                 url: "{{ route('getmodalselesaikanpembayarankamar') }}",
@@ -350,14 +342,6 @@
                         setTimeout(function() {
                             $("#universalModalContent").html(response.dataHTML.trim());
 
-                            // select 2
-                            $(".form-select-2").select2({
-                                dropdownParent: $("#universalModal"),
-                                theme: "bootstrap-5",
-                                // selectionCssClass: "select2--small",
-                                // dropdownCssClass: "select2--small",
-                            });
-
                             // Money
                             $('.formatrupiah').maskMoney({
                                 allowNegative: false,
@@ -374,17 +358,6 @@
             e.preventDefault()
 
             let error = 0;
-
-            if ($("#penyewa").val() == "Pilih Penyewa") {
-                // penyewa
-                $("#penyewa").addClass("is-invalid")
-                $("#errorPenyewa").text("Kolom ini wajib diisi")
-                error++
-            } else {
-                // penyewa
-                $("#penyewa").removeClass("is-invalid")
-                $("#errorPenyewa").text("")
-            }
 
             if (($("#total_bayar").val() == "" || $("#total_bayar").val() == 0) && ($("#potongan_harga").val() == "" || $(
                     "#potongan_harga").val() == 0)) {
@@ -411,8 +384,7 @@
 
                 var formData = new FormData();
                 formData.append("token", $("#token").val());
-                formData.append("pembayaran_id", $("#pembayaran_id").val());
-                formData.append("penyewa", $("#penyewa").val());
+                formData.append("transaksi_id", $("#transaksi_id").val());
                 formData.append("total_bayar", $("#total_bayar").val());
                 formData.append("potongan_harga", $("#potongan_harga").val());
                 formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
@@ -720,18 +692,6 @@
             e.preventDefault()
 
             let error = 0;
-
-            if ($("#penyewa").val() == "Pilih Penyewa") {
-                // penyewa
-                $("#penyewa").addClass("is-invalid")
-                $("#errorPenyewa").text("Kolom ini wajib diisi")
-                error++
-            } else {
-                // penyewa
-                $("#penyewa").removeClass("is-invalid")
-                $("#errorPenyewa").text("")
-            }
-
             if ($("#jenissewa").val() === "Pilih Jenis Sewa") {
                 $("#jenissewa").addClass("is-invalid")
                 $("#errorJenisSewa").text("Kolom ini wajib diisi")
@@ -747,7 +707,6 @@
                 var formData = new FormData();
                 formData.append("token", $("#token").val());
                 formData.append("pembayaran_id", $("#pembayaran_id").val());
-                formData.append("penyewa", $("#penyewa").val());
                 formData.append("jenissewa", $("#jenissewa").val());
                 formData.append("jumlahhari", $("#jumlahhari").val());
                 formData.append("total_bayar", $("#total_bayar").val());

@@ -21,13 +21,11 @@ class KamarController extends Controller
 
         return view('contents.dashboard.kamar.main', $data);
     }
-    // Ajax Request
     public function datatablekamar()
     {
         $kamar = Lokasi::where('jenisruangan_id', 2)->orderby('lantai_id', 'ASC')->get();
 
         $output = [];
-        $nomor = 1;
         foreach ($kamar as $row) {
             if ($row->status == 1) {
                 $status = "<strong class='badge bg-success fw-bold'>Terisi</strong>";
@@ -57,13 +55,12 @@ class KamarController extends Controller
             ';
 
             $output[] = [
-                'nomor' => "<strong>" . $nomor++ . "</strong>",
+                'aksi' => $aksi,
                 'lantai' => $row->lantais->namalantai,
                 'nomor_kamar' => $row->nomor_kamar,
                 'tipe_kamar' => $row->tipekamars->tipekamar,
                 'token_listrik' => $row->token_listrik,
                 'status' => $status,
-                'aksi' => $aksi,
             ];
         }
 
@@ -145,6 +142,67 @@ class KamarController extends Controller
 
         return response()->json($response);
     }
+    public function getmodaleditkamar()
+    {
+        if (request()->ajax()) {
+            $kamar_id = htmlspecialchars(request()->input('kamar_id'), ENT_QUOTES, 'UTF-8');
+            if (Lokasi::where('id', $kamar_id)->exists()) {
+                $kamar = Lokasi::where("id", $kamar_id)->first();
+                $optiontipekamar = [];
+                foreach (Tipekamar::all() as $row) {
+                    $selected = ($kamar->tipekamar_id == $row->id) ? "selected" : "";
+                    $optiontipekamar[] = '<option value="' . $row->id . '" ' . $selected . '>' . $row->tipekamar . '</option>';
+                }
+
+                $dataHTML = '
+                <form class="modal-content" onsubmit="requestEditKamar(event)" autocomplete="off">
+                    <input type="hidden" name="__token" value="' . request()->input('token') . '" id="token">
+                    <input type="hidden" name="kamar_id" id="kamar_id" value="' . $kamar->id . '">
+                    <input type="hidden" name="token_listrik_edit" id="token_listrik_edit" value="' . $kamar->token_listrik . '">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="universalModalLabel">Edit Kamar</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="tipekamar_id" class="form-label fw-bold">Tipe Kamar</label>
+                            <select class="form-select form-select-2"
+                                name="tipekamar" id="tipekamar_id" style="width: 100%;">
+                                <option>Pilih Tipe Kamar</option>
+                                ' . implode(" ", $optiontipekamar) . '
+                            </select>
+                            <span class="text-danger" id="errorTipeKamar"></span>
+                        </div>
+                        <div>
+                            <label for="token_listrik" class="form-label fw-bold">Token Listrik <sup class="text-danger">*</sup></label>
+                            <input type="text" class="form-control"
+                                name="token_listrik" id="token_listrik" placeholder="Masukkan token listrik" value="' . $kamar->token_listrik . '">
+                            <span class="text-danger" id="errorTokenListrik"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success w-100" id="btnRequest">
+                            Ya
+                        </button>
+                    </div>
+                </form>
+                ';
+
+                $response = [
+                    'status' => 200,
+                    'message' => 'success',
+                    'dataHTML' => $dataHTML
+                ];
+            } else {
+                $response = [
+                    'status' => 400,
+                    'message' => 'opps',
+                ];
+            }
+        }
+
+        return response()->json($response);
+    }
     public function create()
     {
         if (request()->ajax()) {
@@ -216,67 +274,6 @@ class KamarController extends Controller
                 return response()->json($response);
             }
         }
-    }
-    public function getmodaleditkamar()
-    {
-        if (request()->ajax()) {
-            $kamar_id = htmlspecialchars(request()->input('kamar_id'), ENT_QUOTES, 'UTF-8');
-            if (Lokasi::where('id', $kamar_id)->exists()) {
-                $kamar = Lokasi::where("id", $kamar_id)->first();
-                $optiontipekamar = [];
-                foreach (Tipekamar::all() as $row) {
-                    $selected = ($kamar->tipekamar_id == $row->id) ? "selected" : "";
-                    $optiontipekamar[] = '<option value="' . $row->id . '" ' . $selected . '>' . $row->tipekamar . '</option>';
-                }
-
-                $dataHTML = '
-                <form class="modal-content" onsubmit="requestEditKamar(event)" autocomplete="off">
-                    <input type="hidden" name="__token" value="' . request()->input('token') . '" id="token">
-                    <input type="hidden" name="kamar_id" id="kamar_id" value="' . $kamar->id . '">
-                    <input type="hidden" name="token_listrik_edit" id="token_listrik_edit" value="' . $kamar->token_listrik . '">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="universalModalLabel">Edit Kamar</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="tipekamar_id" class="form-label fw-bold">Tipe Kamar</label>
-                            <select class="form-select form-select-2"
-                                name="tipekamar" id="tipekamar_id" style="width: 100%;">
-                                <option>Pilih Tipe Kamar</option>
-                                ' . implode(" ", $optiontipekamar) . '
-                            </select>
-                            <span class="text-danger" id="errorTipeKamar"></span>
-                        </div>
-                        <div>
-                            <label for="token_listrik" class="form-label fw-bold">Token Listrik <sup class="text-danger">*</sup></label>
-                            <input type="text" class="form-control"
-                                name="token_listrik" id="token_listrik" placeholder="Masukkan token listrik" value="' . $kamar->token_listrik . '">
-                            <span class="text-danger" id="errorTokenListrik"></span>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success w-100" id="btnRequest">
-                            Ya
-                        </button>
-                    </div>
-                </form>
-                ';
-
-                $response = [
-                    'status' => 200,
-                    'message' => 'success',
-                    'dataHTML' => $dataHTML
-                ];
-            } else {
-                $response = [
-                    'status' => 400,
-                    'message' => 'opps',
-                ];
-            }
-        }
-
-        return response()->json($response);
     }
     public function edittipekamar()
     {

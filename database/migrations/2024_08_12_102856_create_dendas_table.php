@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('dendas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pembayaran_id')->nullable();
             $table->dateTime('tanggal_denda')->nullable();
+            $table->foreignId('pembayaran_id')->nullable();
             $table->foreignId('penyewa_id')->nullable();
             $table->foreignId('lokasi_id')->nullable();
             $table->foreignId('tagih_id')->nullable();

@@ -25,7 +25,6 @@ class MainController extends Controller
         $pengguna = User::where('id', '<>', auth()->user()->id)->orderby('role_id', 'ASC')->get();
 
         $output = [];
-        $nomor = 1;
         foreach ($pengguna as $row) {
 
             $aksi = '<div class="d-flex flex-column align-items-center justify-content-center gap-1">
@@ -45,11 +44,10 @@ class MainController extends Controller
                    </div>';
 
             $output[] = [
-                'nomor' => "<strong>" . $nomor++ . "</strong>",
+                'aksi' => $aksi,
                 'role' => $row->roles->role,
                 'nama_pengguna' => $row->username,
                 'status' => $row->status == 1 ? '<span class="badge bg-green">Aktif</span>' : '<span class="badge bg-red">Nonaktif</span>',
-                'aksi' => $aksi,
             ];
         }
 

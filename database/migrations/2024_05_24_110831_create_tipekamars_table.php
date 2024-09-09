@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('tipekamars', function (Blueprint $table) {
             $table->id();
             $table->string("tipekamar", 50);
-            $table->integer("kapasitas");
             $table->integer('operator_id');
             $table->timestamps();
         });

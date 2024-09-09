@@ -23,8 +23,10 @@ class MainController extends Controller
         $tipekamar = Tipekamar::orderby('created_at', 'ASC')->get();
 
         $output = [];
+        $no = 1;
         foreach ($tipekamar as $row) {
             $output[] = [
+                'nomor' => '<strong>' . $no++ . '</strong>',
                 'tipekamar' => $row->tipekamar,
             ];
         }
@@ -54,7 +56,7 @@ class MainController extends Controller
                     'tipekamar' => Str::upper($tipekamar),
                     'operator_id' => auth()->user()->id
                 ]);
-
+                
                 $response = [
                     'status' => 200,
                     'message' => 'success',

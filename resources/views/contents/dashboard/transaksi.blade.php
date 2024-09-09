@@ -62,15 +62,14 @@
                         <table class="table table-light table-hover border-0 m-0" id="datatableTransaksi">
                             <thead>
                                 <tr>
-                                    <th scope="col">No</th>
                                     <th scope="col">Tanggal Transaksi</th>
                                     <th scope="col">No Transaksi</th>
-                                    {{-- <th scope="col">Tanggal Masuk</th>
+                                    <th scope="col">Tanggal Masuk</th>
                                     <th scope="col">Tanggal Keluar</th>
                                     <th scope="col">Nama Penyewa</th>
                                     <th scope="col">Nomor Kamar</th>
                                     <th scope="col">Tipe Kamar</th>
-                                    <th scope="col">Jenis Sewa</th> --}}
+                                    <th scope="col">Jenis Sewa</th>
                                     <th scope="col">Jenis Transaksi</th>
                                     <th scope="col">Metode Pembayaran</th>
                                     <th scope="col">Tipe</th>
@@ -93,6 +92,7 @@
             var totalPengeluaran = 0;
             tableTransaksi = $("#datatableTransaksi").DataTable({
                 processing: true,
+                paging: false,
                 ajax: {
                     url: "{{ route('datatabletransaksi') }}",
                     type: "POST",
@@ -128,33 +128,31 @@
                         return json.data;
                     },
                 },
-                columns: [{
-                        data: "nomor",
-                    },
+                columns: [
                     {
                         data: "tanggal_transaksi",
                     },
                     {
                         data: "no_transaksi",
                     },
-                    // {
-                    //     data: "tanggal_masuk",
-                    // },
-                    // {
-                    //     data: "tanggal_keluar",
-                    // },
-                    // {
-                    //     data: "nama_penyewa",
-                    // },
-                    // {
-                    //     data: "nomor_kamar",
-                    // },
-                    // {
-                    //     data: "tipe_kamar",
-                    // },
-                    // {
-                    //     data: "jenissewa",
-                    // },
+                    {
+                        data: "tanggal_masuk",
+                    },
+                    {
+                        data: "tanggal_keluar",
+                    },
+                    {
+                        data: "nama_penyewa",
+                    },
+                    {
+                        data: "nomor_kamar",
+                    },
+                    {
+                        data: "tipe_kamar",
+                    },
+                    {
+                        data: "jenissewa",
+                    },
                     {
                         data: "tagihan",
                     },

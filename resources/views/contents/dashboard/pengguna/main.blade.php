@@ -32,11 +32,10 @@
                             style="width: 100%">
                             <thead>
                                 <tr>
-                                    <th scope="col">No</th>
+                                    <th scope="col" width="150"></th>
                                     <th scope="col">Role</th>
                                     <th scope="col">Nama Pengguna</th>
                                     <th scope="col">Status</th>
-                                    <th scope="col" width="150"></th>
                                 </tr>
                             </thead>
                         </table>
@@ -60,7 +59,7 @@
                     dataType: "json"
                 },
                 columns: [{
-                        data: "nomor",
+                        data: "aksi",
                     },
                     {
                         data: "role",
@@ -70,9 +69,6 @@
                     },
                     {
                         data: "status",
-                    },
-                    {
-                        data: "aksi",
                     },
                 ],
                 // "order": [

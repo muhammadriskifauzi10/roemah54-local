@@ -23,5 +23,4 @@ class Transaksi extends Model
     {
         return $this->hasOne(Lokasi::class, 'id', 'lokasi_id');
     }
-    
 }

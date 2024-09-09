@@ -9,7 +9,6 @@ use App\Models\Tipekamar;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-
 class MainController extends Controller
 {
     public function index()
@@ -25,10 +24,8 @@ class MainController extends Controller
         $harga = Harga::orderBy('tipekamar_id', 'ASC')->orderBy('mitra_id', 'ASC')->get();
 
         $output = [];
-        $nomor = 1;
         foreach ($harga as $row) {
             $output[] = [
-                'nomor' => "<strong>" . $nomor++ . "</strong>",
                 'tipe_kamar' => $row->tipekamars->tipekamar,
                 'mitra' => $row->mitras->mitra,
                 'harian' => "RP. " . number_format($row->harian, '0', '.', '.'),
@@ -138,14 +135,14 @@ class MainController extends Controller
                 'bulanan' => $bulanan ? str_replace('.', '', $bulanan) : 0,
                 'operator_id' => auth()->user()->id
             ]);
-
+            
             if ($post) {
                 DB::commit();
                 return redirect()->route('harga')->with('messageSuccess', 'Harga berhasil ditambahkan!');
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return redirect('/harga')->with('messageFailed', 'Opps, terjadi kesalahan!');
+            return redirect()->route('harga')->with('messageFailed', 'Opps, terjadi kesalahan!');
         }
     }
     // ajax request

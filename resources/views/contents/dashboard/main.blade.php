@@ -34,7 +34,7 @@
                 @if ($lantai->count() > 0)
                     <div class="row">
                         @foreach ($lantai as $row)
-                            <a href="{{ route('dasbor.detaillantai', $row->id) }}"
+                            <a href="{{ route('detaillantai', $row->id) }}"
                                 class="col-xl-12 lantai text-decoration-none mb-4">
                                 <div class="card border-0 rounded" style="height: 100%">
                                     <div class="card-header bg-green text-light text-center fw-bold">
@@ -55,17 +55,7 @@
                                                         <td>Harian</td>
                                                         {{-- <td class="text-right" width="10">:</td> --}}
                                                         <td class="text-right fw-bold">
-                                                            {{ DB::table('lokasis as k')
-                                                            ->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')
-                                                            ->join('lantais as l', 'k.lantai_id', '=', 'l.id')
-                                                            // ->join('penyewas as s', 'p.penyewa_id', '=', 's.id')
-                                                            ->where('l.id', $row->id)
-                                                            ->where('p.jenissewa', 'Harian')
-                                                            ->whereIn('k.status', [1, 2])
-                                                            ->where('p.status_pembayaran', '!=', 'failed')
-                                                            ->where('p.status', 1)
-                                                            ->distinct('k.id')
-                                                            ->count('k.id') }}
+                                                            {{ DB::table('lokasis as k')->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')->join('lantais as l', 'k.lantai_id', '=', 'l.id')->join('penyewas as s', 'p.penyewa_id', '=', 's.id')->where('l.id', $row->id)->where('p.jenissewa', 'Harian')->whereIn('k.status', [1, 2])->where('p.status_pembayaran', '!=', 'failed')->whereIn('p.status', [1, 2])->distinct('k.id')->count('k.id') }}
                                                             Kamar
                                                         </td>
                                                     </tr>
@@ -73,17 +63,7 @@
                                                         <td>Mingguan / 7 Hari </td>
                                                         {{-- <td class="text-right" width="10">:</td> --}}
                                                         <td class="text-right fw-bold">
-                                                            {{ DB::table('lokasis as k')
-                                                            ->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')
-                                                            ->join('lantais as l', 'k.lantai_id', '=', 'l.id')
-                                                            // ->join('penyewas as s', 'p.penyewa_id', '=', 's.id')
-                                                            ->where('l.id', $row->id)
-                                                            ->where('p.jenissewa', 'Mingguan / 7 Hari')
-                                                            ->whereIn('k.status', [1, 2])
-                                                            ->where('p.status_pembayaran', '!=', 'failed')
-                                                            ->whereIn('p.status', [1, 2])
-                                                            ->distinct('k.id')
-                                                            ->count('k.id') }}
+                                                            {{ DB::table('lokasis as k')->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')->join('lantais as l', 'k.lantai_id', '=', 'l.id')->join('penyewas as s', 'p.penyewa_id', '=', 's.id')->where('l.id', $row->id)->where('p.jenissewa', 'Mingguan / 7 Hari')->whereIn('k.status', [1, 2])->where('p.status_pembayaran', '!=', 'failed')->whereIn('p.status', [1, 2])->distinct('k.id')->count('k.id') }}
                                                             Kamar
                                                         </td>
                                                     </tr>
@@ -91,16 +71,7 @@
                                                         <td>Mingguan / (14 Hari)</td>
                                                         {{-- <td class="text-right" width="10">:</td> --}}
                                                         <td class="text-right fw-bold">
-                                                            {{ DB::table('lokasis as k')
-                                                            ->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')
-                                                            ->join('lantais as l', 'k.lantai_id', '=', 'l.id')
-                                                            // ->join('penyewas as s', 'p.penyewa_id', '=', 's.id')
-                                                            ->where('l.id', $row->id)->where('p.jenissewa', 'Mingguan / (14 Hari)')
-                                                            ->whereIn('k.status', [1, 2])
-                                                            ->where('p.status_pembayaran', '!=', 'failed')
-                                                            ->whereIn('p.status', [1, 2])
-                                                            ->distinct('k.id')
-                                                            ->count('k.id') }}
+                                                            {{ DB::table('lokasis as k')->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')->join('lantais as l', 'k.lantai_id', '=', 'l.id')->join('penyewas as s', 'p.penyewa_id', '=', 's.id')->where('l.id', $row->id)->where('p.jenissewa', 'Mingguan / (14 Hari)')->whereIn('k.status', [1, 2])->where('p.status_pembayaran', '!=', 'failed')->whereIn('p.status', [1, 2])->distinct('k.id')->count('k.id') }}
                                                             Kamar
                                                         </td>
                                                     </tr>
@@ -108,17 +79,7 @@
                                                         <td>Bulanan</td>
                                                         {{-- <td class="text-right" width="10">:</td> --}}
                                                         <td class="text-right fw-bold">
-                                                            {{ DB::table('lokasis as k')
-                                                            ->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')
-                                                            ->join('lantais as l', 'k.lantai_id', '=', 'l.id')
-                                                            // ->join('penyewas as s', 'p.penyewa_id', '=', 's.id')
-                                                            ->where('l.id', $row->id)
-                                                            ->where('p.jenissewa', 'Bulanan')
-                                                            ->whereIn('k.status', [1, 2])
-                                                            ->where('p.status_pembayaran', '!=', 'failed')
-                                                            ->whereIn('p.status', [1, 2])
-                                                            ->distinct('k.id')
-                                                            ->count('k.id') }}
+                                                            {{ DB::table('lokasis as k')->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')->join('lantais as l', 'k.lantai_id', '=', 'l.id')->join('penyewas as s', 'p.penyewa_id', '=', 's.id')->where('l.id', $row->id)->where('p.jenissewa', 'Bulanan')->whereIn('k.status', [1, 2])->where('p.status_pembayaran', '!=', 'failed')->whereIn('p.status', [1, 2])->distinct('k.id')->count('k.id') }}
                                                             Kamar
                                                         </td>
                                                     </tr>

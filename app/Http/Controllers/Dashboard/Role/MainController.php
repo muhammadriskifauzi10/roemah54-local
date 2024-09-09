@@ -54,7 +54,7 @@ class MainController extends Controller
                     'role' => Str::title($role),
                     'operator_id' => auth()->user()->id
                 ]);
-
+                
                 $response = [
                     'status' => 200,
                     'message' => 'success',

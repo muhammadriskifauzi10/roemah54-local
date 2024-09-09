@@ -21,9 +21,8 @@
                                 <path fill-rule="evenodd"
                                     d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
                             </svg>
-                            Harga
-                        </span>
-                    </a>
+                            Harga</a>
+                    </span>
                 </div>
 
                 {{-- Kamar --}}
@@ -32,7 +31,6 @@
                         <table class="table table-light table-hover border-0 m-0" id="datatableHarga">
                             <thead>
                                 <tr>
-                                    <th scope="col">No</th>
                                     <th scope="col">Tipe Kamar</th>
                                     <th scope="col">Mitra</th>
                                     <th scope="col">Harian</th>
@@ -62,9 +60,7 @@
                     // dataSrc: ""
                     dataType: "json",
                 },
-                columns: [{
-                        data: "nomor",
-                    },
+                columns: [
                     {
                         data: "tipe_kamar",
                     },
