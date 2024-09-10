@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('penyewas', function (Blueprint $table) {
+        Schema::create('asramas', function (Blueprint $table) {
             $table->id();
-            $table->string('namalengkap', 191);
-            $table->string('noktp', 50);
-            $table->string('nohp', 50);
-            $table->text('alamat');
-            $table->string('jenis_penyewa', 100)->default('Umum');
-            $table->string('fotoktp', 100);
-            $table->tinyInteger('status')->default(1);
+            $table->foreignId("lantai_id")->nullable();
+            $table->string("nomor_kamar", 50)->nullable();
+            $table->foreignId("tipekamar_id")->nullable();
+            $table->string('tipekamar', 50)->nullable();
+            $table->string('jenissewa')->nullable();
+            $table->integer("jumlah_mahasiswa")->default(0);
             $table->integer('operator_id');
             $table->timestamps();
         });
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('penyewas');
+        Schema::dropIfExists('asramas');
     }
 };

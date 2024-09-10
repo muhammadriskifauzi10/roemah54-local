@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Dashboard\Asrama\Kamar\MainController as KamarMainController;
+use App\Http\Controllers\Dashboard\Asrama\Mahasiswa\MainController as MahasiswaMainController;
+use App\Http\Controllers\Dashboard\Asrama\MainController as AsramaMainController;
 use App\Http\Controllers\Dashboard\Bisnis\Ritel\MainController as RitelMainController;
 use App\Http\Controllers\Dashboard\Harga\MainController as HargaMainController;
 use App\Http\Controllers\Dashboard\HargaController;
@@ -46,8 +49,8 @@ Route::group(['middleware' => 'auth'], function () {
     // menu utama
     // dasbor
     Route::get('/dasbor', [MainController::class, 'index'])->name('dasbor');
-    Route::get('/dasbor/{lantai:id}', [MainController::class, 'detaildata'])->name('detaillantai');
-    Route::get('/dasbor/detailpenyewa/{penyewa:id}', [MainController::class, 'detailpenyewa'])->name('detailpenyewa');
+    Route::get('/dasbor/{lantai:id}', [MainController::class, 'detaildata'])->name('dasbor.detaillantai');
+    Route::get('/dasbor/detailpenyewa/{penyewa:id}', [MainController::class, 'detailpenyewa'])->name('dasbor.detailpenyewa');
 
     // Lantai
     Route::post('/tambahlantai', [MainController::class, 'create'])->name('postlantai');
@@ -103,6 +106,21 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/kamar/tambahkamar', [KamarController::class, 'create'])->name('kamar.postkamar');
     Route::post('/kamar/getmodaleditkamar', [KamarController::class, 'getmodaleditkamar'])->name('kamar.getmodaleditkamar');
     Route::post('/kamar/postedittipekamar', [KamarController::class, 'edittipekamar'])->name('kamar.postedittipekamar');
+    // kamar asrama
+    Route::get('/asrama/mahasiswa', [MahasiswaMainController::class, 'index'])->name('asrama.mahasiswa');
+    Route::post('/asrama/mahasiswa/datatableasramamahasiswa', [MahasiswaMainController::class, 'datatableasramamahasiswa'])->name('asrama.mahasiswa.datatableasramamahasiswa');
+    Route::post('/asrama/mahasiswa/getmodaltambahpenyewa', [MahasiswaMainController::class, 'getmodaltambahpenyewa'])->name('asrama.mahasiswa.getmodaltambahpenyewa');
+    Route::post('/asrama/mahasiswa/tambahpenyewa', [MahasiswaMainController::class, 'tambahpenyewa'])->name('asrama.mahasiswa.tambahpenyewa');
+    Route::get('/asrama/mahasiswa/cetakinvoice/{id}', [MahasiswaMainController::class, 'cetakinvoice'])->name('asrama.mahasiswa.cetakinvoice');
+    Route::get('/asrama/mahasiswa/cetakkwitansi/{id}', [MahasiswaMainController::class, 'cetakkwitansi'])->name('asrama.mahasiswa.cetakkwitansi');
+    Route::post('/asrama/mahasiswa/getrequestformsewaonktp', [MahasiswaMainController::class, 'getrequestformsewaonktp'])->name('asrama.mahasiswa.getrequestformsewaonktp');
+    // kamar asrama
+    Route::get('/asrama/kamar', [KamarMainController::class, 'index'])->name('asrama.kamar');
+    Route::post('/asrama/kamar/datatableasrama', [KamarMainController::class, 'datatableasrama'])->name('asrama.kamar.datatableasrama');
+    Route::get('/asrama/kamar/tambahasrama', [KamarMainController::class, 'tambahasrama'])->name('asrama.kamar.tambahasrama');
+    Route::post('/asrama/kamar/tambahasrama', [KamarMainController::class, 'create'])->name('asrama.kamar.postasrama');
+    Route::get('/asrama/kamar/detailpenyewa/{id}', [KamarMainController::class, 'detailpenyewa'])->name('asrama.kamar.detailpenyewa');
+    Route::post('/asrama/kamar/getselectlantaikamar', [KamarMainController::class, 'getselectlantaikamar'])->name('asrama.kamar.getselectlantaikamar');
     // Harga
     Route::get('/harga', [HargaMainController::class, 'index'])->name('harga');
     Route::post('/harga/datatableharga', [HargaMainController::class, 'datatableharga'])->name('harga.datatableharga');

@@ -34,7 +34,7 @@
                 @if ($lantai->count() > 0)
                     <div class="row">
                         @foreach ($lantai as $row)
-                            <a href="{{ route('detaillantai', $row->id) }}"
+                            <a href="{{ route('dasbor.detaillantai', $row->id) }}"
                                 class="col-xl-12 lantai text-decoration-none mb-4">
                                 <div class="card border-0 rounded" style="height: 100%">
                                     <div class="card-header bg-green text-light text-center fw-bold">
@@ -88,14 +88,15 @@
                                             <div class="mt-2 d-flex align-items-center gap-4">
                                                 <div class="bg-success"
                                                     style="width: 20px; height: 20px; border-radius: 50px;"></div>
-                                                <strong class="black">{{ $row->lokasis->whereIn('status', [1,2])->count() }}
+                                                <strong
+                                                    class="black">{{ $row->lokasis->whereIn('status', [1, 2])->count() }}
                                                     Kamar Terisi</strong>
                                             </div>
                                             <div class="mt-1 d-flex align-items-center gap-4">
                                                 <div class="bg-warning"
                                                     style="width: 20px; height: 20px; border-radius: 50px;"></div>
                                                 <strong class="black">{{ $row->lokasis->where('status', 2)->count() }}
-                                                    Booking / Belum Lunas</strong>
+                                                    Kamar Booking / Belum Lunas</strong>
                                             </div>
                                             <div class="mt-1 d-flex align-items-center gap-4">
                                                 <div class="bg-danger"

@@ -140,7 +140,6 @@ class SewaController extends Controller
             $model_kamar = Lokasi::where('id', $kamar)->first();
             $model_harga = Harga::where('tipekamar_id', (int)$model_kamar->tipekamar_id)->where('mitra_id', (int)$mitra)->first();
 
-
             if ($total_bayar) {
                 $total_bayar = str_replace(".", "", $total_bayar);
             } else {
@@ -311,9 +310,9 @@ class SewaController extends Controller
                     $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
 
                     $transaksi = new Transaksi();
+                    $transaksi->pembayaran_id = $pembayaran->id;
                     $transaksi->no_transaksi = $no_transaksi;
                     $transaksi->tagih_id = 1;
-                    $transaksi->pembayaran_id = $pembayaran->id;
                     $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
                     $transaksi->jumlah_uang = $total_bayar;
                     $transaksi->metode_pembayaran = $metode_pembayaran;
@@ -1124,6 +1123,7 @@ class SewaController extends Controller
             $lantai = htmlspecialchars(request()->input('lantai'), ENT_QUOTES, 'UTF-8');
             if (Lantai::where('id', (int)$lantai)->exists()) {
                 $kamar = Lokasi::where('jenisruangan_id', 2)->where('lantai_id', (int)$lantai)
+                    ->whereNotIn('tipekamar_id', [5, 6])
                     ->where('status', 0)->get();
 
                 $selectkamar = [];

@@ -20,7 +20,7 @@ class MainController extends Controller
 {
     public function index()
     {
-        $penyewa = Penyewa::all();
+        $penyewa = Penyewa::where('jenis_penyewa', 'Umum')->get();
 
         $data = [
             'judul' => 'Penyewaan Kamar',

@@ -17,6 +17,7 @@ class Penyewa extends Model
         'noktp',
         'nohp',
         'alamat',
+        'jenis_penyewa',
         'fotoktp',
         'status',
         'operator_id'

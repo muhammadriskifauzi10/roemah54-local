@@ -9,11 +9,11 @@
             <div class="col-xl-10">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('detaillantai', $kamar->lantai_id) }}">Kembali</a></li>
+                        <li class="breadcrumb-item"><a href="javascript:history.back()">Kembali</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Detail Penyewa</li>
                     </ol>
                 </nav>
-                
+
                 <div class="card border-0">
                     <div class="card-body p-0">
                         <table class="table table-hover not-va m-0">
