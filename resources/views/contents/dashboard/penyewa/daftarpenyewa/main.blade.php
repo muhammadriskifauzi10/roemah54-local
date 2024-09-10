@@ -12,26 +12,27 @@
                         <li class="breadcrumb-item active" aria-current="page">Daftar Penyewa</li>
                     </ol>
                 </nav>
-                
+
                 <h5 class="m-0 mb-3">Total Penyewa Aktif: {{ DB::table('penyewas')->where('status', 1)->count() }}</h6>
 
-                {{-- daftar penyewa --}}
-                <div class="card border-0">
-                    <div class="card-body">
-                        <table class="table table-light table-hover border-0 m-0" id="datatableDaftarPenyewa">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Nama Lengkap</th>
-                                    <th scope="col">No KTP</th>
-                                    <th scope="col">No HP</th>
-                                    <th scope="col">Alamat</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Foto KTP</th>
-                                </tr>
-                            </thead>
-                        </table>
+                    {{-- daftar penyewa --}}
+                    <div class="card border-0">
+                        <div class="card-body">
+                            <table class="table table-light table-hover border-0 m-0" id="datatableDaftarPenyewa">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">No</th>
+                                        <th scope="col">Nama Lengkap</th>
+                                        <th scope="col">No KTP</th>
+                                        <th scope="col">No HP</th>
+                                        <th scope="col">Alamat</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Foto KTP</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div>
-                </div>
             </div>
         </div>
     </div>
@@ -50,7 +51,9 @@
                     // dataSrc: ""
                     dataType: "json",
                 },
-                columns: [
+                columns: [{
+                        data: "nomor",
+                    },
                     {
                         data: "nama_lengkap",
                     },

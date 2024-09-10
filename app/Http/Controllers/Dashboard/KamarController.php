@@ -26,6 +26,7 @@ class KamarController extends Controller
         $kamar = Lokasi::where('jenisruangan_id', 2)->orderby('lantai_id', 'ASC')->get();
 
         $output = [];
+        $no = 1;
         foreach ($kamar as $row) {
             if ($row->status == 1) {
                 $status = "<strong class='badge bg-success fw-bold'>Terisi</strong>";
@@ -55,12 +56,13 @@ class KamarController extends Controller
             ';
 
             $output[] = [
-                'aksi' => $aksi,
+                'nomor' => "<strong>" . $no++ . "</strong>",
                 'lantai' => $row->lantais->namalantai,
                 'nomor_kamar' => $row->nomor_kamar,
                 'tipe_kamar' => $row->tipekamars->tipekamar,
                 'token_listrik' => $row->token_listrik,
                 'status' => $status,
+                'aksi' => $aksi,
             ];
         }
 

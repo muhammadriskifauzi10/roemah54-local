@@ -62,6 +62,7 @@
                         <table class="table table-light table-hover border-0 m-0" id="datatableTransaksi">
                             <thead>
                                 <tr>
+                                    <th scope="col">No</th>
                                     <th scope="col">Tanggal Transaksi</th>
                                     <th scope="col">No Transaksi</th>
                                     <th scope="col">Tanggal Masuk</th>
@@ -129,6 +130,9 @@
                     },
                 },
                 columns: [
+                    {
+                        data: "nomor",
+                    },
                     {
                         data: "tanggal_transaksi",
                     },

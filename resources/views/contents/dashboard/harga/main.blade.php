@@ -31,6 +31,7 @@
                         <table class="table table-light table-hover border-0 m-0" id="datatableHarga">
                             <thead>
                                 <tr>
+                                    <th scope="col">No</th>
                                     <th scope="col">Tipe Kamar</th>
                                     <th scope="col">Mitra</th>
                                     <th scope="col">Harian</th>
@@ -60,7 +61,9 @@
                     // dataSrc: ""
                     dataType: "json",
                 },
-                columns: [
+                columns: [{
+                        data: "nomor",
+                    },
                     {
                         data: "tipe_kamar",
                     },

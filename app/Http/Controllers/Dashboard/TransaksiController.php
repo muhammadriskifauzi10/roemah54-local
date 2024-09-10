@@ -62,8 +62,10 @@ class TransaksiController extends Controller
             ->orderby('transaksis.tanggal_transaksi', 'DESC')->get();
 
         $output = [];
+        $no = 1;
         foreach ($transaksi as $row) {
             $output[] = [
+                'nomor' => "<strong>" . $no++ . "</strong>",
                 'tanggal_transaksi' => Carbon::parse($row->tanggal_transaksi)->format("Y-m-d H:i:s"),
                 'no_transaksi' => $row->no_transaksi,
                 'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("Y-m-d H:i:s"),

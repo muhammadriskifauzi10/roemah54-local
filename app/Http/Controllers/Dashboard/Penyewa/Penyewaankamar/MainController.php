@@ -51,6 +51,7 @@ class MainController extends Controller
             ->get();
 
         $output = [];
+        $no = 1;
         foreach ($penyewaankamar as $row) {
             // status pembayaran
             if ($row->status_pembayaran == "completed") {
@@ -144,7 +145,7 @@ class MainController extends Controller
             ';
 
             $output[] = [
-                'aksi' => $aksi,
+                'nomor' => "<strong>" . $no++ . "</strong>",
                 'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("Y-m-d H:i:s"),
                 'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("Y-m-d H:i:s"),
                 'nama_penyewa' => $row->penyewas->namalengkap,
@@ -159,6 +160,7 @@ class MainController extends Controller
                 'tanggal_pembayaran' => $row->tanggal_pembayaran ? Carbon::parse($row->tanggal_pembayaran)->format("Y-m-d H:i:s") : "-",
                 'kurang_bayar' => $row->kurang_bayar ? "RP. " . number_format($row->kurang_bayar, '0', '.', '.') : "RP. 0",
                 'status_pembayaran' => $status_pembayaran,
+                'aksi' => $aksi,
             ];
         }
 

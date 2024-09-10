@@ -49,7 +49,7 @@
                         <table class="table table-light table-hover border-0 m-0" id="datatablePenyewaanKamar">
                             <thead>
                                 <tr>
-                                    <th scope="col" width="150"></th>
+                                    <th scope="col">No</th>
                                     <th scope="col">Tanggal Masuk</th>
                                     <th scope="col">Tanggal Keluar</th>
                                     <th scope="col">Nama Penyewa</th>
@@ -64,6 +64,7 @@
                                     <th scope="col">Tanggal Pembayaran</th>
                                     <th scope="col">Kurang Bayar</th>
                                     <th scope="col">Status Pembayaran</th>
+                                    <th scope="col" width="150"></th>
                                 </tr>
                             </thead>
                         </table>
@@ -93,7 +94,7 @@
                     },
                 },
                 columns: [{
-                        data: "aksi",
+                        data: "nomor",
                     },
                     {
                         data: "tanggal_masuk",
@@ -136,6 +137,9 @@
                     },
                     {
                         data: "status_pembayaran",
+                    },
+                    {
+                        data: "aksi",
                     },
                 ],
                 dom: "lBfrtip",

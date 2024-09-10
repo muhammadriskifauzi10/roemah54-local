@@ -24,8 +24,10 @@ class MainController extends Controller
         $harga = Harga::orderBy('tipekamar_id', 'ASC')->orderBy('mitra_id', 'ASC')->get();
 
         $output = [];
+        $no = 1;
         foreach ($harga as $row) {
             $output[] = [
+                'nomor' => "<strong>" . $no++ . "</strong>",
                 'tipe_kamar' => $row->tipekamars->tipekamar,
                 'mitra' => $row->mitras->mitra,
                 'harian' => "RP. " . number_format($row->harian, '0', '.', '.'),
