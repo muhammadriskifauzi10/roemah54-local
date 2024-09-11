@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Dashboard\Asrama\Mahasiswa;
 
 use App\Http\Controllers\Controller;
-use App\Models\Asrama;
 use App\Models\Lokasi;
 use App\Models\Pembayaran;
 use App\Models\Penyewa;
 use App\Models\Tipekamar;
 use App\Models\Transaksi;
-use App\Models\Transaksiasrama;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Dompdf\Dompdf;
