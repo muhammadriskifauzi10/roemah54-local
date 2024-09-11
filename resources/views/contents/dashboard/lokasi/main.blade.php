@@ -32,9 +32,9 @@
                             <thead>
                                 <tr>
                                     <th scope="col">No</th>
+                                    <th scope="col">No Token Listrik</th>
                                     <th scope="col">Lantai</th>
                                     <th scope="col">Lokasi</th>
-                                    <th scope="col">Token Listrik</th>
                                 </tr>
                             </thead>
                         </table>
@@ -62,13 +62,13 @@
                         data: "nomor",
                     },
                     {
+                        data: "token_listrik",
+                    },
+                    {
                         data: "lantai",
                     },
                     {
                         data: "lokasi",
-                    },
-                    {
-                        data: "token_listrik",
                     },
                 ],
                 // "order": [

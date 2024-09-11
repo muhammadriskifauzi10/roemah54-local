@@ -10,22 +10,23 @@ class Asrama extends Model
     protected $table = 'asramas';
     protected $primaryKey = 'id';
 
-    protected $fillable = [
-        'lantai_id',
-        'nomor_kamar',
-        'tipekamar_id',
-        'tipekamar',
-        'jumlah_mahasiswa',
-        'operator_id'
-    ];
-
-    public function lantais()
+    public function penyewas()
     {
-        return $this->hasOne(Lantai::class, 'id', 'lantai_id');
+        return $this->hasOne(Penyewa::class, 'id', 'penyewa_id');
+    }
+
+    public function lokasis()
+    {
+        return $this->hasOne(Lokasi::class, 'id', 'lokasi_id');
     }
 
     public function tipekamars()
     {
         return $this->hasOne(Tipekamar::class, 'id', 'tipekamar_id');
+    }
+
+    public function mitras()
+    {
+        return $this->hasOne(Mitra::class, 'id', 'mitra_id');
     }
 }

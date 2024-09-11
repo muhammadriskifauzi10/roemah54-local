@@ -40,7 +40,7 @@
                                 </tr>
                                 <th scope="row" class="text-left">Foto KTP</th>
                                 <th scope="row" class="text-right">:</th>
-                                <th scope="row" class="text-left"><a href="/img/ktp/{{ $penyewa->fotoktp }}"
+                                <th scope="row" class="text-left"><a href="/img/ktp/umum/{{ $penyewa->fotoktp }}"
                                         target="_blank">Lihat
                                         File</a></th>
                                 </tr>
@@ -48,9 +48,9 @@
                                     <th scope="row" class="text-left">Periode</th>
                                     <th scope="row" class="text-right">:</th>
                                     <th scope="row" class="text-left">
-                                        {{ \Carbon\Carbon::parse($penyewa->transaksisewa_kamars->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
+                                        {{ \Carbon\Carbon::parse($penyewa->transaksisewa_kamars->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
                                         |
-                                        {{ \Carbon\Carbon::parse($penyewa->transaksisewa_kamars->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
+                                        {{ \Carbon\Carbon::parse($penyewa->transaksisewa_kamars->tanggal_keluar)->translatedFormat('l, d-m-Y H:i:s') }}
                                     </th>
                                 </tr>
                                 <tr>

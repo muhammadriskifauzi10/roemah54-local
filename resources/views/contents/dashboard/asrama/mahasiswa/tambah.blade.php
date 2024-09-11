@@ -9,7 +9,8 @@
             <div class="col-xl-10">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item active" aria-current="page">Penyewaan Kamar</li>
+                        <li class="breadcrumb-item"><a href="javascript:history.back()">Kembali</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Penyewaan Kamar Asrama</li>
                     </ol>
                 </nav>
 
@@ -55,8 +56,8 @@
                                     </div>
                                 </div>
 
-                                <form action="{{ route('postsewa') }}" autocomplete="off" method="POST"
-                                    enctype="multipart/form-data">
+                                <form action="{{ route('asrama.mahasiswa.posttambahpenyewa') }}" autocomplete="off"
+                                    method="POST" enctype="multipart/form-data">
                                     @csrf
                                     {{-- data diri --}}
                                     <div class="card border-2 border-dark mb-3">
@@ -137,103 +138,47 @@
                                     {{-- penginapan kamar --}}
                                     <div class="card border-2 border-dark mb-3">
                                         <div class="card-header bg-dark text-light">
-                                            Penginapan Kamar
+                                            Kamar Asrama
                                         </div>
                                         <div class="card-body">
-                                            <div class="row">
-                                                {{-- Lantai --}}
-                                                <div class="col-lg-6 mb-3">
-                                                    <label for="lantai" class="form-label fw-bold">Lantai</label>
-                                                    <select
-                                                        class="form-select form-select-2 @error('lantai') is-invalid @enderror"
-                                                        name="lantai" id="lantai" style="width: 100%;"
-                                                        onchange="selectLantai()">
-                                                        <option>Pilih Lantai</option>
-                                                        @foreach ($lantai as $row)
-                                                            <option value="{{ $row->id }}">
-                                                                {{ $row->namalantai }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('lantai')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
-                                                </div>
-                                                {{-- Kamar --}}
-                                                <div class="col-lg-6 mb-3">
-                                                    <label for="kamar" class="form-label fw-bold">Kamar</label>
-                                                    <select
-                                                        class="form-select form-select-2 @error('kamar') is-invalid @enderror"
-                                                        name="kamar" id="kamar" style="width: 100%;"
-                                                        onchange="selectKamar()">
-                                                        <option>Pilih Kamar</option>
-                                                    </select>
-                                                    @error('kamar')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                {{-- Jenis Sewa --}}
-                                                <div class="col-lg-6 mb-3">
-                                                    <label for="jenissewa" class="form-label fw-bold">Jenis Sewa</label>
-                                                    <select
-                                                        class="form-select form-select-2 @error('jenissewa') is-invalid @enderror"
-                                                        name="jenissewa" id="jenissewa" style="width: 100%;"
-                                                        onchange="selectJenisSewa()">
-                                                        <option>Pilih Jenis Sewa</option>
-                                                    </select>
-                                                    @error('jenissewa')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
-                                                </div>
-                                                {{-- mitra --}}
-                                                <div class="col-lg-6 mb-3">
-                                                    <label for="mitra" class="form-label fw-bold">Mitra</label>
-                                                    <select
-                                                        class="form-select form-select-2 @error('mitra') is-invalid @enderror"
-                                                        name="mitra" id="mitra" style="width: 100%;"
-                                                        onchange="selectMitra()">
-                                                        <option>Pilih Mitra</option>
-                                                    </select>
-                                                    @error('mitra')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                {{-- Tanggal Masuk --}}
-                                                <div class="col-6">
-                                                    <label for="tanggalmasuk" class="form-label fw-bold">Tanggal
-                                                        Masuk</label>
-                                                    <input type="datetime-local"
-                                                        class="form-control @error('tanggalmasuk') is-invalid @enderror without_ampm"
-                                                        name="tanggalmasuk" id="tanggalmasuk"
-                                                        value="{{ old('tanggalmasuk') }}">
-                                                    @error('tanggalmasuk')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
-                                                </div>
-                                                {{-- Jumlah Hari --}}
-                                                <div class="col-6">
-                                                    <label for="jumlahhari" class="form-label fw-bold">Jumlah Hari</label>
-                                                    <div class="input-group" style="z-index: 0;">
-                                                        <input type="number" class="form-control" name="jumlahhari"
-                                                            id="jumlahhari" value="{{ old('jumlahhari') }}"
-                                                            oninput="jumlahHari()">
-                                                        <span
-                                                            class="input-group-text bg-success text-light fw-bold">Hari</span>
+                                            {{-- Kamar --}}
+                                            <div class="mb-3">
+                                                <label for="lokasi" class="form-label fw-bold">Kamar</label>
+                                                <select
+                                                    class="form-select form-select-2 @error('lokasi') is-invalid @enderror"
+                                                    name="lokasi" id="lokasi" style="width: 100%;">
+                                                    <option>Pilih Kamar</option>
+                                                    @foreach ($kamar as $row)
+                                                        <option value="{{ $row->id }}"
+                                                            {{ old('lokasi_id') == $row->id ? 'selected' : '' }}>
+                                                            Lantai {{ $row->lantai_id }} |
+                                                            Nomor Kamar: {{ $row->nomor_kamar }} |
+                                                            Tipe Kamar: {{ $row->tipekamars->tipekamar }} |
+                                                            Sisa:
+                                                            {{ intval($row->kapasitas) - intval($row->jumlah_penyewa) }}
+                                                            Mahasiswa
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                @error('lokasi')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
                                                     </div>
-                                                </div>
+                                                @enderror
+                                            </div>
+                                            {{-- Tanggal Masuk --}}
+                                            <div>
+                                                <label for="tanggalmasuk" class="form-label fw-bold">Tanggal
+                                                    Masuk</label>
+                                                <input type="datetime-local"
+                                                    class="form-control @error('tanggalmasuk') is-invalid @enderror without_ampm"
+                                                    name="tanggalmasuk" id="tanggalmasuk"
+                                                    value="{{ old('tanggalmasuk') }}">
+                                                @error('tanggalmasuk')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
                                             </div>
                                         </div>
                                     </div>
@@ -338,35 +283,14 @@
                             <div class="card-body">
                                 <table style="width: 100%">
                                     <tr>
-                                        <td>Lantai</td>
-                                        <td>:</td>
-                                        <td style="text-align: right;" id="d-lantai">-</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Nomor Kamar</td>
-                                        <td>:</td>
-                                        <td style="text-align: right;" id="d-nomorkamar">-</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Tipe Kamar</td>
-                                        <td>:</td>
-                                        <td style="text-align: right;" id="d-tipekamar">-</td>
-                                    </tr>
-                                    <tr>
                                         <td>Jenis Sewa</td>
                                         <td>:</td>
-                                        <td style="text-align: right;" id="d-jenissewa">-</td>
+                                        <td style="text-align: right;">Bulanan</td>
                                     </tr>
                                     <tr>
                                         <td>Mitra</td>
                                         <td>:</td>
-                                        <td style="text-align: right;" id="d-mitra">-</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Harga Kamar</td>
-                                        <td>:</td>
-                                        <td style="text-align: right;"><strong id="d-hargakamar">RP.
-                                                0</strong></td>
+                                        <td style="text-align: right;">Asrama</td>
                                     </tr>
                                     <tr>
                                         <td colspan="3">
@@ -374,22 +298,10 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>Diskon</td>
-                                        <td>:</td>
-                                        <td style="text-align: right;"><strong class="red" id="d-diskon">0
-                                                %</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Potongan Harga</td>
-                                        <td>:</td>
-                                        <td style="text-align: right;"><strong id="d-potongan">RP.
-                                                0</strong></td>
-                                    </tr>
-                                    <tr>
                                         <td>Total Pembayaran</td>
                                         <td>:</td>
-                                        <td style="text-align: right;"><strong id="d-totalpembayaran">RP.
-                                                0</strong></td>
+                                        <td style="text-align: right;"><strong id="d-totalpembayaran">RP. 500.000</strong>
+                                        </td>
                                     </tr>
                                 </table>
                             </div>
@@ -458,7 +370,7 @@
                 formData.append("noktp", noktp);
 
                 $.ajax({
-                    url: "{{ route('penyewaankamar.getrequestformsewaonktp') }}",
+                    url: "{{ route('asrama.mahasiswa.getrequestformsewaonktp') }}",
                     type: "POST",
                     data: formData,
                     processData: false,
@@ -471,222 +383,6 @@
                         }
                     },
                 });
-            }
-        }
-
-        function selectLantai() {
-            // kamar
-            $("#kamar").empty()
-            $("#kamar").append(`
-                <option>Pilih Kamar</option>
-            `)
-            // jenis sewa
-            $("#jenissewa").empty()
-            $("#jenissewa").append(`
-            <option>Pilih Jenis Sewa</option>
-            `)
-            // mitra
-            $("#mitra").empty()
-            $("#mitra").append(`
-            <option>Pilih Mitra</option>
-            `)
-            var formData = new FormData();
-            formData.append("lantai", $("#lantai").val());
-
-            $.ajax({
-                url: "{{ route('getselectlantaikamar') }}",
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.message == "success") {
-                        $("#d-lantai").text(response.data['namalantai']);
-                        $("#d-nomorkamar").text("-");
-                        $("#d-tipekamar").text("-");
-                        $("#d-jenissewa").text("-");
-                        $("#d-mitra").text("-");
-                        $("#d-hargakamar").text("RP. 0");
-                        $("#d-diskon").text("0 %");
-                        $("#d-potongan").text("RP. 0");
-                        $("#d-totalpembayaran").text("RP. 0");
-
-                        $("#kamar").append(response.data['dataHTML'].trim())
-                    } else {
-                        $("#d-lantai").text("-")
-                        $("#d-nomorkamar").text("-");
-                        $("#d-tipekamar").text("-");
-                        $("#d-jenissewa").text("-");
-                        $("#d-mitra").text("-");
-                        $("#d-hargakamar").text("RP. 0");
-                        $("#d-diskon").text("0 %");
-                        $("#d-potongan").text("RP. 0");
-                        $("#d-totalpembayaran").text("RP. 0");
-                    }
-                },
-            });
-        }
-
-        function selectKamar() {
-            // jenis sewa
-            $("#jenissewa").empty()
-            $("#jenissewa").append(`
-                <option>Pilih Jenis Sewa</option>
-            `)
-            // mitra
-            $("#mitra").empty()
-            $("#mitra").append(`
-                <option>Pilih Mitra</option>
-            `)
-            var formData = new FormData();
-            formData.append("kamar", $("#kamar").val());
-
-            $.ajax({
-                url: "{{ route('getselectkamar') }}",
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.message == "success") {
-                        $("#d-nomorkamar").text(response.data['nomorkamar']);
-                        $("#d-tipekamar").text(response.data['tipekamar']);
-                        $("#d-jenissewa").text("-");
-                        $("#d-mitra").text("-");
-                        $("#d-hargakamar").text("RP. 0");
-                        $("#d-diskon").text("0 %");
-                        $("#d-potongan").text("RP. 0");
-                        $("#d-totalpembayaran").text("RP. 0");
-                        $("#jenissewa").append(response.data['dataHTML'].trim())
-                    } else {
-                        $("#d-nomorkamar").text("-");
-                        $("#d-tipekamar").text("-");
-                        $("#d-jenissewa").text("-");
-                        $("#d-mitra").text("-");
-                        $("#d-hargakamar").text("RP. 0");
-                        $("#d-diskon").text("0 %");
-                        $("#d-potongan").text("RP. 0");
-                        $("#d-totalpembayaran").text("RP. 0");
-                    }
-                },
-            });
-        }
-
-        function selectJenisSewa() {
-            var formData = new FormData();
-            formData.append("kamar", $("#kamar").val());
-            formData.append("jenissewa", $("#jenissewa").val());
-
-            $.ajax({
-                url: "{{ route('getselectjenissewa') }}",
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.message == "success") {
-                        if ($("#jenissewa").val() == "Pilih Jenis Sewa") {
-                            $("#d-jenissewa").text("-");
-
-                            // mitra
-                            $("#mitra").empty()
-                            $("#mitra").append(`
-                                <option>Pilih Mitra</option>
-                                `)
-
-                            // jumlah hari
-                            jumlahHari()
-                        } else {
-                            $("#d-jenissewa").text(response.data['jenissewa']);
-
-                            if ($("#mitra").val() != "Pilih Mitra") {
-                                // jumlah hari
-                                jumlahHari()
-                            } else {
-                                // mitra
-                                $("#mitra").empty()
-                                $("#mitra").append(`
-                                <option>Pilih Mitra</option>
-                                `)
-
-                                // mitra
-                                $("#mitra").append(response.data['dataHTML'].trim())
-
-                                // jumlah hari
-                                jumlahHari()
-                            }
-                        }
-                    } else {
-                        $("#d-jenissewa").text("-");
-                        $("#d-mitra").text("-");
-                        $("#d-hargakamar").text("RP. 0");
-                        $("#d-diskon").text("0 %");
-                        $("#d-potongan").text("RP. 0");
-                        $("#d-totalpembayaran").text("RP. 0");
-                    }
-                },
-            });
-        }
-
-        function selectMitra(jumlahhari = 0) {
-            var formData = new FormData();
-            formData.append("kamar", $("#kamar").val());
-            formData.append("jenissewa", $("#jenissewa").val());
-            formData.append("mitra", $("#mitra").val());
-
-            // jumlah hari
-            if ($("#jumlahhari").val() > 0) {
-                jumlahhari = parseInt($("#jumlahhari").val())
-            }
-
-            formData.append("jumlahhari", jumlahhari);
-
-            $.ajax({
-                url: "{{ route('getselectmitra') }}",
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.message == "success") {
-                        $("#d-mitra").text(response.data['mitra']);
-
-                        $("#d-hargakamar").text("RP. " + parseInt(response.data['hargakamar']).toLocaleString()
-                            .replaceAll(",",
-                                "."));
-                        $("#d-diskon").text(response.data['diskon'] + " %");
-                        $("#d-potongan").text("RP. " + parseInt(response.data['potongan']).toLocaleString()
-                            .replaceAll(",",
-                                "."));
-                        $("#d-totalpembayaran").text("RP. " + parseInt(response.data['totalpembayaran'])
-                            .toLocaleString()
-                            .replaceAll(",",
-                                "."));
-                    } else {
-                        $("#d-mitra").text("-");
-                        $("#d-hargakamar").text("RP. 0");
-                        $("#d-diskon").text("0 %");
-                        $("#d-potongan").text("RP. 0");
-                        $("#d-totalpembayaran").text("RP. 0");
-                    }
-                },
-            });
-        }
-
-        function jumlahHari() {
-            var jenissewa = $("#jenissewa").val()
-            let jumlahhari = $("#jumlahhari").val()
-
-            if (jumlahhari <= 0) {
-                $("#jumlahhari").val("")
-                jumlahhari = 0
-            }
-
-            if (jenissewa == "Harian") {
-                selectMitra(parseInt(jumlahhari))
-            } else {
-                selectMitra(0)
-                $("#jumlahhari").val("")
             }
         }
     </script>

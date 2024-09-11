@@ -31,10 +31,13 @@
                             <thead>
                                 <tr>
                                     <th scope="col">No</th>
+                                    <th scope="col">Token Listrik</th>
                                     <th scope="col">Lantai</th>
                                     <th scope="col">Nomor Kamar</th>
                                     <th scope="col">Tipe Kamar</th>
-                                    <th scope="col">Token Listrik</th>
+                                    <th scope="col">Jenis Kamar</th>
+                                    <th scope="col">Kapasitas</th>
+                                    <th scope="col">Jumlah Penyewa</th>
                                     <th scope="col">Status</th>
                                     <th scope="col" width="150"></th>
                                 </tr>
@@ -64,6 +67,9 @@
                         data: "nomor",
                     },
                     {
+                        data: "token_listrik",
+                    },
+                    {
                         data: "lantai",
                     },
                     {
@@ -73,7 +79,13 @@
                         data: "tipe_kamar",
                     },
                     {
-                        data: "token_listrik",
+                        data: "jenis_kamar",
+                    },
+                    {
+                        data: "kapasitas",
+                    },
+                    {
+                        data: "jumlah_penyewa",
                     },
                     {
                         data: "status",

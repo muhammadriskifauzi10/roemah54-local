@@ -59,7 +59,7 @@
     <table>
         <tr>
             <td>
-                <span class="pacifio">Stikos</span>
+                <span class="pacifio">Roemah 54 (Stikos)</span>
             </td>
             <td rowspan="6" style="width: 50%; vertical-align: baseline;">
                 <span class="pacifio">
@@ -71,7 +71,7 @@
         </tr>
         <tr>
             <td>
-                <p>Penginapan Harian, Mingguan dan Bulanan</p>
+                <p>Asrama Mahasiswa</p>
             </td>
         </tr>
         <tr>
@@ -99,7 +99,7 @@
     <table style="border: 2px solid black; margin-top: 10px;">
         <tr>
             <td colspan="6">
-                No.Kwitansi: <span class="border-bottom-solid">{{ $asramadetail->id }}</span>
+                No.Kwitansi: <span class="border-bottom-solid">{{ $pembayaran->id }}</span>
             </td>
         </tr>
         <tr>
@@ -111,7 +111,7 @@
                 :
             </td>
             <td colspan="4">
-                <span class="border-bottom-dashed">{{ ucwords($asramadetail->penyewas->namalengkap) }}</span>
+                <span class="border-bottom-dashed">{{ ucwords($pembayaran->penyewas->namalengkap) }}</span>
             </td>
         </tr>
         <tr>
@@ -130,7 +130,7 @@
                 @endphp
 
                 @foreach ($tipekamars as $row)
-                    @if ($row->tipekamar == $asrama->tipekamar)
+                    @if ($row->tipekamar == $pembayaran->tipekamar)
                         <span>{{ $row->tipekamar }}</span>
                     @else
                         <span><del>{{ $row->tipekamar }}</del></span>
@@ -149,7 +149,7 @@
                 :
             </td>
             <td>
-                <span class="border-bottom-solid">{{ $asrama->nomor_kamar }}</span>
+                <span class="border-bottom-solid">{{ $pembayaran->lokasis->nomor_kamar }}</span>
             </td>
         </tr>
         <tr>
@@ -162,7 +162,7 @@
             </td>
             <td>
                 <span
-                    class="border-bottom-dashed">{{ \Carbon\Carbon::parse($asramadetail->tanggal_masuk)->format('d/m/Y') }}</span>
+                    class="border-bottom-dashed">{{ \Carbon\Carbon::parse($pembayaran->tanggal_masuk)->format('d/m/Y') }}</span>
             </td>
             <td>
                 <span class="border-bottom-solid">Tanggal Keluar</span> <br>
@@ -173,7 +173,7 @@
             </td>
             <td>
                 <span
-                    class="border-bottom-dashed">{{ \Carbon\Carbon::parse($asramadetail->tanggal_keluar)->format('d/m/Y') }}</span>
+                    class="border-bottom-dashed">{{ \Carbon\Carbon::parse($pembayaran->tanggal_keluar)->format('d/m/Y') }}</span>
             </td>
         </tr>
         <tr>
@@ -187,13 +187,13 @@
             <td>
                 Rp.
                 <span
-                    class="border-bottom-solid">{{ $asramadetail->jumlah_pembayaran ? number_format($asramadetail->jumlah_pembayaran, '0', '.', '.') : '' }}</span>
+                    class="border-bottom-solid">{{ $pembayaran->jumlah_pembayaran ? number_format($pembayaran->jumlah_pembayaran, '0', '.', '.') : '' }}</span>
             </td>
             <td colspan="3" rowspan="3" style="vertical-align: baseline; text-align: center;">
                 Medan, <span class="border-bottom-dashed">{{ \Carbon\Carbon::now()->translatedFormat('d M Y') }}</span>
                 <div style="margin-top: 10px;">
                     <<img
-                        src="https://barcode.tec-it.com/barcode.ashx?data={{ $asramadetail->id }}&code=QRCode&translate-esc=on&dpi=150&eclevel=L"
+                        src="https://barcode.tec-it.com/barcode.ashx?data={{ $pembayaran->id }}&code=QRCode&translate-esc=on&dpi=150&eclevel=L"
                         alt="" style="width: 80px; height: 80px;">
                 </div>
             </td>
@@ -209,7 +209,7 @@
             <td>
                 Rp.
                 <span
-                    class="border-bottom-solid">{{ $asramadetail->potongan_harga ? number_format($asramadetail->potongan_harga, '0', '.', '.') : '' }}</span>
+                    class="border-bottom-solid">{{ $pembayaran->potongan_harga ? number_format($pembayaran->potongan_harga, '0', '.', '.') : '' }}</span>
             </td>
         </tr>
         <tr>
@@ -222,7 +222,7 @@
             <td>
                 Rp.
                 <span
-                    class="border-bottom-solid">{{ $asramadetail->total_bayar ? number_format($asramadetail->total_bayar, '0', '.', '.') : '' }}</span>
+                    class="border-bottom-solid">{{ $pembayaran->total_bayar ? number_format($pembayaran->total_bayar, '0', '.', '.') : '' }}</span>
             </td>
         </tr>
     </table>

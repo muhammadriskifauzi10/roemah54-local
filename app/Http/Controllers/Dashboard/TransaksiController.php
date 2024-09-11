@@ -66,10 +66,10 @@ class TransaksiController extends Controller
         foreach ($transaksi as $row) {
             $output[] = [
                 'nomor' => "<strong>" . $no++ . "</strong>",
-                'tanggal_transaksi' => Carbon::parse($row->tanggal_transaksi)->format("Y-m-d H:i:s"),
+                'tanggal_transaksi' => Carbon::parse($row->tanggal_transaksi)->format("d-m-Y H:i:s"),
                 'no_transaksi' => $row->no_transaksi,
-                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("Y-m-d H:i:s"),
-                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("Y-m-d H:i:s"),
+                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("d-m-Y H:i:s"),
+                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("d-m-Y H:i:s"),
                 'nama_penyewa' => $row->penyewas->namalengkap,
                 'nomor_kamar' => $row->lokasis->nomor_kamar,
                 'tipe_kamar' => $row->tipekamar,

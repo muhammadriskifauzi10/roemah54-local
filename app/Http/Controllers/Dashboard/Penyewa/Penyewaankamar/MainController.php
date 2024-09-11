@@ -46,7 +46,7 @@ class MainController extends Controller
             ->when($status_pembayaran !== "Pilih Status Pembayaran", function ($query) use ($status_pembayaran) {
                 $query->where('status_pembayaran', $status_pembayaran);
             })
-            ->where('tagih_id', 1)
+            ->whereIn('mitra_id', [1, 2])
             ->orderBy('tanggal_masuk', 'DESC')
             ->get();
 
@@ -62,9 +62,9 @@ class MainController extends Controller
                 $status_pembayaran = "<span class='badge bg-danger'>Dibatalkan</span>";
             }
 
-            // tombol cetak kwitansi
-            if ($row->tanggal_pembayaran && in_array($row->status_pembayaran, ['completed', 'pending'])) {
-                $cetakpembayaran = '
+            // tombol cetak kwitansi & cetak invoice
+            if ($row->tanggal_pembayaran && $row->status_pembayaran == "completed") {
+                $cetakkwitansi = '
                 <a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
                         <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
@@ -72,11 +72,14 @@ class MainController extends Controller
                     </svg>
                     Cetak Kwitansi
                 </a>';
+                $cetakinvoice = "";
             } else {
                 if ($row->status_pembayaran == "failed") {
-                    $cetakpembayaran = "";
-                } else {
-                    $cetakpembayaran = '
+                    $cetakkwitansi = "";
+                    $cetakinvoice = "";
+                } else if ($row->status_pembayaran == "pending") {
+                    $cetakkwitansi = "";
+                    $cetakinvoice = '
                      <a href="' . route('penyewaankamar.cetakinvoice', encrypt($row->id)) . '" class="btn btn-warning text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
                             <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
@@ -138,7 +141,8 @@ class MainController extends Controller
             $aksi = '
             <div class="d-flex flex-column align-items-center justify-content-center gap-1">
                 ' . $bayar . '
-                ' . $cetakpembayaran . '
+                ' . $cetakkwitansi . '
+                ' . $cetakinvoice . '
                 ' . $pulangkantamu . '
             
             </div>
@@ -146,8 +150,8 @@ class MainController extends Controller
 
             $output[] = [
                 'nomor' => "<strong>" . $no++ . "</strong>",
-                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("Y-m-d H:i:s"),
-                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("Y-m-d H:i:s"),
+                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("d-m-Y H:i:s"),
+                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("d-m-Y H:i:s"),
                 'nama_penyewa' => $row->penyewas->namalengkap,
                 'nomor_kamar' => $row->lokasis->nomor_kamar,
                 'tipe_kamar' => $row->tipekamar,
@@ -157,7 +161,7 @@ class MainController extends Controller
                 'diskon' => intval($row->diskon) . " %",
                 'potongan_harga' => $row->potongan_harga ? "RP. " . number_format($row->potongan_harga, '0', '.', '.') : "RP. 0",
                 'total_bayar' => $row->total_bayar ? "RP. " . number_format($row->total_bayar, '0', '.', '.') : "RP. 0",
-                'tanggal_pembayaran' => $row->tanggal_pembayaran ? Carbon::parse($row->tanggal_pembayaran)->format("Y-m-d H:i:s") : "-",
+                'tanggal_pembayaran' => $row->tanggal_pembayaran ? Carbon::parse($row->tanggal_pembayaran)->format("d-m-Y H:i:s") : "-",
                 'kurang_bayar' => $row->kurang_bayar ? "RP. " . number_format($row->kurang_bayar, '0', '.', '.') : "RP. 0",
                 'status_pembayaran' => $status_pembayaran,
                 'aksi' => $aksi,
@@ -358,11 +362,11 @@ class MainController extends Controller
     {
         if (request()->ajax()) {
             $noktp = htmlspecialchars(request()->input('noktp'), ENT_QUOTES, 'UTF-8');
-            if (Penyewa::where('noktp', $noktp)->exists()) {
+            if (Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->exists()) {
                 try {
                     DB::beginTransaction();
 
-                    $penyewa = Penyewa::where('noktp', $noktp)->first();
+                    $penyewa = Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->first();
 
                     $response = [
                         'status' => 200,

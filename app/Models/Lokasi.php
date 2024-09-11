@@ -34,7 +34,7 @@ class Lokasi extends Model
 
     public function hargas()
     {
-        return $this->hasOne(Harga::class);
+        return $this->hasOne(Harga::class, 'tipekamar_id', 'tipekamar_id');
     }
 
     public function transaksisewa_kamars()

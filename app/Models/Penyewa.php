@@ -30,6 +30,6 @@ class Penyewa extends Model
 
     public function transaksisewa_kamars()
     {
-        return $this->hasOne(Pembayaran::class)->where('tagih_id', 1)->latest();
+        return $this->hasOne(Pembayaran::class)->whereIn('mitra_id', [1, 2])->latest();
     }
 }

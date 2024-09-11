@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Dashboard\Asrama\Mahasiswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asrama;
-use App\Models\Asramadetail;
 use App\Models\Lokasi;
+use App\Models\Pembayaran;
 use App\Models\Penyewa;
+use App\Models\Tipekamar;
+use App\Models\Transaksi;
 use App\Models\Transaksiasrama;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -38,7 +40,7 @@ class MainController extends Controller
         $penyewa = request()->input('penyewa');
         $status_pembayaran = request()->input('status_pembayaran');
 
-        $asramadetail = Asramadetail::when($minDate && $maxDate, function ($query) use ($minDate, $maxDate) {
+        $penyewaankamar = Pembayaran::when($minDate && $maxDate, function ($query) use ($minDate, $maxDate) {
             $query->whereDate('tanggal_masuk', '>=', $minDate)
                 ->whereDate('tanggal_masuk', '<=', $maxDate);
         })
@@ -48,12 +50,13 @@ class MainController extends Controller
             ->when($status_pembayaran !== "Pilih Status Pembayaran", function ($query) use ($status_pembayaran) {
                 $query->where('status_pembayaran', $status_pembayaran);
             })
+            ->where('mitra_id', 3)
             ->orderBy('tanggal_masuk', 'DESC')
             ->get();
 
         $output = [];
         $no = 1;
-        foreach ($asramadetail as $row) {
+        foreach ($penyewaankamar as $row) {
             // status pembayaran
             if ($row->status_pembayaran == "completed") {
                 $status_pembayaran = "<span class='badge bg-success'>Lunas</span>";
@@ -63,9 +66,9 @@ class MainController extends Controller
                 $status_pembayaran = "<span class='badge bg-danger'>Dibatalkan</span>";
             }
 
-            // tombol cetak kwitansi
-            if ($row->tanggal_pembayaran && in_array($row->status_pembayaran, ['completed', 'pending'])) {
-                $cetakpembayaran = '
+            // tombol cetak kwitansi & cetak invoice
+            if ($row->tanggal_pembayaran && $row->status_pembayaran == "completed") {
+                $cetakkwitansi = '
                 <a href="' . route('asrama.mahasiswa.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
                         <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
@@ -73,11 +76,14 @@ class MainController extends Controller
                     </svg>
                     Cetak Kwitansi
                 </a>';
+                $cetakinvoice = "";
             } else {
                 if ($row->status_pembayaran == "failed") {
-                    $cetakpembayaran = "";
-                } else {
-                    $cetakpembayaran = '
+                    $cetakkwitansi = "";
+                    $cetakinvoice = "";
+                } else if ($row->status_pembayaran == "pending") {
+                    $cetakkwitansi = "";
+                    $cetakinvoice = '
                      <a href="' . route('asrama.mahasiswa.cetakinvoice', encrypt($row->id)) . '" class="btn btn-warning text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
                             <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
@@ -139,7 +145,8 @@ class MainController extends Controller
             $aksi = '
             <div class="d-flex flex-column align-items-center justify-content-center gap-1">
                 ' . $bayar . '
-                ' . $cetakpembayaran . '
+                ' . $cetakkwitansi . '
+                ' . $cetakinvoice . '
                 ' . $pulangkantamu . '
             
             </div>
@@ -147,13 +154,16 @@ class MainController extends Controller
 
             $output[] = [
                 'nomor' => "<strong>" . $no++ . "</strong>",
-                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("Y-m-d H:i:s"),
-                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("Y-m-d H:i:s"),
+                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("d-m-Y H:i:s"),
+                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("d-m-Y H:i:s"),
                 'nama_penyewa' => $row->penyewas->namalengkap,
+                'nomor_kamar' => $row->lokasis->nomor_kamar,
+                'tipe_kamar' => $row->tipekamar,
+                'jenissewa' => $row->jenissewa,
                 'jumlah_pembayaran' => $row->jumlah_pembayaran ? "RP. " . number_format($row->jumlah_pembayaran, '0', '.', '.') : "RP. 0",
                 'potongan_harga' => $row->potongan_harga ? "RP. " . number_format($row->potongan_harga, '0', '.', '.') : "RP. 0",
                 'total_bayar' => $row->total_bayar ? "RP. " . number_format($row->total_bayar, '0', '.', '.') : "RP. 0",
-                'tanggal_pembayaran' => $row->tanggal_pembayaran ? Carbon::parse($row->tanggal_pembayaran)->format("Y-m-d H:i:s") : "-",
+                'tanggal_pembayaran' => $row->tanggal_pembayaran ? Carbon::parse($row->tanggal_pembayaran)->format("d-m-Y H:i:s") : "-",
                 'kurang_bayar' => $row->kurang_bayar ? "RP. " . number_format($row->kurang_bayar, '0', '.', '.') : "RP. 0",
                 'status_pembayaran' => $status_pembayaran,
                 'aksi' => $aksi,
@@ -164,195 +174,107 @@ class MainController extends Controller
             'data' => $output
         ]);
     }
-    public function getmodaltambahpenyewa()
-    {
-        if (request()->ajax()) {
-            $optionasrama = [];
-
-            foreach (
-                Asrama::select(
-                    'asramas.id',
-                    'asramas.nomor_kamar',
-                    'asramas.tipekamar',
-                    't.kapasitas',
-                    'asramas.tipekamar_id',
-                    'asramas.jumlah_mahasiswa'
-                )
-                    ->join('tipekamars as t', 'asramas.tipekamar_id', '=', 't.id')
-                    ->whereColumn('asramas.jumlah_mahasiswa', '<=', 't.kapasitas')
-                    ->get()
-                as $row
-            ) {
-                $optionasrama[] = ' <option value="' . $row->id . '">Nomor Kamar: ' . $row->nomor_kamar . ' | Tipe Kamar: ' . $row->tipekamars->tipekamar . '</option>';
-            }
-
-            $dataHTML = '
-            <form class="modal-content" onsubmit="requestTambahPenyewa(event)" autocomplete="off" enctype="multipart/form-data" id="formtambahpenyewa">
-                <input type="hidden" name="__token" value="' . request()->input('_token') . '" id="token">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="universalModalLabel">Tambah Penyewa</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="card border-2 border-dark mb-3">
-                        <div class="card-header bg-dark text-light">
-                            Data Diri
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="noktp" class="form-label fw-bold">No KTP <sup class="red">*</sup></label>
-                                <input type="text" class="form-control" name="noktp" id="noktp" oninput="onNoKtp(event)">
-                                <span class="text-danger" id="errorNoKTP"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label for="namalengkap" class="form-label fw-bold">Nama Lengkap <sup class="red">*</sup></label>
-                                <input type="text" class="form-control" name="namalengkap" id="namalengkap">
-                                <span class="text-danger" id="errorNamaLengkap"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label for="nohp" class="form-label fw-bold">No HP <sup class="red">*</sup></label>
-                                <input type="text" class="form-control" name="nohp" id="nohp">
-                                <span class="text-danger" id="errorNoHP"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label for="alamat" class="form-label fw-bold">Alamat <sup class="red">*</sup></label>
-                                <textarea class="form-control" name="alamat" id="alamat"></textarea>
-                                <span class="text-danger" id="errorAlamat"></span>
-                            </div>
-                            <div>
-                                <label for="fotoktp" class="form-label fw-bold">Foto KTP <sup class="red">*</sup></label>
-                                <input type="file" class="form-control" name="fotoktp" id="fotoktp">
-                                <span class="text-danger" id="errorFotoKTP"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card border-2 border-dark mb-3">
-                        <div class="card-header bg-dark text-light">
-                            Penginapan Asrama
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="asrama" class="form-label fw-bold">asrama <sup class="text-danger">*</sup></label>
-                                <select class="form-select form-select-2"
-                                    name="asrama" id="asrama" style="width: 100%;">
-                                    <option>Pilih Kamar</option>
-                                    ' . implode(" ", $optionasrama) . '
-                                </select>
-                                <span class="text-danger" id="errorKamar"></span>
-                            </div>
-                            <div>
-                                <label for="tanggalmasuk" class="form-label fw-bold">Tanggal Masuk <sup class="red">*</sup></label>
-                                <input type="date" class="form-control" name="tanggalmasuk" id="tanggalmasuk">
-                                <span class="text-danger" id="errorTanggalMasuk"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card border-2 border-dark mb-3">
-                        <div class="card-header bg-dark text-light">
-                            Pembayaran
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="total_bayar" class="form-label fw-bold">Total
-                                        Bayar</label>
-                                <div class="input-group" style="z-index: 0;">
-                                    <span class="input-group-text bg-success text-light fw-bold">RP</span>
-                                    <input type="text"
-                                        class="form-control formatrupiah"
-                                        name="total_bayar" id="total_bayar" placeholder="0">
-                                </div>
-                                <span class="text-danger" id="errorTotalBayar"></span>
-                            </div>
-                            <div>
-                                <div class="row">
-                                    <div class="mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio"
-                                                name="metode_pembayaran" id="none" value="Tidak Ada" checked>
-                                            <label class="form-check-label" for="none">
-                                                Tidak Ada
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio"
-                                                name="metode_pembayaran" id="cash" value="Cash">
-                                            <label class="form-check-label" for="cash">
-                                                Cash
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio"
-                                                name="metode_pembayaran" id="debit" value="Debit">
-                                            <label class="form-check-label" for="debit">
-                                                Debit
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio"
-                                                name="metode_pembayaran" id="qris" value="QRIS">
-                                            <label class="form-check-label" for="qris">
-                                                QRIS
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio"
-                                                name="metode_pembayaran" id="transfer" value="Transfer">
-                                            <label class="form-check-label" for="transfer">
-                                                Transfer
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <button type="submit" class="btn btn-success w-100" id="btnRequest">
-                            Sewa
-                        </button>
-                    </div>
-                </div>
-            </form>
-            ';
-
-            $response = [
-                'status' => 200,
-                'message' => 'success',
-                'dataHTML' => $dataHTML
-            ];
-        } else {
-            $response = [
-                'status' => 400,
-                'message' => 'opps',
-            ];
-        }
-
-        return response()->json($response);
-    }
     public function tambahpenyewa()
     {
-        if (request()->ajax()) {
-            // data diri
-            $noktp = htmlspecialchars(request()->input('noktp'), true);
-            $namalengkap = htmlspecialchars(request()->input('namalengkap'), true);
-            $nohp = htmlspecialchars(request()->input('nohp'), true);
-            $alamat = htmlspecialchars(request()->input('alamat'), true);
-            $fotoktp = request()->file('fotoktp');
-            // penginapan kamar
-            $asrama = htmlspecialchars(request()->input('asrama'), true);
+        $kamar = Lokasi::select(
+            'lokasis.id',
+            'lokasis.token_listrik',
+            'lokasis.lantai_id',
+            'lokasis.nomor_kamar',
+            'lokasis.tipekamar_id',
+            'lokasis.kapasitas',
+            'lokasis.jumlah_penyewa'
+        )
+            ->join('hargas as h', 'lokasis.tipekamar_id', '=', 'h.tipekamar_id')
+            ->where('lokasis.jenisruangan_id', 2)
+            ->where('h.mitra_id', 3)
+            ->whereColumn('lokasis.kapasitas', '>', 'lokasis.jumlah_penyewa')
+            ->orderBy('lokasis.lantai_id', 'ASC')
+            ->get();
+
+        $data = [
+            'judul' => 'Tambah Asrama Mahasiswa',
+            'kamar' => $kamar
+        ];
+
+        return view('contents.dashboard.asrama.mahasiswa.tambah', $data);
+    }
+    public function posttambahpenyewa()
+    {
+        $noktp = htmlspecialchars(request()->input('noktp'), true);
+        $total_bayar = htmlspecialchars(request()->input('total_bayar'), true);
+        $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), true);
+        if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Mahasiswa')->exists()) {
+            $rulefotoktp = 'required|mimes:jpg,jpeg,png';
+        } else {
+            $rulefotoktp = 'mimes:jpg,jpeg,png';
+        }
+
+        request()->merge([
+            'total_bayar' => str_replace('.', '', request()->input('total_bayar')),
+        ]);
+
+        if (intval($total_bayar) > 0) {
+            if ($metode_pembayaran == "None") {
+                return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
+            }
+        } else {
+            if ($metode_pembayaran != "None") {
+                return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi');
+            }
+        }
+
+        $validator = Validator::make(request()->all(), [
+            'tanggalmasuk' => 'required|date',
+            'namalengkap' => 'required',
+            'noktp' => 'required|numeric|digits:16',
+            'nohp' => 'required|regex:/^08[0-9]{8,}$/',
+            'lokasi' => [
+                function ($attribute, $value, $fail) {
+                    if (!Lokasi::where('id', (int)$value)->exists()) {
+                        $fail('Kolom ini wajib dipilih');
+                    }
+                },
+            ],
+            'fotoktp' => $rulefotoktp,
+            'total_bayar' => 'nullable|numeric',
+            'alamat' => 'required',
+            // 'tipe_pembayaran' => 'required',
+        ], [
+            'tanggalmasuk.required' => 'Kolom ini wajib diisi',
+            'tanggalmasuk.date' => 'Kolom ini wajib diisi',
+            'namalengkap.required' => 'Kolom ini wajib diisi',
+            'noktp.required' => 'No KTP wajib diisi',
+            'noktp.numeric' => 'No KTP tidak valid',
+            'noktp.digits' => 'No KTP tidak valid',
+            'nohp.required' => 'Kolom ini wajib diisi',
+            'nohp.regex' => 'No HP tidak valid',
+            'fotoktp.required' => 'Kolom ini wajib diisi',
+            'fotoktp.mimes' => 'Ekstensi file hanya mendukung format jpg dan jpeg',
+            'total_bayar.required' => 'Kolom ini wajib diisi',
+            'total_bayar.not_in' => 'Kolom ini wajib diisi',
+            'alamat.required' => 'Kolom ini wajib diisi',
+            // 'tipe_pembayaran.required' => 'Kolom ini tidak valid',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            DB::beginTransaction();
+
             $tanggalmasuk = htmlspecialchars(request()->input('tanggalmasuk'), true);
             $tanggalmasuk_format = Carbon::parse($tanggalmasuk)->format('Y-m-d H:i');
-            // pembayaran
-            $total_bayar = htmlspecialchars(request()->input('total_bayar'), true);
-            $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), true);
+            $namalengkap = htmlspecialchars(request()->input('namalengkap'), true);
+            $nohp = htmlspecialchars(request()->input('nohp'), true);
+            $lokasi_id = htmlspecialchars(request()->input('lokasi'), true);
+            $lokasi = Lokasi::where('id', (int)$lokasi_id)->first();
+            $alamat = htmlspecialchars(request()->input('alamat'), true);
+            $fotoktp = request()->file('fotoktp');
 
             if ($total_bayar) {
                 $total_bayar = str_replace(".", "", $total_bayar);
@@ -361,206 +283,153 @@ class MainController extends Controller
             }
 
             if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Mahasiswa')->exists()) {
-                $rulefotoktp = 'required|mimes:jpg,jpeg,png';
+                $penyewa = Penyewa::create([
+                    'namalengkap' => $namalengkap,
+                    'noktp' => $noktp,
+                    'nohp' => $nohp,
+                    'alamat' => $alamat,
+                    'jenis_penyewa' => 'Mahasiswa',
+                    'fotoktp' => "",
+                    'operator_id' => auth()->user()->id,
+                ]);
+
+                $fotoktp = "penyewa" . "-" . $penyewa->id . "." .  request()->file('fotoktp')->getClientOriginalExtension();
+                $file = request()->file('fotoktp');
+                $tujuan_upload = 'img/ktp/asrama';
+                $file->move($tujuan_upload, $fotoktp);
+
+                Penyewa::where('id', $penyewa->id)->update([
+                    'fotoktp' => $fotoktp,
+                ]);
             } else {
-                $rulefotoktp = 'mimes:jpg,jpeg,png';
-            }
-
-            $validator = Validator::make(request()->all(), [
-                'namalengkap' => 'required',
-                'noktp' => 'required|numeric|digits:16',
-                'nohp' => 'required|regex:/^08[0-9]{8,}$/',
-                'fotoktp' => $rulefotoktp,
-                'alamat' => 'required',
-                'kamar' => [
-                    function ($attribute, $value, $fail) {
-                        if (!Lokasi::where('id', (int)$value)->exists()) {
-                            $fail('Kolom ini wajib dipilih');
-                        }
-                    },
-                ],
-                'tanggalmasuk' => 'required|date',
-            ], [
-                'namalengkap.required' => 'Kolom ini wajib diisi',
-                'noktp.required' => 'No KTP wajib diisi',
-                'noktp.numeric' => 'No KTP tidak valid',
-                'noktp.digits' => 'No KTP tidak valid',
-                'nohp.required' => 'Kolom ini wajib diisi',
-                'nohp.regex' => 'No HP tidak valid',
-                'fotoktp.required' => 'Kolom ini wajib diisi',
-                'fotoktp.mimes' => 'Ekstensi file hanya mendukung format jpg dan jpeg',
-                'alamat.required' => 'Kolom ini wajib diisi',
-                'tanggalmasuk.required' => 'Kolom ini wajib diisi',
-                'tanggalmasuk.date' => 'Kolom ini wajib diisi',
-            ]);
-
-            if ($validator->fails()) {
-                $response = [
-                    'status' => 422,
-                    'message' => 'errorvalidation',
-                    'dataError' => $validator->errors()
-                ];
-
-                return response()->json($response);
-            }
-
-            try {
-                DB::beginTransaction();
-
                 $penyewa = Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Mahasiswa')->first();
 
-                if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Mahasiswa')->exists()) {
-                    $penyewa = Penyewa::create([
-                        'namalengkap' => $namalengkap,
-                        'noktp' => $noktp,
-                        'nohp' => $nohp,
-                        'alamat' => $alamat,
-                        'jenis_penyewa' => 'Mahasiswa',
-                        'fotoktp' => "",
-                        'operator_id' => auth()->user()->id,
-                    ]);
+                if (request()->file('fotoktp')) {
+                    // Hapus file KTP lama jika ada
+                    if (file_exists('img/ktp/asrama/' . $penyewa->fotoktp)) {
+                        unlink('img/ktp/asrama/' . $penyewa->fotoktp);
+                    }
 
-                    $fotoktp = "penyewa" . "-" . $penyewa->id . "." .  request()->file('fotoktp')->getClientOriginalExtension();
+                    $fotoktp = "penyewa" . "-" . $penyewa->id . "." . request()->file('fotoktp')->getClientOriginalExtension();
                     $file = request()->file('fotoktp');
                     $tujuan_upload = 'img/ktp/asrama';
                     $file->move($tujuan_upload, $fotoktp);
-
-                    Penyewa::where('id', $penyewa->id)->update([
-                        'fotoktp' => $fotoktp,
-                    ]);
                 } else {
-                    $penyewa = Penyewa::where('noktp', $noktp)->first();
-
-                    if (request()->file('fotoktp')) {
-                        // Hapus file KTP lama jika ada
-                        if (file_exists('img/ktp/asrama/' . $penyewa->fotoktp)) {
-                            unlink('img/ktp/asrama/' . $penyewa->fotoktp);
-                        }
-
-                        $fotoktp = "penyewa" . "-" . $penyewa->id . "." . request()->file('fotoktp')->getClientOriginalExtension();
-                        $file = request()->file('fotoktp');
-                        $tujuan_upload = 'img/ktp/asrama';
-                        $file->move($tujuan_upload, $fotoktp);
-                    } else {
-                        $fotoktp = $penyewa->fotoktp;
-                    }
-
-                    Penyewa::where('id', $penyewa->id)->update([
-                        'namalengkap' => $namalengkap,
-                        'noktp' => $noktp,
-                        'nohp' => $nohp,
-                        'alamat' => $alamat,
-                        'jenis_penyewa' => 'Mahasiswa',
-                        'fotoktp' => $fotoktp,
-                        'status' => 1,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
+                    $fotoktp = $penyewa->fotoktp;
                 }
 
-                // Bulanan (Monthly)
-                $tenggatwaktu = Carbon::parse($this->check_out($tanggalmasuk_format))->addMonth();
-                $potongan_harga = 0;
-                $jumlah_pembayaran = 500000;
+                Penyewa::where('id', $penyewa->id)->update([
+                    'namalengkap' => $namalengkap,
+                    'noktp' => $noktp,
+                    'nohp' => $nohp,
+                    'alamat' => $alamat,
+                    'jenis_penyewa' => 'Mahasiswa',
+                    'fotoktp' => $fotoktp,
+                    'status' => 1,
+                    'operator_id' => auth()->user()->id,
+                    'updated_at' => date("Y-m-d H:i:s"),
+                ]);
+            }
 
-                if (intval($total_bayar) >= intval($jumlah_pembayaran)) {
-                    $status_pembayaran = "completed";
-                } else {
-                    $status_pembayaran = "pending";
-                }
+            // Bulanan (Monthly)
+            $tenggatwaktu = Carbon::parse($this->check_out($tanggalmasuk_format))->addMonth();
+            $potongan_harga = 0;
+            $jumlah_pembayaran = 500000;
 
-                $asramadetail = new Asramadetail();
-                $asramadetail->asrama_id = $asrama;
+            if (intval($total_bayar) >= intval($jumlah_pembayaran)) {
+                $status_pembayaran = "completed";
+            } else {
+                $status_pembayaran = "pending";
+            }
+
+            $pembayaran = new Pembayaran();
+            if (intval($total_bayar) > 0) {
+                $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
+            }
+            $pembayaran->tanggal_masuk = $tanggalmasuk_format;
+            $pembayaran->tanggal_keluar = $tenggatwaktu;
+            $pembayaran->penyewa_id = $penyewa->id;
+            $pembayaran->lokasi_id = $lokasi_id;
+            $pembayaran->mitra_id = 3;
+            $pembayaran->tipekamar_id = Tipekamar::where('id', $lokasi->tipekamar_id)->first()->id;
+            $pembayaran->tipekamar = Tipekamar::where('id', $lokasi->tipekamar_id)->first()->tipekamar;
+            $pembayaran->jenissewa = 'Bulanan';
+            $pembayaran->jumlah_pembayaran = intval($jumlah_pembayaran) + intval($potongan_harga);
+            $pembayaran->diskon = 0;
+            $pembayaran->potongan_harga = 0;
+            $pembayaran->total_bayar = $total_bayar;
+            $pembayaran->kurang_bayar = intval($jumlah_pembayaran) - intval($total_bayar);
+            $pembayaran->status_pembayaran = $status_pembayaran;
+            $pembayaran->status = 1;
+            $pembayaran->operator_id = auth()->user()->id;
+            $post = $pembayaran->save();
+
+            if ($post) {
                 if (intval($total_bayar) > 0) {
-                    $asramadetail->tanggal_pembayaran = date('Y-m-d H:i:s');
-                }
-                $asramadetail->tanggal_masuk = $tanggalmasuk_format;
-                $asramadetail->tanggal_keluar = $tenggatwaktu;
-                $asramadetail->penyewa_id = $penyewa->id;
-                $asramadetail->jumlah_pembayaran = intval($jumlah_pembayaran) + intval($potongan_harga);
-                $asramadetail->potongan_harga = intval($potongan_harga);
-                $asramadetail->total_bayar = $total_bayar;
-                $asramadetail->kurang_bayar = intval($jumlah_pembayaran) - intval($total_bayar);
-                $asramadetail->status_pembayaran = $status_pembayaran;
-                $asramadetail->status = 1;
-                $asramadetail->operator_id = auth()->user()->id;
-                $post = $asramadetail->save();
+                    // Generate no transaksi
+                    $tahun = date('Y');
+                    $bulan = date('m');
+                    $tanggal = date('d');
+                    $infoterakhir = Transaksi::orderBy('created_at', 'DESC')->first();
 
-                if ($post) {
-                    if (intval($total_bayar) > 0) {
-                        // Generate no transaksi
-                        $tahun = date('Y');
-                        $bulan = date('m');
-                        $tanggal = date('d');
-                        $infoterakhir = Transaksiasrama::orderBy('created_at', 'DESC')->first();
+                    if ($infoterakhir) {
+                        $tahunterakhir = Carbon::parse($infoterakhir->created_at)->format('Y') ?? 0;
+                        $bulanterakhir = Carbon::parse($infoterakhir->created_at)->format('m') ?? 0;
+                        $tanggalterakhir = Carbon::parse($infoterakhir->created_at)->format('d') ?? 0;
+                        $nomor = substr($infoterakhir->no_transaksi, 6);
 
-                        if ($infoterakhir) {
-                            $tahunterakhir = Carbon::parse($infoterakhir->created_at)->format('Y') ?? 0;
-                            $bulanterakhir = Carbon::parse($infoterakhir->created_at)->format('m') ?? 0;
-                            $tanggalterakhir = Carbon::parse($infoterakhir->created_at)->format('d') ?? 0;
-                            $nomor = substr($infoterakhir->no_transaksi, 6);
-
-                            if ($tahun != $tahunterakhir || $bulan != $bulanterakhir || $tanggal != $tanggalterakhir) {
-                                $nomor = 0;
-                            }
-                        } else {
+                        if ($tahun != $tahunterakhir || $bulan != $bulanterakhir || $tanggal != $tanggalterakhir) {
                             $nomor = 0;
                         }
-
-                        // yymmddxxxxxx
-                        $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
-
-                        $transaksi = new Transaksiasrama();
-                        $transaksi->asrama_id = $asrama;
-                        $transaksi->penyewa_id = $penyewa->id;
-                        $transaksi->no_transaksi = $no_transaksi;
-                        $transaksi->tagih_id = 1;
-                        $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
-                        $transaksi->jumlah_uang = $total_bayar;
-                        $transaksi->metode_pembayaran = $metode_pembayaran;
-                        $transaksi->operator_id = auth()->user()->id;
-                        $transaksi->save();
+                    } else {
+                        $nomor = 0;
                     }
 
-                    Asrama::where('id', (int)$asrama)->increment('jumlah_mahasiswa');
+                    // yymmddxxxxxx
+                    $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
+
+                    $transaksi = new Transaksi();
+                    $transaksi->pembayaran_id = $pembayaran->id;
+                    $transaksi->no_transaksi = $no_transaksi;
+                    $transaksi->tagih_id = 3;
+                    $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
+                    $transaksi->jumlah_uang = $total_bayar;
+                    $transaksi->metode_pembayaran = $metode_pembayaran;
+                    $transaksi->operator_id = auth()->user()->id;
+                    $transaksi->save();
                 }
 
-                $response = [
-                    'status' => 200,
-                    'message' => 'success',
-                ];
+                Lokasi::where('id', (int)$lokasi_id)->increment('jumlah_penyewa');
+                Lokasi::where('id', (int)$lokasi_id)->update([
+                    'status' => 1,
+                    'operator_id' => auth()->user()->id,
+                    'updated_at' => date("Y-m-d H:i:s"),
+                ]);
 
                 DB::commit();
-                return response()->json($response);
-            } catch (Exception $e) {
-                $response = [
-                    'status' => 500,
-                    'message' => $e->getMessage(),
-                ];
-
-                DB::rollBack();
-                return response()->json($response);
+                return redirect()->route('asrama.mahasiswa')->with('messageSuccess', 'Penyewaan kamar berhasil ditambahkan');
             }
+        } catch (Exception $e) {
+            DB::rollBack();
+            echo $e->getMessage();
         }
     }
     public function cetakkwitansi($id)
     {
         $id = decrypt($id);
 
-        if (!Asramadetail::where('id', $id)->exists()) {
+        if (!Pembayaran::where('id', $id)->exists()) {
             abort(404);
         }
 
-        $asramadetail = Asramadetail::where('id', $id)->first();
-        $asrama = Asrama::where('id', $asramadetail->asrama_id)->first();
+        $pembayaran = Pembayaran::where('id', $id)->first();
 
         // Generate QR code as SVG
         $qrcode = QrCode::format('svg')->size(200)->generate('https://example.com');
 
         $data = [
-            'judul' => 'Asrama Cetak Kwitansi',
-            'asramadetail' => $asramadetail,
-            'asrama' => $asrama,
+            'judul' => 'Penyewaan Kamar',
+            'pembayaran' => $pembayaran,
             'qrcode' => $qrcode
         ];
 
@@ -591,23 +460,22 @@ class MainController extends Controller
         // Generate PDF
         $pdf = Pdf::loadView('contents.dashboard.asrama.mahasiswa.downloadpdf.cetakkwitansi', $data);
         return $pdf->stream('cetakkwitansi.pdf');
-        // return view('contents.dashboard.downloadpdf.cetakinvoice', $data);
     }
     public function cetakinvoice($id)
     {
         $id = decrypt($id);
 
-        if (!Asramadetail::where('id', $id)->exists()) {
+        if (!Pembayaran::where('id', $id)->exists()) {
             abort(404);
         }
 
-        $pembayaran = Asrama::where('id', $id)->first();
+        $pembayaran = Pembayaran::where('id', $id)->first();
 
         // Generate QR code as SVG
         $qrcode = QrCode::format('svg')->size(200)->generate('https://example.com');
 
         $data = [
-            'judul' => 'Asrama Cetak Invoice',
+            'judul' => 'Penyewaan Kamar',
             'pembayaran' => $pembayaran,
             'qrcode' => $qrcode
         ];
@@ -639,7 +507,6 @@ class MainController extends Controller
         // Generate PDF
         $pdf = Pdf::loadView('contents.dashboard.asrama.mahasiswa.downloadpdf.cetakinvoice', $data);
         return $pdf->stream('cetakinvoice.pdf');
-        // return view('contents.dashboard.downloadpdf.cetakinvoice', $data);
     }
     // Helper
     public function getrequestformsewaonktp()

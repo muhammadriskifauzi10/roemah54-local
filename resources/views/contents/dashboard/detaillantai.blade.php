@@ -35,7 +35,7 @@
                                             $query->where('status', 1)->orWhere('status', 2);
                                         })->count() > 0)
                                     @foreach ($lantai->lokasis as $l)
-                                        @foreach (App\Models\Pembayaran::where('tagih_id', 1)->where('lokasi_id', $l->id)->where('status', '<>', 0)->get() as $p)
+                                        @foreach (App\Models\Pembayaran::whereIn('mitra_id', [1, 2])->where('lokasi_id', $l->id)->where('status', '<>', 0)->get() as $p)
                                             @if ($p->status_pembayaran == 'completed')
                                                 {{-- kamar terisi --}}
                                                 <a href="{{ route('dasbor.detailpenyewa', $p->penyewa_id) }}"
@@ -76,9 +76,9 @@
                                                                     <tr>
                                                                         <td>Periode</td>
                                                                         <td class="text-right">
-                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
                                                                             <br>
-                                                                            {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, d-m-Y H:i:s') }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
@@ -158,9 +158,9 @@
                                                                     <tr>
                                                                         <td>Periode</td>
                                                                         <td class="text-right">
-                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, Y-m-d H:i:s') }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
                                                                             <br>
-                                                                            {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, Y-m-d H:i:s') }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, d-m-Y H:i:s') }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>

@@ -24,6 +24,12 @@ use App\Http\Controllers\Dashboard\Scan\MainController as ScanMainController;
 use App\Http\Controllers\Dashboard\SewaController;
 use App\Http\Controllers\Dashboard\Tipekamar\MainController as TipekamarMainController;
 use App\Http\Controllers\Dashboard\TransaksiController;
+use App\Models\Asrama;
+use App\Models\Pembayaran;
+use App\Models\Transaksi;
+use App\Models\Transaksiasrama;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +42,74 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Route::get('/tes', function () {
+//     foreach (Asrama::all() as $row) {
+//         try {
+//             DB::beginTransaction();
+//             $pembayaran = new Pembayaran();
+//             if ($row->tanggal_pembayaran) {
+//                 $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
+//             }
+//             $pembayaran->tanggal_masuk = $row->tanggal_masuk;
+//             $pembayaran->tanggal_keluar = $row->tanggal_keluar;
+//             $pembayaran->penyewa_id = $row->penyewa_id;
+//             $pembayaran->lokasi_id = $row->lokasi_id;
+//             $pembayaran->mitra_id = $row->mitra_id;
+//             $pembayaran->tipekamar_id = $row->tipekamar_id;
+//             $pembayaran->tipekamar = $row->tipekamar;
+//             $pembayaran->jenissewa = $row->jenissewa;
+//             $pembayaran->jumlah_pembayaran = $row->jumlah_pembayaran;
+//             $pembayaran->diskon = 0;
+//             $pembayaran->potongan_harga = 0;
+//             $pembayaran->total_bayar = $row->total_bayar;
+//             $pembayaran->kurang_bayar = $row->kurang_bayar;
+//             $pembayaran->status_pembayaran = $row->status_pembayaran;
+//             $pembayaran->status = $row->status;
+//             $pembayaran->operator_id = $row->operator_id;
+//             $post = $pembayaran->save();
+
+//             if ($post) {
+//                 if (intval($row->total_bayar) > 0) {
+//                     // Generate no transaksi
+//                     $tahun = date('Y');
+//                     $bulan = date('m');
+//                     $tanggal = date('d');
+//                     $infoterakhir = Transaksi::orderBy('created_at', 'DESC')->first();
+
+//                     if ($infoterakhir) {
+//                         $tahunterakhir = Carbon::parse($infoterakhir->created_at)->format('Y') ?? 0;
+//                         $bulanterakhir = Carbon::parse($infoterakhir->created_at)->format('m') ?? 0;
+//                         $tanggalterakhir = Carbon::parse($infoterakhir->created_at)->format('d') ?? 0;
+//                         $nomor = substr($infoterakhir->no_transaksi, 6);
+
+//                         if ($tahun != $tahunterakhir || $bulan != $bulanterakhir || $tanggal != $tanggalterakhir) {
+//                             $nomor = 0;
+//                         }
+//                     } else {
+//                         $nomor = 0;
+//                     }
+
+//                     // yymmddxxxxxx
+//                     $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
+
+//                     $transaksi = new Transaksi();
+//                     $transaksi->pembayaran_id = $pembayaran->id;
+//                     $transaksi->no_transaksi = $no_transaksi;
+//                     $transaksi->tagih_id = 1;
+//                     $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
+//                     $transaksi->jumlah_uang = $row->total_bayar;
+//                     $transaksi->metode_pembayaran = NULL;
+//                     $transaksi->operator_id = $row->operator_id;
+//                     $transaksi->save();
+//                     DB::commit();
+//                 }
+//             }
+//         } catch (Exception $e) {
+//             DB::rollBack();
+//             echo $e->getMessage();
+//         }
+//     }
+// });
 // Route Auth
 Route::group(['middleware' => 'guest'], function () {
     Route::get('/', [LoginController::class, 'index'])->name('login');
@@ -106,27 +180,28 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/kamar/tambahkamar', [KamarController::class, 'create'])->name('kamar.postkamar');
     Route::post('/kamar/getmodaleditkamar', [KamarController::class, 'getmodaleditkamar'])->name('kamar.getmodaleditkamar');
     Route::post('/kamar/postedittipekamar', [KamarController::class, 'edittipekamar'])->name('kamar.postedittipekamar');
-    // kamar asrama
-    Route::get('/asrama/mahasiswa', [MahasiswaMainController::class, 'index'])->name('asrama.mahasiswa');
-    Route::post('/asrama/mahasiswa/datatableasramamahasiswa', [MahasiswaMainController::class, 'datatableasramamahasiswa'])->name('asrama.mahasiswa.datatableasramamahasiswa');
-    Route::post('/asrama/mahasiswa/getmodaltambahpenyewa', [MahasiswaMainController::class, 'getmodaltambahpenyewa'])->name('asrama.mahasiswa.getmodaltambahpenyewa');
-    Route::post('/asrama/mahasiswa/tambahpenyewa', [MahasiswaMainController::class, 'tambahpenyewa'])->name('asrama.mahasiswa.tambahpenyewa');
-    Route::get('/asrama/mahasiswa/cetakinvoice/{id}', [MahasiswaMainController::class, 'cetakinvoice'])->name('asrama.mahasiswa.cetakinvoice');
-    Route::get('/asrama/mahasiswa/cetakkwitansi/{id}', [MahasiswaMainController::class, 'cetakkwitansi'])->name('asrama.mahasiswa.cetakkwitansi');
-    Route::post('/asrama/mahasiswa/getrequestformsewaonktp', [MahasiswaMainController::class, 'getrequestformsewaonktp'])->name('asrama.mahasiswa.getrequestformsewaonktp');
-    // kamar asrama
-    Route::get('/asrama/kamar', [KamarMainController::class, 'index'])->name('asrama.kamar');
-    Route::post('/asrama/kamar/datatableasrama', [KamarMainController::class, 'datatableasrama'])->name('asrama.kamar.datatableasrama');
-    Route::get('/asrama/kamar/tambahasrama', [KamarMainController::class, 'tambahasrama'])->name('asrama.kamar.tambahasrama');
-    Route::post('/asrama/kamar/tambahasrama', [KamarMainController::class, 'create'])->name('asrama.kamar.postasrama');
-    Route::get('/asrama/kamar/detailpenyewa/{id}', [KamarMainController::class, 'detailpenyewa'])->name('asrama.kamar.detailpenyewa');
-    Route::post('/asrama/kamar/getselectlantaikamar', [KamarMainController::class, 'getselectlantaikamar'])->name('asrama.kamar.getselectlantaikamar');
     // Harga
     Route::get('/harga', [HargaMainController::class, 'index'])->name('harga');
     Route::post('/harga/datatableharga', [HargaMainController::class, 'datatableharga'])->name('harga.datatableharga');
     Route::get('/harga/tambahharga', [HargaMainController::class, 'tambahharga'])->name('harga.tambahharga');
     Route::post('/harga/getselectharga', [HargaMainController::class, 'getselectharga'])->name('harga.getselectharga');
     Route::post('/harga/tambahharga', [HargaMainController::class, 'create'])->name('harga.postharga');
+    // kamar asrama mahasiswa
+    Route::get('/asrama/mahasiswa', [MahasiswaMainController::class, 'index'])->name('asrama.mahasiswa');
+    Route::post('/asrama/mahasiswa/datatableasramamahasiswa', [MahasiswaMainController::class, 'datatableasramamahasiswa'])->name('asrama.mahasiswa.datatableasramamahasiswa');
+    Route::post('/asrama/mahasiswa/getmodaltambahpenyewa', [MahasiswaMainController::class, 'getmodaltambahpenyewa'])->name('asrama.mahasiswa.getmodaltambahpenyewa');
+    Route::get('/asrama/mahasiswa/tambahpenyewa', [MahasiswaMainController::class, 'tambahpenyewa'])->name('asrama.mahasiswa.tambahpenyewa');
+    Route::post('/asrama/mahasiswa/tambahpenyewa', [MahasiswaMainController::class, 'posttambahpenyewa'])->name('asrama.mahasiswa.posttambahpenyewa');
+    Route::get('/asrama/mahasiswa/cetakinvoice/{id}', [MahasiswaMainController::class, 'cetakinvoice'])->name('asrama.mahasiswa.cetakinvoice');
+    Route::get('/asrama/mahasiswa/cetakkwitansi/{id}', [MahasiswaMainController::class, 'cetakkwitansi'])->name('asrama.mahasiswa.cetakkwitansi');
+    Route::post('/asrama/mahasiswa/getrequestformsewaonktp', [MahasiswaMainController::class, 'getrequestformsewaonktp'])->name('asrama.mahasiswa.getrequestformsewaonktp');
+    // kamar asrama
+    // Route::get('/asrama/kamar', [KamarMainController::class, 'index'])->name('asrama.kamar');
+    // Route::post('/asrama/kamar/datatableasrama', [KamarMainController::class, 'datatableasrama'])->name('asrama.kamar.datatableasrama');
+    // Route::get('/asrama/kamar/tambahasrama', [KamarMainController::class, 'tambahasrama'])->name('asrama.kamar.tambahasrama');
+    // Route::post('/asrama/kamar/tambahasrama', [KamarMainController::class, 'create'])->name('asrama.kamar.postasrama');
+    // Route::get('/asrama/kamar/detailpenyewa/{id}', [KamarMainController::class, 'detailpenyewa'])->name('asrama.kamar.detailpenyewa');
+    // Route::post('/asrama/kamar/getselectlantaikamar', [KamarMainController::class, 'getselectlantaikamar'])->name('asrama.kamar.getselectlantaikamar');
 
     // layanan
     // laundri

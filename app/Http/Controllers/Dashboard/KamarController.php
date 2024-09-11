@@ -57,10 +57,13 @@ class KamarController extends Controller
 
             $output[] = [
                 'nomor' => "<strong>" . $no++ . "</strong>",
+                'token_listrik' => $row->token_listrik,
                 'lantai' => $row->lantais->namalantai,
                 'nomor_kamar' => $row->nomor_kamar,
                 'tipe_kamar' => $row->tipekamars->tipekamar,
-                'token_listrik' => $row->token_listrik,
+                'jenis_kamar' => $row->hargas->mitras->mitra,
+                'kapasitas' => $row->kapasitas . ' Orang',
+                'jumlah_penyewa' => $row->jumlah_penyewa . ' Orang',
                 'status' => $status,
                 'aksi' => $aksi,
             ];

@@ -47,7 +47,9 @@ class SewaController extends Controller
     public function create()
     {
         $noktp = htmlspecialchars(request()->input('noktp'), true);
-        if (!Penyewa::where('noktp', $noktp)->exists()) {
+        $total_bayar = htmlspecialchars(request()->input('total_bayar'), true);
+        $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), true);
+        if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->exists()) {
             $rulefotoktp = 'required|mimes:jpg,jpeg,png';
         } else {
             $rulefotoktp = 'mimes:jpg,jpeg,png';
@@ -56,6 +58,16 @@ class SewaController extends Controller
         request()->merge([
             'total_bayar' => str_replace('.', '', request()->input('total_bayar')),
         ]);
+
+        if (intval($total_bayar) > 0) {
+            if ($metode_pembayaran == "None") {
+                return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
+            }
+        } else {
+            if ($metode_pembayaran != "None") {
+                return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi');
+            }
+        }
 
         $validator = Validator::make(request()->all(), [
             'tanggalmasuk' => 'required|date',
@@ -132,10 +144,8 @@ class SewaController extends Controller
             $kamar = htmlspecialchars(request()->input('kamar'), true);
             $jenissewa = request()->input('jenissewa');
             $mitra = request()->input('mitra');
-            $total_bayar = htmlspecialchars(request()->input('total_bayar'), true);
             $alamat = htmlspecialchars(request()->input('alamat'), true);
             $fotoktp = request()->file('fotoktp');
-            $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), true);
 
             $model_kamar = Lokasi::where('id', $kamar)->first();
             $model_harga = Harga::where('tipekamar_id', (int)$model_kamar->tipekamar_id)->where('mitra_id', (int)$mitra)->first();
@@ -146,7 +156,7 @@ class SewaController extends Controller
                 $total_bayar = 0;
             }
 
-            if (!Penyewa::where('noktp', $noktp)->exists()) {
+            if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->exists()) {
                 $penyewa = Penyewa::create([
                     'namalengkap' => $namalengkap,
                     'noktp' => $noktp,
@@ -158,7 +168,7 @@ class SewaController extends Controller
 
                 $fotoktp = "penyewa" . "-" . $penyewa->id . "." .  request()->file('fotoktp')->getClientOriginalExtension();
                 $file = request()->file('fotoktp');
-                $tujuan_upload = 'img/ktp';
+                $tujuan_upload = 'img/ktp/umum';
                 $file->move($tujuan_upload, $fotoktp);
 
                 Penyewa::where('id', $penyewa->id)->update([
@@ -166,17 +176,17 @@ class SewaController extends Controller
                     'updated_at' => date("Y-m-d H:i:s"),
                 ]);
             } else {
-                $penyewa = Penyewa::where('noktp', $noktp)->first();
+                $penyewa = Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->first();
 
                 if (request()->file('fotoktp')) {
                     // Hapus file KTP lama jika ada
-                    if (file_exists('img/ktp/' . $penyewa->fotoktp)) {
-                        unlink('img/ktp/' . $penyewa->fotoktp);
+                    if (file_exists('img/ktp/umum/' . $penyewa->fotoktp)) {
+                        unlink('img/ktp/umum/' . $penyewa->fotoktp);
                     }
 
                     $fotoktp = "penyewa" . "-" . $penyewa->id . "." . request()->file('fotoktp')->getClientOriginalExtension();
                     $file = request()->file('fotoktp');
-                    $tujuan_upload = 'img/ktp';
+                    $tujuan_upload = 'img/ktp/umum';
                     $file->move($tujuan_upload, $fotoktp);
                 } else {
                     $fotoktp = $penyewa->fotoktp;
@@ -262,15 +272,14 @@ class SewaController extends Controller
             }
 
             $pembayaran = new Pembayaran();
-            $pembayaran->tagih_id = 1;
             if (intval($total_bayar) > 0) {
                 $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
             }
             $pembayaran->tanggal_masuk = $tanggalmasuk_format;
             $pembayaran->tanggal_keluar = $tenggatwaktu;
             $pembayaran->penyewa_id = $penyewa->id;
-            $pembayaran->mitra_id = $mitra;
             $pembayaran->lokasi_id = $kamar;
+            $pembayaran->mitra_id = $mitra;
             $pembayaran->tipekamar_id = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->id;
             $pembayaran->tipekamar = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->tipekamar;
             $pembayaran->jenissewa = $jenissewa;

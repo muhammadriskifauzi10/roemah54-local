@@ -52,6 +52,15 @@
             border-bottom: 1px solid black;
             inline-display: block;
         }
+
+        .border-bottom-solid.red {
+            border-bottom: 1px solid red;
+            inline-display: block;
+        }
+
+        .red {
+            color: red;
+        }
     </style>
 </head>
 
@@ -95,7 +104,7 @@
             </td>
         </tr>
     </table>
-    
+
     <table style="border: 2px solid black; margin-top: 10px;">
         <tr>
             <td colspan="6">
@@ -189,8 +198,9 @@
                 <span
                     class="border-bottom-solid">{{ $pembayaran->jumlah_pembayaran ? number_format($pembayaran->jumlah_pembayaran, '0', '.', '.') : '' }}</span>
             </td>
-            <td colspan="3" rowspan="3" style="vertical-align: baseline; text-align: center;">
-                Medan, <span class="border-bottom-dashed">{{ \Carbon\Carbon::parse($pembayaran->tanggal_keluar)->format('d/m/Y') }}</span>
+            <td colspan="3" rowspan="5" style="vertical-align: baseline; text-align: center;">
+                Medan, <span
+                    class="border-bottom-dashed">{{ \Carbon\Carbon::parse($pembayaran->tanggal_keluar)->format('d/m/Y') }}</span>
                 <div style="margin-top: 10px;">
                     <<img
                         src="https://barcode.tec-it.com/barcode.ashx?data={{ $pembayaran->id }}&code=QRCode&translate-esc=on&dpi=150&eclevel=L"
@@ -223,6 +233,32 @@
                 Rp.
                 <span
                     class="border-bottom-solid">{{ $pembayaran->total_bayar ? number_format($pembayaran->jumlah_pembayaran - $pembayaran->potongan_harga, '0', '.', '.') : '' }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Payments
+            </td>
+            <td style="text-align: right">
+                :
+            </td>
+            <td>
+                Rp.
+                <span
+                    class="border-bottom-solid">{{ $pembayaran->total_bayar ? number_format($pembayaran->total_bayar, '0', '.', '.') : '' }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Remaining payment
+            </td>
+            <td style="text-align: right">
+                :
+            </td>
+            <td>
+                Rp.
+                <span
+                    class="border-bottom-solid red">{{ $pembayaran->kurang_bayar ? number_format($pembayaran->kurang_bayar, '0', '.', '.') : '' }}</span>
             </td>
         </tr>
     </table>

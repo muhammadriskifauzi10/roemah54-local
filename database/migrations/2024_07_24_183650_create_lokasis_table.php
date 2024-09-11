@@ -14,10 +14,12 @@ return new class extends Migration
         Schema::create('lokasis', function (Blueprint $table) {
             $table->id();
             $table->foreignId("jenisruangan_id")->nullable();
+            $table->string("token_listrik", 50)->nullable();
             $table->foreignId("lantai_id")->nullable();
             $table->string("nomor_kamar", 50)->nullable();
             $table->foreignId("tipekamar_id")->nullable();
-            $table->string("token_listrik", 50)->nullable();
+            $table->integer("kapasitas");
+            $table->integer("jumlah_penyewa");
             $table->tinyInteger("status")->default(0);
             $table->integer('operator_id');
             $table->timestamps();
