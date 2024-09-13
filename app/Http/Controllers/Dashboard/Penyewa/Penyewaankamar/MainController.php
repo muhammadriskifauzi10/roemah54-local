@@ -20,17 +20,6 @@ class MainController extends Controller
 {
     public function index()
     {
-        // foreach (Pembayaran::all() as $row) {
-        //     if ($row->mitra_id == 3) {
-        //         Pembayaran::where('id', $row->id)->update([
-        //             'tagih_id' => 3
-        //         ]);
-        //     } else {
-        //         Pembayaran::where('id', $row->id)->update([
-        //             'tagih_id' => 1
-        //         ]);
-        //     }
-        // }
         $penyewa = Penyewa::all();
 
         $data = [
