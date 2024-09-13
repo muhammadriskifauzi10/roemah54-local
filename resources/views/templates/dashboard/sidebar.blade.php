@@ -50,10 +50,10 @@
                 class="list-group-item list-group-item-action border-0 {{ request()->is('harga*') ? 'active' : '' }}">
                 Harga Kamar
             </a>
-            <a href="{{ route('asrama.mahasiswa') }}"
+            {{-- <a href="{{ route('asrama.mahasiswa') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('asrama*') ? 'active' : '' }}">
                 Kamar Asrama
-            </a>
+            </a> --}}
 
             {{-- layanan --}}
             {{-- <div class="fw-bold my-3">Layanan</div>

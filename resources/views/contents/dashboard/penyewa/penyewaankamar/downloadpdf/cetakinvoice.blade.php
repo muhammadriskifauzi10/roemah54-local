@@ -132,7 +132,8 @@
                 :
             </td>
             <td>
-                @php
+                {{ $pembayaran->tipekamar }}
+                {{-- @php
                     $tipekamars = App\Models\Tipekamar::all();
                     $total = count($tipekamars);
                     $counter = 0;
@@ -148,7 +149,7 @@
                     @if (++$counter < $total)
                         <span class="slash">/</span>
                     @endif
-                @endforeach
+                @endforeach --}}
             </td>
             <td>
                 <span class="border-bottom-solid">No Kamar</span> <br>

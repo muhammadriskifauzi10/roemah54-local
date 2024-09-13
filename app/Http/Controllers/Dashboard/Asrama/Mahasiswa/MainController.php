@@ -341,6 +341,7 @@ class MainController extends Controller
             }
 
             $pembayaran = new Pembayaran();
+            $pembayaran->tagih_id = 3;
             if (intval($total_bayar) > 0) {
                 $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
             }
@@ -405,7 +406,7 @@ class MainController extends Controller
                 ]);
 
                 DB::commit();
-                return redirect()->route('asrama.mahasiswa')->with('messageSuccess', 'Penyewaan kamar berhasil ditambahkan');
+                return redirect()->route('penyewaankamar')->with('messageSuccess', 'Penyewaan kamar berhasil ditambahkan');
             }
         } catch (Exception $e) {
             DB::rollBack();

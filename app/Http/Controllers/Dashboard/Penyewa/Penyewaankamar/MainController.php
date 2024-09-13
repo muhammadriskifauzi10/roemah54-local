@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Dashboard\Penyewa\Penyewaankamar;
 
 use App\Http\Controllers\Controller;
-use App\Models\Denda;
 use App\Models\Lokasi;
+use App\Models\Mitra;
 use App\Models\Pembayaran;
 use App\Models\Penyewa;
 use Carbon\Carbon;
@@ -20,7 +20,18 @@ class MainController extends Controller
 {
     public function index()
     {
-        $penyewa = Penyewa::where('jenis_penyewa', 'Umum')->get();
+        // foreach (Pembayaran::all() as $row) {
+        //     if ($row->mitra_id == 3) {
+        //         Pembayaran::where('id', $row->id)->update([
+        //             'tagih_id' => 3
+        //         ]);
+        //     } else {
+        //         Pembayaran::where('id', $row->id)->update([
+        //             'tagih_id' => 1
+        //         ]);
+        //     }
+        // }
+        $penyewa = Penyewa::all();
 
         $data = [
             'judul' => 'Penyewaan Kamar',
@@ -34,6 +45,7 @@ class MainController extends Controller
         $minDate = request()->input('minDate');
         $maxDate = request()->input('maxDate');
         $penyewa = request()->input('penyewa');
+        $mitra = request()->input('mitra');
         $status_pembayaran = request()->input('status_pembayaran');
 
         $penyewaankamar = Pembayaran::when($minDate && $maxDate, function ($query) use ($minDate, $maxDate) {
@@ -43,10 +55,16 @@ class MainController extends Controller
             ->when($penyewa !== "Pilih Penyewa", function ($query) use ($penyewa) {
                 $query->where('penyewa_id', $penyewa);
             })
+            ->when($mitra, function ($query) use ($mitra) {
+                foreach (Mitra::all() as $row) {
+                    if ($mitra == $row->id) {
+                        return $query->where('mitra_id', $row->id);
+                    }
+                }
+            })
             ->when($status_pembayaran !== "Pilih Status Pembayaran", function ($query) use ($status_pembayaran) {
                 $query->where('status_pembayaran', $status_pembayaran);
             })
-            ->whereIn('mitra_id', [1, 2])
             ->orderBy('tanggal_masuk', 'DESC')
             ->get();
 
@@ -64,29 +82,9 @@ class MainController extends Controller
 
             // tombol cetak kwitansi & cetak invoice
             if ($row->tanggal_pembayaran && $row->status_pembayaran == "completed") {
-                $cetakkwitansi = '
-                <a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
-                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
-                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
-                    </svg>
-                    Cetak Kwitansi
-                </a>';
-                $cetakinvoice = "";
             } else {
                 if ($row->status_pembayaran == "failed") {
-                    $cetakkwitansi = "";
-                    $cetakinvoice = "";
                 } else if ($row->status_pembayaran == "pending") {
-                    $cetakkwitansi = "";
-                    $cetakinvoice = '
-                     <a href="' . route('penyewaankamar.cetakinvoice', encrypt($row->id)) . '" class="btn btn-warning text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
-                            <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
-                            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
-                        </svg>
-                        Cetak Invoice
-                    </a>';
                 }
             }
 
@@ -107,6 +105,16 @@ class MainController extends Controller
                 } else {
                     $pulangkantamu = '';
                 }
+
+                $cetakkwitansi = '
+                <a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                    </svg>
+                    Cetak Kwitansi
+                </a>';
+                $cetakinvoice = "";
             } else if ($row->status_pembayaran == "pending") {
                 $bayar = '
                 <button type="button" class="btn btn-success text-light fw-bold d-flex align-items-center justify-content-center gap-1" onclick="openModalBayarKamar(event, ' . $row->id . ')" style="width: 180px;">
@@ -133,8 +141,32 @@ class MainController extends Controller
                 } else {
                     $pulangkantamu = '';
                 }
+
+                if ($row->tanggal_pembayaran) {
+                    $cetakkwitansi = '
+                    <a href="' . route('penyewaankamar.cetakkwitansi', encrypt($row->id)) . '" class="btn btn-success text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                            <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                        </svg>
+                        Cetak Kwitansi
+                    </a>';
+                } else {
+                    $cetakkwitansi = "";
+                }
+
+                $cetakinvoice = '
+                 <a href="' . route('penyewaankamar.cetakinvoice', encrypt($row->id)) . '" class="btn btn-warning text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 180px;" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                    </svg>
+                    Cetak Invoice
+                </a>';
             } elseif ($row->status_pembayaran == "failed") {
                 $bayar = '';
+                $cetakkwitansi = "";
+                $cetakinvoice = "";
                 $pulangkantamu = '';
             }
 
@@ -292,44 +324,59 @@ class MainController extends Controller
                         ]);
                     }
 
-                    // kosongkan kamar
-                    Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
-                        'status' => 0,
-                        'operator_id' => auth()->user()->id,
-                        'updated_at' => date("Y-m-d H:i:s"),
-                    ]);
+                    if ($model_pembayaran->mitra_id == 1) {
+                        Lokasi::where('id', (int)$model_pembayaran->lokasi_id)->decrement('jumlah_penyewa');
+                        
+                        // kosongkan kamar
+                        Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
+                            'status' => 0,
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
+                    } else if ($model_pembayaran->mitra_id == 3) {
+                        Lokasi::where('id', (int)$model_pembayaran->lokasi_id)->decrement('jumlah_penyewa');
 
-                    // denda checkout
-                    $givenDateTime = Carbon::create($model_pembayaran->tanggal_keluar);
-
-                    // Ambil waktu sekarang
-                    $now = Carbon::now();
-
-                    // Tentukan waktu batasan (15:00 pada tanggal yang sama)
-                    $limitTime = $givenDateTime->copy()->setHour(15)->setMinute(0)->setSecond(0);
-
-                    // Hitung pembayaran berdasarkan waktu sekarang dan waktu batasan
-                    if ($now->greaterThanOrEqualTo($givenDateTime) && $now->greaterThanOrEqualTo($limitTime)) {
-                        $model_denda_checkout = new Denda();
-                        $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
-                        $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
-                        $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
-                        $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
-                        $model_denda_checkout->tagih_id = 3;
-                        $model_denda_checkout->jumlah_uang = 100000;
-                        $model_denda_checkout->operator_id = auth()->user()->id;
-                        $model_denda_checkout->save();
-                    } elseif ($now->greaterThanOrEqualTo($givenDateTime) && $now->lessThan($limitTime)) {
-                        $model_denda_checkout = new Denda();
-                        $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
-                        $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
-                        $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
-                        $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
-                        $model_denda_checkout->tagih_id = 3;
-                        $model_denda_checkout->jumlah_uang = 50000;
-                        $model_denda_checkout->operator_id = auth()->user()->id;
-                        $model_denda_checkout->save();
+                        if (Lokasi::where('id', (int)$model_pembayaran->lokasi_id)->first()->jumlah_penyewa == 0) {
+                            // kosongkan kamar
+                            Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
+                                'status' => 0,
+                                'operator_id' => auth()->user()->id,
+                                'updated_at' => date("Y-m-d H:i:s"),
+                            ]);
+                        }
                     }
+
+                    // // denda checkout
+                    // $givenDateTime = Carbon::create($model_pembayaran->tanggal_keluar);
+
+                    // // Ambil waktu sekarang
+                    // $now = Carbon::now();
+
+                    // // Tentukan waktu batasan (15:00 pada tanggal yang sama)
+                    // $limitTime = $givenDateTime->copy()->setHour(15)->setMinute(0)->setSecond(0);
+
+                    // // Hitung pembayaran berdasarkan waktu sekarang dan waktu batasan
+                    // if ($now->greaterThanOrEqualTo($givenDateTime) && $now->greaterThanOrEqualTo($limitTime)) {
+                    //     $model_denda_checkout = new Denda();
+                    //     $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
+                    //     $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
+                    //     $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
+                    //     $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
+                    //     $model_denda_checkout->tagih_id = 3;
+                    //     $model_denda_checkout->jumlah_uang = 100000;
+                    //     $model_denda_checkout->operator_id = auth()->user()->id;
+                    //     $model_denda_checkout->save();
+                    // } elseif ($now->greaterThanOrEqualTo($givenDateTime) && $now->lessThan($limitTime)) {
+                    //     $model_denda_checkout = new Denda();
+                    //     $model_denda_checkout->tanggal_denda = date('Y-m-d H:i:s');
+                    //     $model_denda_checkout->pembayaran_id = $model_pembayaran->id;
+                    //     $model_denda_checkout->penyewa_id = $model_pembayaran->penyewa_id;
+                    //     $model_denda_checkout->lokasi_id = $model_pembayaran->lokasi_id;
+                    //     $model_denda_checkout->tagih_id = 3;
+                    //     $model_denda_checkout->jumlah_uang = 50000;
+                    //     $model_denda_checkout->operator_id = auth()->user()->id;
+                    //     $model_denda_checkout->save();
+                    // }
 
                     $response = [
                         'status' => 200,

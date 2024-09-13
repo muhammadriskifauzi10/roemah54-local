@@ -17,15 +17,17 @@
                 <div class="card border-0">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-xl-3 mb-3">
+                            <div class="col-xl-6 mb-3">
                                 <label for="minDate" class="form-label fw-600">Min Tanggal Masuk</label>
                                 <input type="date" class="form-control" id="minDate" value="{{ date('Y-m-01') }}">
                             </div>
-                            <div class="col-xl-3 mb-3">
+                            <div class="col-xl-6 mb-3">
                                 <label for="maxDate" class="form-label fw-600">Max Tanggal Masuk</label>
                                 <input type="date" class="form-control" id="maxDate" value="{{ date('Y-m-d') }}">
                             </div>
-                            <div class="col-xl-3 mb-3">
+                        </div>
+                        <div class="row">
+                            <div class="col-xl-4 mb-3">
                                 <label for="penyewa" class="form-label">Pilih Penyewa</label>
                                 <select class="form-select form-select-2" name="penyewa" id="penyewa"
                                     style="width: 100%;">
@@ -35,7 +37,17 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-xl-3 mb-3">
+                            <div class="col-xl-4 mb-3">
+                                <label for="mitra" class="form-label">Mitra</label>
+                                <select class="form-select form-select-2" name="mitra" id="mitra"
+                                    style="width: 100%;">
+                                    <option>Pilih Mitra</option>
+                                    @foreach (App\Models\Mitra::all() as $row)
+                                        <option value="{{ $row->id }}">{{ $row->mitra }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-xl-4 mb-3">
                                 <label for="status_pembayaran" class="form-label">Status Pembayaran</label>
                                 <select class="form-select form-select-2" name="status_pembayaran" id="status_pembayaran"
                                     style="width: 100%;">
@@ -90,6 +102,7 @@
                         d.minDate = $("#minDate").val();
                         d.maxDate = $("#maxDate").val();
                         d.penyewa = $("#penyewa").val();
+                        d.mitra = $("#mitra").val();
                         d.status_pembayaran = $("#status_pembayaran").val();
                     },
                 },
@@ -184,7 +197,7 @@
                 // }
             });
 
-            $("#minDate, #maxDate, #penyewa, #status_pembayaran").change(function() {
+            $("#minDate, #maxDate, #penyewa, #mitra, #status_pembayaran").change(function() {
                 tablePenyewaanKamar.ajax.reload();
             });
         });
