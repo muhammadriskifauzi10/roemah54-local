@@ -208,6 +208,7 @@
                                             @php
                                                 $kamar = App\Models\Lokasi::where('jenisruangan_id', 2)
                                                     ->where('lantai_id', $lantai->id)
+                                                    ->whereNotIn('tipekamar_id', [5, 6])
                                                     ->where('status', 0)
                                                     ->get();
                                                 $total = count($kamar);

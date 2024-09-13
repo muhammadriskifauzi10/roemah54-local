@@ -76,6 +76,7 @@
                                     <th scope="col">Tanggal Pembayaran</th>
                                     <th scope="col">Kurang Bayar</th>
                                     <th scope="col">Status Pembayaran</th>
+                                    <th scope="col">Status</th>
                                     <th scope="col" width="150"></th>
                                 </tr>
                             </thead>
@@ -150,6 +151,9 @@
                     },
                     {
                         data: "status_pembayaran",
+                    },
+                    {
+                        data: "status",
                     },
                     {
                         data: "aksi",
@@ -303,6 +307,111 @@
                             }, 1000)
                         } else {
                             $("#btnRequest").prop("disabled", false)
+                            Swal.fire({
+                                title: "Opps, terjadi kesalahan",
+                                icon: "error"
+                            })
+                        }
+                    },
+                });
+            }
+        }
+
+        // perpanjang
+        function openModalPerpanjangPenyewaanKamar(e, pembayaran_id) {
+            e.preventDefault()
+
+            var formData = new FormData();
+            formData.append("token", $('meta[name="csrf-token"]').attr('content'))
+            formData.append("pembayaran_id", pembayaran_id);
+
+            $.ajax({
+                url: "{{ route('getmodalperpanjangpembayarankamar') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    $("#universalModalContent").empty();
+                    $("#universalModalContent").addClass("modal-dialog-centered");
+                    $("#universalModalContent").append(`
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div class="loading">
+                                    <span class="dots pulse1"></span>
+                                    <span class="dots pulse2"></span>
+                                    <span class="dots pulse3"></span>
+                                </div>
+                            </div>
+                        </div>
+                        `);
+                    $("#universalModal").modal("show");
+                },
+                success: function(response) {
+                    if (response.message == "success") {
+                        setTimeout(function() {
+                            $("#universalModalContent").html(response.dataHTML.trim());
+
+                            $(".form-modal-select-2").select2({
+                                dropdownParent: $("#universalModal"),
+                                theme: "bootstrap-5",
+                                // selectionCssClass: "select2--small",
+                                // dropdownCssClass: "select2--small",
+                            });
+
+                            // Money
+                            $('.formatrupiah').maskMoney({
+                                allowNegative: false,
+                                precision: 0,
+                                thousands: '.'
+                            });
+                        }, 1000);
+                    }
+                },
+            });
+        }
+
+        function requestBayarPerpanjangPenyewaanKamar(e) {
+            e.preventDefault()
+
+            let error = 0;
+            if ($("#jenissewa").val() === "Pilih Jenis Sewa") {
+                $("#jenissewa").addClass("is-invalid")
+                $("#errorJenisSewa").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                $("#jenissewa").removeClass("is-invalid")
+                $("#errorJenisSewa").text("")
+            }
+
+            if (error == 0) {
+                $("#btnRequest").prop("disabled", true)
+
+                var formData = new FormData();
+                formData.append("token", $("#token").val());
+                formData.append("pembayaran_id", $("#pembayaran_id").val());
+                formData.append("jenissewa", $("#jenissewa").val());
+                formData.append("jumlahhari", $("#jumlahhari").val());
+                formData.append("total_bayar", $("#total_bayar").val());
+                formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
+
+                $.ajax({
+                    url: "{{ route('postbayarperpanjangankamar') }}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.message == "success") {
+                            Swal.fire({
+                                title: "Berhasil",
+                                text: "Kamar Berhasil Diperpanjang",
+                                icon: "success"
+                            })
+                            setTimeout(function() {
+                                location.reload()
+                            }, 1000)
+                        } else {
                             Swal.fire({
                                 title: "Opps, terjadi kesalahan",
                                 icon: "error"

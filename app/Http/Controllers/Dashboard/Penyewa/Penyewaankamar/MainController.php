@@ -69,14 +69,6 @@ class MainController extends Controller
                 $status_pembayaran = "<span class='badge bg-danger'>Dibatalkan</span>";
             }
 
-            // tombol cetak kwitansi & cetak invoice
-            if ($row->tanggal_pembayaran && $row->status_pembayaran == "completed") {
-            } else {
-                if ($row->status_pembayaran == "failed") {
-                } else if ($row->status_pembayaran == "pending") {
-                }
-            }
-
             // status penyewa
             if ($row->status_pembayaran == "completed") {
                 $bayar = '';
@@ -159,13 +151,38 @@ class MainController extends Controller
                 $pulangkantamu = '';
             }
 
+            // status pembayaran
+            if ($row->status == 1) {
+                $status = "<span class='badge bg-success'>Sedang Menyewa</span>";
+
+                if (Carbon::now() > Carbon::parse($row->tanggal_keluar)) {
+                    $perpanjang = '<button type="button" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" onclick="openModalPerpanjangPenyewaanKamar(event, ' . $row->id . ')" style="width: 180px;">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            width="16" height="16"
+                            fill="currentColor" class="bi bi-credit-card"
+                            viewBox="0 0 16 16">
+                            <path
+                                d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z" />
+                            <path
+                                d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
+                        </svg>
+                        Perpanjang Kamar
+                    </button>';
+                } else {
+                    $perpanjang = '';
+                }
+            } else {
+                $status = "<span class='badge bg-danger'>-</span>";
+                $perpanjang = '';
+            }
+
             $aksi = '
             <div class="d-flex flex-column align-items-center justify-content-center gap-1">
                 ' . $bayar . '
                 ' . $cetakkwitansi . '
                 ' . $cetakinvoice . '
+                ' . $perpanjang . '
                 ' . $pulangkantamu . '
-            
             </div>
             ';
 
@@ -185,6 +202,7 @@ class MainController extends Controller
                 'tanggal_pembayaran' => $row->tanggal_pembayaran ? Carbon::parse($row->tanggal_pembayaran)->format("d-m-Y H:i:s") : "-",
                 'kurang_bayar' => $row->kurang_bayar ? "RP. " . number_format($row->kurang_bayar, '0', '.', '.') : "RP. 0",
                 'status_pembayaran' => $status_pembayaran,
+                'status' => $status,
                 'aksi' => $aksi,
             ];
         }
@@ -315,7 +333,7 @@ class MainController extends Controller
 
                     if ($model_pembayaran->mitra_id == 1) {
                         Lokasi::where('id', (int)$model_pembayaran->lokasi_id)->decrement('jumlah_penyewa');
-                        
+
                         // kosongkan kamar
                         Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
                             'status' => 0,

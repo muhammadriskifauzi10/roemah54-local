@@ -549,11 +549,11 @@ class SewaController extends Controller
                             </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success w-100" id="btnRequest">
-                            Ya
-                        </button>
+                        <div>
+                            <button type="submit" class="btn btn-success w-100" id="btnRequest">
+                                Ya
+                            </button>
+                        </div>
                     </div>
                 </form>
                 ';
@@ -793,17 +793,43 @@ class SewaController extends Controller
             if (Pembayaran::where('id', $pembayaran_id)->exists()) {
                 $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
 
-                $jenissewa = [
-                    'Harian',
-                    'Mingguan / 7 Hari',
-                    'Mingguan / (14 Hari)',
-                    'Bulanan',
-                ];
+                if ($model_pembayaran->mitra_id == 3) {
+                    $selectjenissewa = '';
+                    $inputtotalhari = '';
+                } else {
+                    $jenissewa = [
+                        'Harian',
+                        'Mingguan / 7 Hari',
+                        'Mingguan / (14 Hari)',
+                        'Bulanan',
+                    ];
 
-                $selectjenissewa = [];
-                foreach ($jenissewa as $value) {
-                    $selected = $value == $model_pembayaran->jenissewa ? "selected" : "";
-                    $selectjenissewa[] = '<option value="' . $value . '" ' . $selected . '>' . $value . '</option>';
+                    $optionjenissewa = [];
+                    foreach ($jenissewa as $value) {
+                        $selected = $value == $model_pembayaran->jenissewa ? "selected" : "";
+                        $optionjenissewa[] = '<option value="' . $value . '" ' . $selected . '>' . $value . '</option>';
+                    }
+
+                    $selectjenissewa = '
+                    <div class="mb-3">
+                        <label for="jenissewa" class="form-label fw-bold">Pilih Jenis Sewa</label>
+                        <select class="form-select form-modal-select-2"
+                            name="jenissewa" id="jenissewa" style="width: 100%;" onchange="selectJenisSewa()">
+                            <option>Pilih Jenis Sewa</option>
+                            ' . implode(" ", $optionjenissewa) . '
+                        </select>
+                        <span class="text-danger" id="errorJenisSewa"></span>
+                    </div>
+                    ';
+
+                    $inputtotalhari = '
+                    <div class="mb-3">
+                        <label for="jumlahhari" class="form-label fw-bold">Jumlah Hari</label>
+                        <div class="input-group" style="z-index: 0;">
+                            <input type="number" class="form-control" name="jumlahhari" id="jumlahhari" oninput="jumlahHari()">
+                            <span class="input-group-text bg-success text-light fw-bold">Hari</span>
+                        </div>
+                    </div>';
                 }
 
                 $dataHTML = '
@@ -815,22 +841,8 @@ class SewaController extends Controller
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="jenissewa" class="form-label fw-bold">Pilih Jenis Sewa</label>
-                            <select class="form-select form-select-2"
-                                name="jenissewa" id="jenissewa" style="width: 100%;" onchange="selectJenisSewa()">
-                                <option>Pilih Jenis Sewa</option>
-                                ' . implode(" ", $selectjenissewa) . '
-                            </select>
-                            <span class="text-danger" id="errorJenisSewa"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label for="jumlahhari" class="form-label fw-bold">Jumlah Hari</label>
-                            <div class="input-group" style="z-index: 0;">
-                                <input type="number" class="form-control" name="jumlahhari" id="jumlahhari" oninput="jumlahHari()">
-                                <span class="input-group-text bg-success text-light fw-bold">Hari</span>
-                            </div>
-                        </div>
+                        ' . $selectjenissewa . '
+                        ' . $inputtotalhari . '
                         <div class="mb-3">
                             <label for="total_bayar" class="form-label fw-bold">Total
                                 Bayar</label>
@@ -880,11 +892,11 @@ class SewaController extends Controller
                             </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success text-light w-100" id="btnRequest">
-                            Ya
-                        </button>
+                        <div>
+                            <button type="submit" class="btn btn-success text-light w-100" id="btnRequest">
+                                Ya
+                            </button>
+                        </div>
                     </div>
                 </form>
                 ';
@@ -928,62 +940,71 @@ class SewaController extends Controller
                         $total_bayar = 0;
                     }
 
-                    if (stripos($jenissewa, 'Harian') !== false) {
-                        $tenggatwaktu = $this->check_out($tanggalmasuk_format);
-
-                        if ($model_harga->mitra_id == 1) {
-                            $diskon = 0;
-                            $potongan_harga = 0;
-                            $jumlah_pembayaran = $model_harga->harian;
-                        } elseif ($model_harga->mitra_id == 2) {
-                            $diskon = 15;
-                            $potongan_harga = $model_harga->harian * ($diskon / 100);
-                            $jumlah_pembayaran = $model_harga->harian - $potongan_harga;
-                        }
-
-                        if ($jumlahhari || $jumlahhari > 0) {
-                            $new_tanggalmasuk = Carbon::parse($tanggalmasuk_format)->addDay($jumlahhari - 1);
-                            $tenggatwaktu = $this->check_out($new_tanggalmasuk);
-
-                            $potongan_harga = $model_harga->harian * intval($jumlahhari) * ($diskon / 100);
-                            $jumlah_pembayaran = intval($jumlah_pembayaran) * intval($jumlahhari);
-                        }
-                    } elseif (stripos($jenissewa, 'Mingguan / 7 Hari') !== false) {
-                        $tenggatwaktu = Carbon::parse($this->check_out($tanggalmasuk_format))->addWeek();
-
-                        if ($model_harga->mitra_id == 1) {
-                            $diskon = 0;
-                            $potongan_harga = 0;
-                            $jumlah_pembayaran = $model_harga->mingguan;
-                        } elseif ($model_harga->mitra_id == 2) {
-                            $diskon = 15;
-                            $potongan_harga = $model_harga->mingguan * ($diskon / 100);
-                            $jumlah_pembayaran = $model_harga->mingguan - $potongan_harga;
-                        }
-                    } elseif (stripos($jenissewa, 'Mingguan / (14 Hari)') !== false) {
-                        $tenggatwaktu = Carbon::parse($this->check_out($tanggalmasuk_format))->addWeeks(2);
-
-                        if ($model_harga->mitra_id == 1) {
-                            $diskon = 0;
-                            $potongan_harga = 0;
-                            $jumlah_pembayaran = $model_harga->hari14;
-                        } elseif ($model_harga->mitra_id == 2) {
-                            $diskon = 15;
-                            $potongan_harga = $model_harga->hari14 * ($diskon / 100);
-                            $jumlah_pembayaran = $model_harga->hari14 - $potongan_harga;
-                        }
-                    } elseif (stripos($jenissewa, 'Bulanan') !== false) {
+                    if ($model_pembayaran->mitra_id == 3) {
                         // Bulanan (Monthly)
                         $tenggatwaktu = Carbon::parse($this->check_out($tanggalmasuk_format))->addMonth();
 
-                        if ($model_harga->mitra_id == 1) {
-                            $diskon = 0;
-                            $potongan_harga = 0;
-                            $jumlah_pembayaran = $model_harga->bulanan;
-                        } elseif ($model_harga->mitra_id == 2) {
-                            $diskon = 15;
-                            $potongan_harga = $model_harga->bulanan * ($diskon / 100);
-                            $jumlah_pembayaran = $model_harga->bulanan - $potongan_harga;
+                        $diskon = 0;
+                        $potongan_harga = 0;
+                        $jumlah_pembayaran = 500000;
+                    } else {
+                        if (stripos($jenissewa, 'Harian') !== false) {
+                            $tenggatwaktu = $this->check_out($tanggalmasuk_format);
+
+                            if ($model_harga->mitra_id == 1) {
+                                $diskon = 0;
+                                $potongan_harga = 0;
+                                $jumlah_pembayaran = $model_harga->harian;
+                            } elseif ($model_harga->mitra_id == 2) {
+                                $diskon = 15;
+                                $potongan_harga = $model_harga->harian * ($diskon / 100);
+                                $jumlah_pembayaran = $model_harga->harian - $potongan_harga;
+                            }
+
+                            if ($jumlahhari || $jumlahhari > 0) {
+                                $new_tanggalmasuk = Carbon::parse($tanggalmasuk_format)->addDay($jumlahhari - 1);
+                                $tenggatwaktu = $this->check_out($new_tanggalmasuk);
+
+                                $potongan_harga = $model_harga->harian * intval($jumlahhari) * ($diskon / 100);
+                                $jumlah_pembayaran = intval($jumlah_pembayaran) * intval($jumlahhari);
+                            }
+                        } elseif (stripos($jenissewa, 'Mingguan / 7 Hari') !== false) {
+                            $tenggatwaktu = Carbon::parse($this->check_out($tanggalmasuk_format))->addWeek();
+
+                            if ($model_harga->mitra_id == 1) {
+                                $diskon = 0;
+                                $potongan_harga = 0;
+                                $jumlah_pembayaran = $model_harga->mingguan;
+                            } elseif ($model_harga->mitra_id == 2) {
+                                $diskon = 15;
+                                $potongan_harga = $model_harga->mingguan * ($diskon / 100);
+                                $jumlah_pembayaran = $model_harga->mingguan - $potongan_harga;
+                            }
+                        } elseif (stripos($jenissewa, 'Mingguan / (14 Hari)') !== false) {
+                            $tenggatwaktu = Carbon::parse($this->check_out($tanggalmasuk_format))->addWeeks(2);
+
+                            if ($model_harga->mitra_id == 1) {
+                                $diskon = 0;
+                                $potongan_harga = 0;
+                                $jumlah_pembayaran = $model_harga->hari14;
+                            } elseif ($model_harga->mitra_id == 2) {
+                                $diskon = 15;
+                                $potongan_harga = $model_harga->hari14 * ($diskon / 100);
+                                $jumlah_pembayaran = $model_harga->hari14 - $potongan_harga;
+                            }
+                        } elseif (stripos($jenissewa, 'Bulanan') !== false) {
+                            // Bulanan (Monthly)
+                            $tenggatwaktu = Carbon::parse($this->check_out($tanggalmasuk_format))->addMonth();
+
+                            if ($model_harga->mitra_id == 1) {
+                                $diskon = 0;
+                                $potongan_harga = 0;
+                                $jumlah_pembayaran = $model_harga->bulanan;
+                            } elseif ($model_harga->mitra_id == 2) {
+                                $diskon = 15;
+                                $potongan_harga = $model_harga->bulanan * ($diskon / 100);
+                                $jumlah_pembayaran = $model_harga->bulanan - $potongan_harga;
+                            }
                         }
                     }
 
@@ -999,10 +1020,8 @@ class SewaController extends Controller
                     $model_post_pembayaran->tagih_id = 1;
                     if (intval($total_bayar) > 0) {
                         $model_post_pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
-                        $tanggal_pembayaran = date('Y-m-d H:i:s');
-                    } else {
-                        $tanggal_pembayaran = NULL;
                     }
+
                     $model_post_pembayaran->tanggal_masuk = $tanggalmasuk;
                     $model_post_pembayaran->tanggal_keluar = $tenggatwaktu;
                     $model_post_pembayaran->penyewa_id = $model_pembayaran->penyewa_id;
