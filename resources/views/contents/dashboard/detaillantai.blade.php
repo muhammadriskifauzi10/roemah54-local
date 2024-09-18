@@ -68,16 +68,14 @@
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>Penyewa</td>
+                                                                        <td>Tanggal Masuk</td>
                                                                         <td class="text-right">
-                                                                            {{ $p->penyewas->namalengkap }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>Periode</td>
+                                                                        <td>Tanggal Keluar</td>
                                                                         <td class="text-right">
-                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
-                                                                            <br>
                                                                             {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, d-m-Y H:i:s') }}
                                                                         </td>
                                                                     </tr>
@@ -150,16 +148,14 @@
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>Penyewa</td>
+                                                                        <td>Tanggal Masuk</td>
                                                                         <td class="text-right">
-                                                                            {{ $p->penyewas->namalengkap }}
+                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>Periode</td>
+                                                                        <td>Tanggal Keluar</td>
                                                                         <td class="text-right">
-                                                                            {{ \Carbon\Carbon::parse($p->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
-                                                                            <br>
                                                                             {{ \Carbon\Carbon::parse($p->tanggal_keluar)->translatedFormat('l, d-m-Y H:i:s') }}
                                                                         </td>
                                                                     </tr>

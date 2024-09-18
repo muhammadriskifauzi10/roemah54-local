@@ -21,6 +21,25 @@
                 Daftar Lokasi
             </a> --}}
 
+            {{-- kamar --}}
+            <div class="fw-bold my-3">Kamar</div>
+            {{-- <a href="{{ route('tipekamar') }}"
+                   class="list-group-item list-group-item-action border-0 {{ request()->is('tipekamar*') ? 'active' : '' }}">
+                   Tipe Kamar
+               </a> --}}
+            <a href="{{ route('kamar') }}"
+                class="list-group-item list-group-item-action border-0 {{ request()->is('kamar*') ? 'active' : '' }}">
+                Daftar Kamar
+            </a>
+            <a href="{{ route('harga') }}"
+                class="list-group-item list-group-item-action border-0 {{ request()->is('harga*') ? 'active' : '' }}">
+                Harga Kamar
+            </a>
+            {{-- <a href="{{ route('asrama.mahasiswa') }}"
+                   class="list-group-item list-group-item-action border-0 {{ request()->is('asrama*') ? 'active' : '' }}">
+                   Kamar Asrama
+               </a> --}}
+
             {{-- penyewa --}}
             <div class="fw-bold my-3">Penyewa</div>
             <a href="{{ route('daftarpenyewa') }}"
@@ -34,25 +53,6 @@
             {{-- <a href="{{ route('dendacheckout') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('dendacheckout*') ? 'active' : '' }}">
                 Denda Checkout
-            </a> --}}
-
-            {{-- kamar --}}
-            <div class="fw-bold my-3">Kamar</div>
-            {{-- <a href="{{ route('tipekamar') }}"
-                class="list-group-item list-group-item-action border-0 {{ request()->is('tipekamar*') ? 'active' : '' }}">
-                Tipe Kamar
-            </a> --}}
-            <a href="{{ route('kamar') }}"
-                class="list-group-item list-group-item-action border-0 {{ request()->is('kamar*') ? 'active' : '' }}">
-                Daftar Kamar
-            </a>
-            <a href="{{ route('harga') }}"
-                class="list-group-item list-group-item-action border-0 {{ request()->is('harga*') ? 'active' : '' }}">
-                Harga Kamar
-            </a>
-            {{-- <a href="{{ route('asrama.mahasiswa') }}"
-                class="list-group-item list-group-item-action border-0 {{ request()->is('asrama*') ? 'active' : '' }}">
-                Kamar Asrama
             </a> --}}
 
             {{-- layanan --}}

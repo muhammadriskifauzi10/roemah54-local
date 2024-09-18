@@ -171,9 +171,19 @@ class MainController extends Controller
                 } else {
                     $perpanjang = '';
                 }
+
+                $mutasi = '
+                    <button type="button" class="btn btn-info fw-bold d-flex align-items-center justify-content-center gap-1 text-light" onclick="openModalPindahkanTamu(event, ' . $row->id . ')" style="width: 180px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-up" viewBox="0 0 16 16">
+                        <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.354-5.854 1.5 1.5a.5.5 0 0 1-.708.708L13 11.707V14.5a.5.5 0 0 1-1 0v-2.793l-.646.647a.5.5 0 0 1-.708-.708l1.5-1.5a.5.5 0 0 1 .708 0M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/>
+                        <path d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z"/>
+                    </svg>
+                    Pindahkan Tamu
+                </button>';
             } else {
                 $status = "<span class='badge bg-danger'>-</span>";
                 $perpanjang = '';
+                $mutasi = '';
             }
 
             $aksi = '
@@ -182,6 +192,7 @@ class MainController extends Controller
                 ' . $cetakkwitansi . '
                 ' . $cetakinvoice . '
                 ' . $perpanjang . '
+                ' . $mutasi . '
                 ' . $pulangkantamu . '
             </div>
             ';
@@ -307,6 +318,70 @@ class MainController extends Controller
         return $pdf->stream('cetakinvoice.pdf');
         // return view('contents.dashboard.downloadpdf.cetakinvoice', $data);
     }
+    // perpanjang
+    public function getmodalpindahkantamu()
+    {
+        if (request()->ajax()) {
+            $pembayaran_id = htmlspecialchars(request()->input('pembayaran_id'), ENT_QUOTES, 'UTF-8');
+            if (Pembayaran::where('id', $pembayaran_id)->exists()) {
+                $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
+
+                $kamar = Lokasi::query();
+                if ($model_pembayaran->mitra_id == 1 || $model_pembayaran->mitra_id == 2) {
+                    $kamar = $kamar->whereNotIn('tipekamar_id', [5, 6])->where('status', 0);
+                } else {
+                    $kamar = $kamar->whereIn('tipekamar_id', [5, 6])->whereColumn('lokasis.kapasitas', '>', 'lokasis.jumlah_penyewa');
+                }
+
+                $kamar = $kamar->where('id', '<>', $model_pembayaran->lokasi_id)->where('jenisruangan_id', 2)->orderby('id', 'ASC')->get();
+
+                $optionkamar = [];
+                foreach ($kamar as $row) {
+                    $selected = $row->id == $model_pembayaran->lokasi_id ? "selected" : "";
+                    $optionkamar[] = '<option value="' . $row->id . '" ' . $selected . '>Nomor Kamar: ' . $row->nomor_kamar . ' | Tipe Kamar: ' . $row->tipekamars->tipekamar . '</option>';
+                }
+
+                $dataHTML = '
+                <form class="modal-content" onsubmit="" autocomplete="off">
+                    <input type="hidden" name="__token" value="' . request()->input('token') . '" id="token">
+                    <input type="hidden" name="__pembayaran_id" value="' . $pembayaran_id . '" id="pembayaran_id">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="universalModalLabel">Pindahkan Tamu</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="lokasi" class="form-label fw-bold">Pilih Jenis Sewa</label>
+                            <select class="form-select form-modal-select-2" name="lokasi" id="lokasi" style="width: 100%;">
+                                <option>Pilih Kamar</option>
+                                ' . implode(" ", $optionkamar) . '
+                            </select>
+                            <span class="text-danger" id="errorLokasi"></span>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-success text-light w-100" id="btnRequest">
+                                Ya
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                ';
+
+                $response = [
+                    'status' => 200,
+                    'message' => 'success',
+                    'dataHTML' => $dataHTML
+                ];
+            } else {
+                $response = [
+                    'status' => 400,
+                    'message' => 'opps',
+                ];
+            }
+        }
+
+        return response()->json($response);
+    }
     public function pulangkantamu()
     {
         if (request()->ajax()) {
@@ -331,16 +406,7 @@ class MainController extends Controller
                         ]);
                     }
 
-                    if ($model_pembayaran->mitra_id == 1) {
-                        Lokasi::where('id', (int)$model_pembayaran->lokasi_id)->decrement('jumlah_penyewa');
-
-                        // kosongkan kamar
-                        Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
-                            'status' => 0,
-                            'operator_id' => auth()->user()->id,
-                            'updated_at' => date("Y-m-d H:i:s"),
-                        ]);
-                    } else if ($model_pembayaran->mitra_id == 3) {
+                    if ($model_pembayaran->mitra_id == 3) {
                         Lokasi::where('id', (int)$model_pembayaran->lokasi_id)->decrement('jumlah_penyewa');
 
                         if (Lokasi::where('id', (int)$model_pembayaran->lokasi_id)->first()->jumlah_penyewa == 0) {
@@ -351,6 +417,15 @@ class MainController extends Controller
                                 'updated_at' => date("Y-m-d H:i:s"),
                             ]);
                         }
+                    } else {
+                        Lokasi::where('id', (int)$model_pembayaran->lokasi_id)->decrement('jumlah_penyewa');
+
+                        // kosongkan kamar
+                        Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
+                            'status' => 0,
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
                     }
 
                     // // denda checkout

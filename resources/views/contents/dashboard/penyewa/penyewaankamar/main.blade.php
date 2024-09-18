@@ -422,6 +422,53 @@
             }
         }
 
+        // perpanjang
+        function openModalPindahkanTamu(e, pembayaran_id) {
+            e.preventDefault()
+
+            var formData = new FormData();
+            formData.append("token", $('meta[name="csrf-token"]').attr('content'))
+            formData.append("pembayaran_id", pembayaran_id);
+
+            $.ajax({
+                url: "{{ route('penyewaankamar.getmodalpindahkantamu') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    $("#universalModalContent").empty();
+                    $("#universalModalContent").addClass("modal-dialog-centered");
+                    $("#universalModalContent").append(`
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div class="loading">
+                                    <span class="dots pulse1"></span>
+                                    <span class="dots pulse2"></span>
+                                    <span class="dots pulse3"></span>
+                                </div>
+                            </div>
+                        </div>
+                        `);
+                    $("#universalModal").modal("show");
+                },
+                success: function(response) {
+                    if (response.message == "success") {
+                        setTimeout(function() {
+                            $("#universalModalContent").html(response.dataHTML.trim());
+
+                            $(".form-modal-select-2").select2({
+                                dropdownParent: $("#universalModal"),
+                                theme: "bootstrap-5",
+                                // selectionCssClass: "select2--small",
+                                // dropdownCssClass: "select2--small",
+                            });
+                        }, 1000);
+                    }
+                },
+            });
+        }
+
         // pulangkan tamu
         function requestPulangkanTamu(id) {
             Swal.fire({

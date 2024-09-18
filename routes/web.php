@@ -41,75 +41,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-// Route::get('/tes', function () {
-//     foreach (Asrama::all() as $row) {
-//         try {
-//             DB::beginTransaction();
-//             $pembayaran = new Pembayaran();
-//             if ($row->tanggal_pembayaran) {
-//                 $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
-//             }
-//             $pembayaran->tanggal_masuk = $row->tanggal_masuk;
-//             $pembayaran->tanggal_keluar = $row->tanggal_keluar;
-//             $pembayaran->penyewa_id = $row->penyewa_id;
-//             $pembayaran->lokasi_id = $row->lokasi_id;
-//             $pembayaran->mitra_id = $row->mitra_id;
-//             $pembayaran->tipekamar_id = $row->tipekamar_id;
-//             $pembayaran->tipekamar = $row->tipekamar;
-//             $pembayaran->jenissewa = $row->jenissewa;
-//             $pembayaran->jumlah_pembayaran = $row->jumlah_pembayaran;
-//             $pembayaran->diskon = 0;
-//             $pembayaran->potongan_harga = 0;
-//             $pembayaran->total_bayar = $row->total_bayar;
-//             $pembayaran->kurang_bayar = $row->kurang_bayar;
-//             $pembayaran->status_pembayaran = $row->status_pembayaran;
-//             $pembayaran->status = $row->status;
-//             $pembayaran->operator_id = $row->operator_id;
-//             $post = $pembayaran->save();
-
-//             if ($post) {
-//                 if (intval($row->total_bayar) > 0) {
-//                     // Generate no transaksi
-//                     $tahun = date('Y');
-//                     $bulan = date('m');
-//                     $tanggal = date('d');
-//                     $infoterakhir = Transaksi::orderBy('created_at', 'DESC')->first();
-
-//                     if ($infoterakhir) {
-//                         $tahunterakhir = Carbon::parse($infoterakhir->created_at)->format('Y') ?? 0;
-//                         $bulanterakhir = Carbon::parse($infoterakhir->created_at)->format('m') ?? 0;
-//                         $tanggalterakhir = Carbon::parse($infoterakhir->created_at)->format('d') ?? 0;
-//                         $nomor = substr($infoterakhir->no_transaksi, 6);
-
-//                         if ($tahun != $tahunterakhir || $bulan != $bulanterakhir || $tanggal != $tanggalterakhir) {
-//                             $nomor = 0;
-//                         }
-//                     } else {
-//                         $nomor = 0;
-//                     }
-
-//                     // yymmddxxxxxx
-//                     $no_transaksi = sprintf('%02d%02d%02d%06d', date('y'), $bulan, $tanggal, $nomor + 1);
-
-//                     $transaksi = new Transaksi();
-//                     $transaksi->pembayaran_id = $pembayaran->id;
-//                     $transaksi->no_transaksi = $no_transaksi;
-//                     $transaksi->tagih_id = 1;
-//                     $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
-//                     $transaksi->jumlah_uang = $row->total_bayar;
-//                     $transaksi->metode_pembayaran = NULL;
-//                     $transaksi->operator_id = $row->operator_id;
-//                     $transaksi->save();
-//                     DB::commit();
-//                 }
-//             }
-//         } catch (Exception $e) {
-//             DB::rollBack();
-//             echo $e->getMessage();
-//         }
-//     }
-// });
 // Route Auth
 Route::group(['middleware' => 'guest'], function () {
     Route::get('/', [LoginController::class, 'index'])->name('login');
@@ -143,6 +74,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/penyewaankamar/datatablepenyewaankamar', [PenyewaankamarMainController::class, 'datatablepenyewaankamar'])->name('penyewaankamar.datatablepenyewaankamar');
     Route::get('/penyewaankamar/cetakkwitansi/{id}', [PenyewaankamarMainController::class, 'cetakkwitansi'])->name('penyewaankamar.cetakkwitansi');
     Route::get('/penyewaankamar/cetakinvoice/{id}', [PenyewaankamarMainController::class, 'cetakinvoice'])->name('penyewaankamar.cetakinvoice');
+    Route::post('/penyewaankamar/getmodalpindahkantamu', [PenyewaankamarMainController::class, 'getmodalpindahkantamu'])->name('penyewaankamar.getmodalpindahkantamu');
     Route::post('/penyewaankamar/pulangkantamu', [PenyewaankamarMainController::class, 'pulangkantamu'])->name('penyewaankamar.pulangkantamu');
     Route::post('/penyewaankamar/getrequestformsewaonktp', [PenyewaankamarMainController::class, 'getrequestformsewaonktp'])->name('penyewaankamar.getrequestformsewaonktp');
     // denda checkout

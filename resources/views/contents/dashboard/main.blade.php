@@ -55,18 +55,7 @@
                                                         <td>Harian</td>
                                                         {{-- <td class="text-right" width="10">:</td> --}}
                                                         <td class="text-right fw-bold">
-                                                            {{ DB::table('lokasis as k')
-                                                            ->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')
-                                                            ->join('lantais as l', 'k.lantai_id', '=', 'l.id')
-                                                            ->join('penyewas as s', 'p.penyewa_id', '=', 's.id')
-                                                            ->where('l.id', $row->id)
-                                                            ->where('p.jenissewa', 'Harian')
-                                                            ->whereIn('k.status', [1, 2])
-                                                            ->where('p.status_pembayaran', '!=', 'failed')
-                                                            ->whereIn('p.mitra_id', [1, 2])
-                                                            ->whereIn('p.status', [1, 2])
-                                                            ->distinct('k.id')
-                                                            ->count('k.id') }}
+                                                            {{ DB::table('lokasis as k')->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')->join('lantais as l', 'k.lantai_id', '=', 'l.id')->join('penyewas as s', 'p.penyewa_id', '=', 's.id')->where('l.id', $row->id)->where('p.jenissewa', 'Harian')->whereIn('k.status', [1, 2])->where('p.status_pembayaran', '!=', 'failed')->whereIn('p.status', [1, 2])->distinct('k.id')->count('k.id') }}
                                                             Kamar
                                                         </td>
                                                     </tr>
@@ -74,18 +63,7 @@
                                                         <td>Mingguan / 7 Hari </td>
                                                         {{-- <td class="text-right" width="10">:</td> --}}
                                                         <td class="text-right fw-bold">
-                                                            {{ DB::table('lokasis as k')
-                                                            ->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')
-                                                            ->join('lantais as l', 'k.lantai_id', '=', 'l.id')
-                                                            ->join('penyewas as s', 'p.penyewa_id', '=', 's.id')
-                                                            ->where('l.id', $row->id)
-                                                            ->where('p.jenissewa', 'Mingguan / 7 Hari')
-                                                            ->whereIn('k.status', [1, 2])
-                                                            ->where('p.status_pembayaran', '!=', 'failed')
-                                                            ->whereIn('p.mitra_id', [1, 2])
-                                                            ->whereIn('p.status', [1, 2])
-                                                            ->distinct('k.id')
-                                                            ->count('k.id') }}
+                                                            {{ DB::table('lokasis as k')->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')->join('lantais as l', 'k.lantai_id', '=', 'l.id')->join('penyewas as s', 'p.penyewa_id', '=', 's.id')->where('l.id', $row->id)->where('p.jenissewa', 'Mingguan / 7 Hari')->whereIn('k.status', [1, 2])->where('p.status_pembayaran', '!=', 'failed')->whereIn('p.status', [1, 2])->distinct('k.id')->count('k.id') }}
                                                             Kamar
                                                         </td>
                                                     </tr>
@@ -93,18 +71,7 @@
                                                         <td>Mingguan / (14 Hari)</td>
                                                         {{-- <td class="text-right" width="10">:</td> --}}
                                                         <td class="text-right fw-bold">
-                                                            {{ DB::table('lokasis as k')
-                                                            ->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')
-                                                            ->join('lantais as l', 'k.lantai_id', '=', 'l.id')
-                                                            ->join('penyewas as s', 'p.penyewa_id', '=', 's.id')
-                                                            ->where('l.id', $row->id)
-                                                            ->where('p.jenissewa', 'Mingguan / (14 Hari)')
-                                                            ->whereIn('k.status', [1, 2])
-                                                            ->where('p.status_pembayaran', '!=', 'failed')
-                                                            ->whereIn('p.mitra_id', [1, 2])
-                                                            ->whereIn('p.status', [1, 2])
-                                                            ->distinct('k.id')
-                                                            ->count('k.id') }}
+                                                            {{ DB::table('lokasis as k')->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')->join('lantais as l', 'k.lantai_id', '=', 'l.id')->join('penyewas as s', 'p.penyewa_id', '=', 's.id')->where('l.id', $row->id)->where('p.jenissewa', 'Mingguan / (14 Hari)')->whereIn('k.status', [1, 2])->where('p.status_pembayaran', '!=', 'failed')->whereIn('p.status', [1, 2])->distinct('k.id')->count('k.id') }}
                                                             Kamar
                                                         </td>
                                                     </tr>
@@ -112,29 +79,32 @@
                                                         <td>Bulanan</td>
                                                         {{-- <td class="text-right" width="10">:</td> --}}
                                                         <td class="text-right fw-bold">
-                                                            {{ DB::table('lokasis as k')
-                                                            ->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')
-                                                            ->join('lantais as l', 'k.lantai_id', '=', 'l.id')
-                                                            ->join('penyewas as s', 'p.penyewa_id', '=', 's.id')
-                                                            ->where('l.id', $row->id)
-                                                            ->where('p.jenissewa', 'Bulanan')
-                                                            ->whereIn('k.status', [1, 2])
-                                                            ->where('p.status_pembayaran', '!=', 'failed')
-                                                            ->whereIn('p.mitra_id', [1, 2])
-                                                            ->whereIn('p.status', [1, 2])
-                                                            ->distinct('k.id')
-                                                            ->count('k.id') }}
+                                                            {{ DB::table('lokasis as k')->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')->join('lantais as l', 'k.lantai_id', '=', 'l.id')->join('penyewas as s', 'p.penyewa_id', '=', 's.id')->where('l.id', $row->id)->where('p.jenissewa', 'Bulanan')->whereIn('k.status', [1, 2])->where('p.status_pembayaran', '!=', 'failed')->whereIn('p.status', [1, 2])->distinct('k.id')->count('k.id') }}
                                                             Kamar
                                                         </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
                                             <div class="mt-2 d-flex align-items-center gap-4">
-                                                <div class="bg-success"
+                                                <div class="bg-info"
                                                     style="width: 20px; height: 20px; border-radius: 50px;"></div>
                                                 <strong
                                                     class="black">{{ $row->lokasis->whereIn('status', [1, 2])->count() }}
                                                     Kamar Terisi</strong>
+                                            </div>
+                                            <div class="mt-2 d-flex align-items-center gap-4">
+                                                <div class="bg-success"
+                                                    style="width: 20px; height: 20px; border-radius: 50px;"></div>
+                                                <strong
+                                                    class="black">{{ $row->lokasis->whereIn('status', [1, 2])->whereNotIn('tipekamar_id', [5, 6])->count() }}
+                                                    Kamar Umum</strong>
+                                            </div>
+                                            <div class="mt-2 d-flex align-items-center gap-4">
+                                                <div class="bg-success"
+                                                    style="width: 20px; height: 20px; border-radius: 50px;"></div>
+                                                <strong
+                                                    class="black">{{ $row->lokasis->whereIn('status', [1, 2])->whereIn('tipekamar_id', [5, 6])->count() }}
+                                                    Kamar Asrama</strong>
                                             </div>
                                             <div class="mt-1 d-flex align-items-center gap-4">
                                                 <div class="bg-warning"

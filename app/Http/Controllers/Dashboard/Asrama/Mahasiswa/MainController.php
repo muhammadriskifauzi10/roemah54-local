@@ -189,7 +189,7 @@ class MainController extends Controller
             ->whereColumn('lokasis.kapasitas', '>', 'lokasis.jumlah_penyewa')
             ->orderBy('lokasis.lantai_id', 'ASC')
             ->get();
-
+            
         $data = [
             'judul' => 'Tambah Asrama Mahasiswa',
             'kamar' => $kamar

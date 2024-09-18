@@ -329,6 +329,7 @@ class SewaController extends Controller
                     $transaksi->save();
                 }
 
+                Lokasi::where('id', $kamar)->increment('jumlah_penyewa');
                 Lokasi::where('id', $kamar)->update([
                     'status' => $status_kamar,
                     'operator_id' => auth()->user()->id,
@@ -679,7 +680,6 @@ class SewaController extends Controller
             return response()->json($response);
         }
     }
-    // baru
     public function bayarisitokenkamar()
     {
         if (request()->ajax()) {
@@ -784,7 +784,6 @@ class SewaController extends Controller
             return response()->json($response);
         }
     }
-    // baru
     // perpanjang
     public function getmodalperpanjangpembayarankamar()
     {

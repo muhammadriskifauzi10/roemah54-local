@@ -18,10 +18,54 @@
                     <div class="card-body p-0">
                         <table class="table table-hover not-va m-0">
                             <tbody>
+                                {{-- informasi kamar --}}
+                                <tr>
+                                    <th colspan="3" scope="row" class="text-left bg-green text-light">Informasi Kamar
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="text-left">Lantai</th>
+                                    <th scope="row" class="text-right">:</th>
+                                    <th scope="row" class="text-left">
+                                        {{ DB::table('lantais')->where('id', $kamar->lantai_id)->first()->namalantai }}
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="text-left">Nomor Kamar</th>
+                                    <th scope="row" class="text-right">:</th>
+                                    <th scope="row" class="text-left">{{ $kamar->nomor_kamar }}</th>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="text-left">Tipe Kamar</th>
+                                    <th scope="row" class="text-right">:</th>
+                                    <th scope="row" class="text-left">
+                                        {{ DB::table('tipekamars')->where('id', $kamar->tipekamar_id)->first()->tipekamar }}
+                                    </th>
+                                </tr>
+                                {{-- informasi tamu --}}
+                                <tr>
+                                    <th colspan="3" scope="row" class="text-left bg-green text-light">
+                                        Informasi Tamu
+                                    </th>
+                                </tr>
                                 <tr>
                                     <th scope="row" class="text-left">Nama Lengkap</th>
                                     <th scope="row" class="text-right">:</th>
                                     <th scope="row" class="text-left">{{ $penyewa->namalengkap }}</th>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="text-left">Tanggal Masuk</th>
+                                    <th scope="row" class="text-right">:</th>
+                                    <th scope="row" class="text-left">
+                                        {{ \Carbon\Carbon::parse($penyewa->transaksisewa_kamars->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="text-left">Tanggal Keluar</th>
+                                    <th scope="row" class="text-right">:</th>
+                                    <th scope="row" class="text-left">
+                                        {{ \Carbon\Carbon::parse($penyewa->transaksisewa_kamars->tanggal_keluar)->translatedFormat('l, d-m-Y H:i:s') }}
+                                    </th>
                                 </tr>
                                 <tr>
                                     <th scope="row" class="text-left">No KTP</th>
@@ -44,32 +88,10 @@
                                         target="_blank">Lihat
                                         File</a></th>
                                 </tr>
+                                {{-- informasi biaya --}}
                                 <tr>
-                                    <th scope="row" class="text-left">Periode</th>
-                                    <th scope="row" class="text-right">:</th>
-                                    <th scope="row" class="text-left">
-                                        {{ \Carbon\Carbon::parse($penyewa->transaksisewa_kamars->tanggal_masuk)->translatedFormat('l, d-m-Y H:i:s') }}
-                                        |
-                                        {{ \Carbon\Carbon::parse($penyewa->transaksisewa_kamars->tanggal_keluar)->translatedFormat('l, d-m-Y H:i:s') }}
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th scope="row" class="text-left">Lantai</th>
-                                    <th scope="row" class="text-right">:</th>
-                                    <th scope="row" class="text-left">
-                                        {{ DB::table('lantais')->where('id', $kamar->lantai_id)->first()->namalantai }}
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th scope="row" class="text-left">Nomor Kamar</th>
-                                    <th scope="row" class="text-right">:</th>
-                                    <th scope="row" class="text-left">{{ $kamar->nomor_kamar }}</th>
-                                </tr>
-                                <tr>
-                                    <th scope="row" class="text-left">Tipe Kamar</th>
-                                    <th scope="row" class="text-right">:</th>
-                                    <th scope="row" class="text-left">
-                                        {{ DB::table('tipekamars')->where('id', $kamar->tipekamar_id)->first()->tipekamar }}
+                                    <th colspan="3" scope="row" class="text-left bg-green text-light">
+                                        Informasi Biaya
                                     </th>
                                 </tr>
                                 <tr>
