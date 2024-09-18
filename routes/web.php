@@ -75,6 +75,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/penyewaankamar/cetakkwitansi/{id}', [PenyewaankamarMainController::class, 'cetakkwitansi'])->name('penyewaankamar.cetakkwitansi');
     Route::get('/penyewaankamar/cetakinvoice/{id}', [PenyewaankamarMainController::class, 'cetakinvoice'])->name('penyewaankamar.cetakinvoice');
     Route::post('/penyewaankamar/getmodalpindahkantamu', [PenyewaankamarMainController::class, 'getmodalpindahkantamu'])->name('penyewaankamar.getmodalpindahkantamu');
+    Route::post('/penyewaankamar/pindahkantamu', [PenyewaankamarMainController::class, 'pindahkantamu'])->name('penyewaankamar.pindahkantamu');
     Route::post('/penyewaankamar/pulangkantamu', [PenyewaankamarMainController::class, 'pulangkantamu'])->name('penyewaankamar.pulangkantamu');
     Route::post('/penyewaankamar/getrequestformsewaonktp', [PenyewaankamarMainController::class, 'getrequestformsewaonktp'])->name('penyewaankamar.getrequestformsewaonktp');
     // denda checkout

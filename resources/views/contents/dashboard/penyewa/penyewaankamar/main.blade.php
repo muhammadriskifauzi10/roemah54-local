@@ -422,7 +422,7 @@
             }
         }
 
-        // perpanjang
+        // pindahkan tamu
         function openModalPindahkanTamu(e, pembayaran_id) {
             e.preventDefault()
 
@@ -467,6 +467,55 @@
                     }
                 },
             });
+        }
+
+        function requestPindahkanTamu(e) {
+            e.preventDefault()
+
+            let error = 0;
+            if ($("#lokasi").val() === "Pilih Kamar") {
+                $("#lokasi").addClass("is-invalid")
+                $("#errorLokasi").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                $("#lokasi").removeClass("is-invalid")
+                $("#errorLokasi").text("")
+            }
+
+            if (error == 0) {
+                console.log("oke")
+                $("#btnRequest").prop("disabled", true)
+
+                const form = $("#formpindahkantamu")[0]
+
+                const formData = new FormData(form);
+
+                $.ajax({
+                    url: "{{ route('penyewaankamar.pindahkantamu') }}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.message == "success") {
+                            Swal.fire({
+                                title: "Berhasil",
+                                text: "Tamu berhasil dipindahkan",
+                                icon: "success"
+                            })
+
+                            setTimeout(function() {
+                                location.reload()
+                            }, 1000)
+                        } else {
+                            Swal.fire({
+                                title: "Opps, terjadi kesalahan",
+                                icon: "error"
+                            })
+                        }
+                    },
+                });
+            }
         }
 
         // pulangkan tamu

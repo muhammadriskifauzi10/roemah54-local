@@ -192,7 +192,8 @@
                                 @endif
                             </div>
                         </div>
-                        {{-- Detail Penyewaan --}}
+
+                        {{-- daftar kamar belum terisi --}}
                         <div class="col-xl-3 mb-3">
                             <div class="card border-0">
                                 <div class="card-header bg-danger text-light text-center fw-bold">
@@ -204,7 +205,6 @@
                                             @php
                                                 $kamar = App\Models\Lokasi::where('jenisruangan_id', 2)
                                                     ->where('lantai_id', $lantai->id)
-                                                    ->whereNotIn('tipekamar_id', [5, 6])
                                                     ->where('status', 0)
                                                     ->get();
                                                 $total = count($kamar);
