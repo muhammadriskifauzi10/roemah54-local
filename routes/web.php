@@ -77,6 +77,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/penyewaankamar/getmodalpindahkantamu', [PenyewaankamarMainController::class, 'getmodalpindahkantamu'])->name('penyewaankamar.getmodalpindahkantamu');
     Route::post('/penyewaankamar/pindahkantamu', [PenyewaankamarMainController::class, 'pindahkantamu'])->name('penyewaankamar.pindahkantamu');
     Route::post('/penyewaankamar/pulangkantamu', [PenyewaankamarMainController::class, 'pulangkantamu'])->name('penyewaankamar.pulangkantamu');
+    Route::post('/penyewaankamar/emailpotonganharga', [PenyewaankamarMainController::class, 'emailpotonganharga'])->name('get');
     Route::post('/penyewaankamar/getrequestformsewaonktp', [PenyewaankamarMainController::class, 'getrequestformsewaonktp'])->name('penyewaankamar.getrequestformsewaonktp');
     // denda checkout
     Route::get('/dendacheckout', [DendacheckoutMainController::class, 'index'])->name('dendacheckout');
@@ -98,6 +99,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/getselectmitra', [SewaController::class, 'getselectmitra'])->name('getselectmitra');
     Route::post('/batalkanpembayarankamar', [SewaController::class, 'batalkanpembayarankamar'])->name('postbatalkanpembayarankamar');
     Route::post('/getmodalselesaikanpembayarankamar', [SewaController::class, 'getmodalselesaikanpembayarankamar'])->name('getmodalselesaikanpembayarankamar');
+    Route::post('/sendemailverifikasipotonganharga', [SewaController::class, 'sendemailverifikasipotonganharga'])->name('sendemailverifikasipotonganharga');
+    Route::post('/verifikasipotonganharga', [SewaController::class, 'verifikasipotonganharga'])->name('verifikasipotonganharga');
     Route::post('/selesaikanpembayarankamar', [SewaController::class, 'selesaikanpembayarankamar'])->name('postselesaikanpembayarankamar');
     Route::post('/bayarisitokenkamar', [SewaController::class, 'bayarisitokenkamar'])->name('postbayarisitokenkamar');
 

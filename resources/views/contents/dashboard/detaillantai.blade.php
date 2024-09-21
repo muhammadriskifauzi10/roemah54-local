@@ -356,24 +356,14 @@
 
             let error = 0;
 
-            if (($("#total_bayar").val() == "" || $("#total_bayar").val() == 0) && ($("#potongan_harga").val() == "" || $(
-                    "#potongan_harga").val() == 0)) {
+            if (($("#total_bayar").val() == "" || $("#total_bayar").val() == 0)) {
                 // total bayar
                 $("#total_bayar").addClass("is-invalid")
                 $("#errorTotalBayar").text("Kolom ini wajib diisi")
-
-                // potongan harga
-                $("#potongan_harga").addClass("is-invalid")
-                $("#errorPotonganHarga").text("Kolom ini wajib diisi")
-                error++
             } else {
                 // total harga
                 $("#total_bayar").removeClass("is-invalid")
                 $("#errorTotalBayar").text("")
-
-                // potongan harga
-                $("#potongan_harga").removeClass("is-invalid")
-                $("#errorPotonganHarga").text("")
             }
 
             if (error == 0) {
@@ -383,7 +373,6 @@
                 formData.append("token", $("#token").val());
                 formData.append("transaksi_id", $("#transaksi_id").val());
                 formData.append("total_bayar", $("#total_bayar").val());
-                formData.append("potongan_harga", $("#potongan_harga").val());
                 formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
 
                 $.ajax({
@@ -414,6 +403,118 @@
             }
         }
 
+        function onGetToken(pembayaran_id) {
+
+            let error = 0;
+
+            if (($("#potongan_harga").val() == "" || $("#potongan_harga").val() == 0)) {
+                // potongan harga
+                $("#potongan_harga").addClass("is-invalid")
+                $("#errorPotonganHarga").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                // potongan harga
+                $("#potongan_harga").removeClass("is-invalid")
+                $("#errorPotonganHarga").text("")
+            }
+
+            if (error == 0) {
+
+                $("#btnRequestGetToken").prop("disabled", true)
+
+                var formData = new FormData();
+                formData.append("potongan_harga", $("#potongan_harga").val());
+                formData.append("pembayaran_id", pembayaran_id);
+
+                $.ajax({
+                    url: "{{ route('sendemailverifikasipotonganharga') }}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.message == "success") {
+                            $("#btnRequestGetToken").prop("disabled", false)
+
+                            // potongan harga
+                            $("#potongan_harga").removeClass("is-invalid")
+                            $("#potongan_harga").val(0)
+                            $("#errorPotonganHarga").text("")
+                        } else {
+                            $("#btnRequestGetToken").prop("disabled", false)
+
+                            Swal.fire({
+                                title: "Opps, terjadi kesalahan",
+                                icon: "error"
+                            })
+                        }
+                    },
+                });
+            }
+        }
+
+        function onVerifikasi(pembayaran_id) {
+            $("#btnRequestVerifikasi").prop("disabled", true)
+
+            var formData = new FormData();
+            formData.append("pembayaran_id", pembayaran_id);
+            formData.append("kode", $("#kode").val());
+
+            $.ajax({
+                url: "{{ route('verifikasipotonganharga') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.message == "completed") {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        $("#labelpembayaran").empty()
+                        $("#labelpembayaran").append(response['label'])
+
+                        $("#kode").val("")
+
+                        Swal.fire({
+                            title: "Berhasil",
+                            text: "Token valid, berhasil menerapkan potongan harga",
+                            icon: "success"
+                        })
+
+                        setTimeout(function() {
+                            location.reload()
+                        }, 1000)
+                    } else if (response.message == "success") {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        $("#labelpembayaran").empty()
+                        $("#labelpembayaran").append(response['label'])
+
+                        $("#kode").val("")
+
+                        Swal.fire({
+                            title: "Berhasil",
+                            text: "Token valid, berhasil menerapkan potongan harga",
+                            icon: "success"
+                        })
+                    } else if (response.message == "error") {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        Swal.fire({
+                            title: "Token tidak ditemukan",
+                            icon: "error"
+                        })
+                    } else {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        Swal.fire({
+                            title: "Opps, terjadi kesalahan",
+                            icon: "error"
+                        })
+                    }
+                },
+            });
+        }
         // Isi Token
         function openModalBayarIsiTokenKamar(e, transaksi_id) {
             e.preventDefault()

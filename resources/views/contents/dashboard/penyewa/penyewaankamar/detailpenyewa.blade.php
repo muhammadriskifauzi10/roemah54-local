@@ -82,11 +82,12 @@
                                     <th scope="row" class="text-right">:</th>
                                     <th scope="row" class="text-left">{!! nl2br($penyewa->alamat) !!}</th>
                                 </tr>
-                                <th scope="row" class="text-left">Foto KTP</th>
-                                <th scope="row" class="text-right">:</th>
-                                <th scope="row" class="text-left"><a href="/img/ktp/umum/{{ $penyewa->fotoktp }}"
-                                        target="_blank">Lihat
-                                        File</a></th>
+                                <tr>
+                                    <th scope="row" class="text-left">Foto KTP</th>
+                                    <th scope="row" class="text-right">:</th>
+                                    <th scope="row" class="text-left"><a href="/img/ktp/umum/{{ $penyewa->fotoktp }}"
+                                            target="_blank">Lihat
+                                            File</a></th>
                                 </tr>
                                 {{-- informasi biaya --}}
                                 <tr>

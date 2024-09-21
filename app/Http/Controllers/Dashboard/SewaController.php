@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Denda;
+use Illuminate\Support\Str;
+use App\Mail\PotonganhargaEmail;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Harga;
 use App\Models\Lokasi;
 use App\Models\Lantai;
 use App\Models\Mitra;
 use App\Models\Pembayaran;
 use App\Models\Penyewa;
+use App\Models\Potonganharga;
 use App\Models\Tipekamar;
 use App\Models\Tokenlistrik;
 use App\Models\Transaksi;
@@ -17,6 +20,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Collection;
 
 class SewaController extends Controller
 {
@@ -402,6 +406,7 @@ class SewaController extends Controller
             }
         }
     }
+    // pembayaran kamar
     public function getmodalselesaikanpembayarankamar()
     {
         if (request()->ajax()) {
@@ -457,23 +462,6 @@ class SewaController extends Controller
                     }
                 }
 
-                if (auth()->user()->role_id == 1 || auth()->user()->role_id == 3) {
-                    $potongan_harga = '
-                    <div class="mb-3">
-                        <label for="potongan_harga" class="form-label fw-bold">Potongan Harga</label>
-                        <div class="input-group" style="z-index: 0;">
-                            <span class="input-group-text bg-success text-light fw-bold">RP</span>
-                            <input type="text"
-                                class="form-control formatrupiah"
-                                name="potongan_harga" id="potongan_harga" value="0">
-                        </div>
-                        <span class="text-danger" id="errorPotonganHarga"></span>
-                    </div>
-                    ';
-                } else {
-                    $potongan_harga = '';
-                }
-
                 $dataHTML = '
                 <form class="modal-content" onsubmit="requestSelesaikanPembayaranKamar(event)" autocomplete="off">
                     <input type="hidden" name="__token" value="' . request()->input('token') . '" id="token">
@@ -484,7 +472,7 @@ class SewaController extends Controller
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <table style="width: 100%;">
+                            <table style="width: 100%;" id="labelpembayaran">
                                 <tbody>
                                     ' . $label . '
                                     <tr>
@@ -510,7 +498,6 @@ class SewaController extends Controller
                             </div>
                             <span class="text-danger" id="errorTotalBayar"></span>
                         </div>
-                        ' . $potongan_harga . '
                         <div class="mb-3">
                             <label for="cash" class="form-label fw-bold">
                                 Metode Pembayaran
@@ -550,6 +537,28 @@ class SewaController extends Controller
                             </div>
                             </div>
                         </div>
+                        <div class="mb-3">
+                            <label for="potongan_harga" class="form-label fw-bold">Potongan Harga</label>
+                            <div class="input-group" style="z-index: 0;">
+                                <span class="input-group-text bg-success text-light fw-bold">RP</span>
+                                <input type="text"
+                                class="form-control formatrupiah"
+                                name="potongan_harga" id="potongan_harga" value="0">
+                                <button type="button" class="btn btn-success input-group-text" onclick="onGetToken(' . $model_pembayaran->id . ')" id="btnRequestGetToken">
+                                    Get Token
+                                </button>
+                            </div>
+                            <span class="text-danger" id="errorPotonganHarga"></span>
+                        </div>
+                        <hr/>
+                        <div class="mb-3">
+                            <div class="input-group" style="z-index: 0;">
+                                <input type="text" class="form-control" name="kode" id="kode" placeholder="KODE-xxxxx">
+                                <button type="button" class="btn btn-success input-group-text" onclick="onVerifikasi(' . $model_pembayaran->id . ')" id="btnRequestVerifikasi">
+                                    Verifikasi
+                                </button>
+                            </div>
+                        </div>
                         <div>
                             <button type="submit" class="btn btn-success w-100" id="btnRequest">
                                 Ya
@@ -574,14 +583,212 @@ class SewaController extends Controller
 
         return response()->json($response);
     }
+    public function sendemailverifikasipotonganharga()
+    {
+        if (request()->ajax()) {
+            try {
+                DB::beginTransaction();
+
+                $pembayaran_id = request()->input('pembayaran_id');
+                $potongan_harga = request()->input('potongan_harga');
+
+                $model_pembayaran = Pembayaran::where('id', intval($pembayaran_id))->first();
+                $kamar = Lokasi::where('id', $model_pembayaran->lokasi_id)->first();
+                $penyewa = Penyewa::where('id', $model_pembayaran->penyewa_id)->first();
+
+                $kode = mt_rand(10000, 99999);
+
+                $data = new Collection([
+                    'pembayaran' => $model_pembayaran,
+                    'kamar' => $kamar,
+                    'penyewa' => $penyewa,
+                    'kode' => $kode,
+                    'potongan_harga' => str_replace('.', '', $potongan_harga),
+                ]);
+
+                $model_potonganharga = new Potonganharga();
+                $model_potonganharga->kode = $kode;
+                $model_potonganharga->potongan_harga = str_replace(".", "", $potongan_harga);
+                $model_potonganharga->expired = 'N';
+                $model_potonganharga->save();
+
+                Mail::to(strtolower('maxwinata@gmail.com'))->send(new PotonganhargaEmail($data));
+
+                $response = [
+                    'status' => 200,
+                    'message' => 'success',
+                    'data' => request()->all(),
+                ];
+
+                DB::commit();
+                return response()->json($response);
+            } catch (Exception $e) {
+                $response = [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ];
+
+                DB::rollBack();
+                return response()->json($response);
+            }
+        }
+    }
+    public function verifikasipotonganharga()
+    {
+        if (request()->ajax()) {
+            try {
+                DB::beginTransaction();
+                $pembayaran_id = request()->input('pembayaran_id');
+                $kode = request()->input('kode');
+
+                $model_potonganharga = Potonganharga::where('kode', (int)$kode)
+                    ->where('expired', 'N')
+                    ->whereDate('created_at', '<=', Carbon::now()->subMinutes(15))
+                    ->first();
+
+                if ($model_potonganharga) {
+                    $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
+
+                    Pembayaran::where('id', (int)$pembayaran_id)->update([
+                        'potongan_harga' => intval($model_pembayaran->potongan_harga) + intval($model_potonganharga->potongan_harga),
+                        'kurang_bayar' => intval($model_pembayaran->kurang_bayar) - intval($model_potonganharga->potongan_harga)
+                    ]);
+
+                    $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
+
+                    if ($model_pembayaran->diskon != 0) {
+                        $label = '
+                                    <tr>
+                                        <td class="text-left">Harga Kamar</td>
+                                        <td class="text-right" width="10">:</td>
+                                        <td class="text-right">RP. ' . number_format($model_pembayaran->jumlah_pembayaran, '0', '.', '.') . '</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left">Potongan Harga</td>
+                                        <td class="text-right" width="10">:</td>
+                                        <td class="text-right">RP. ' . number_format($model_pembayaran->potongan_harga, '0', '.', '.') . '</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left">Total Pembayaran</td>
+                                        <td class="text-right" width="10">:</td>
+                                        <td class="text-right">RP. ' . number_format($model_pembayaran->jumlah_pembayaran - $model_pembayaran->potongan_harga, '0', '.', '.') . '</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left">Total Bayar</td>
+                                        <td class="text-right" width="10">:</td>
+                                        <td class="text-right">RP. ' . number_format($model_pembayaran->total_bayar, '0', '.', '.') . '</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left">Kurang Bayar</td>
+                                        <td class="text-right" width="10">:</td>
+                                        <td class="text-right">RP. ' . number_format($model_pembayaran->kurang_bayar, '0', '.', '.') . '</td>
+                                    </tr>
+                                ';
+                    } else {
+                        if ($model_pembayaran->potongan_harga != 0) {
+                            $label = '
+                                        <tr>
+                                            <td class="text-left">Harga Kamar</td>
+                                            <td class="text-right" width="10">:</td>
+                                            <td class="text-right">RP. ' . number_format($model_pembayaran->jumlah_pembayaran, '0', '.', '.') . '</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left">Potongan Harga</td>
+                                            <td class="text-right" width="10">:</td>
+                                            <td class="text-right">RP. ' . number_format($model_pembayaran->potongan_harga, '0', '.', '.') . '</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left">Total Pembayaran</td>
+                                            <td class="text-right" width="10">:</td>
+                                            <td class="text-right">RP. ' . number_format($model_pembayaran->jumlah_pembayaran - $model_pembayaran->potongan_harga, '0', '.', '.') . '</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left">Total Bayar</td>
+                                            <td class="text-right" width="10">:</td>
+                                            <td class="text-right">RP. ' . number_format($model_pembayaran->total_bayar, '0', '.', '.') . '</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left">Kurang Bayar</td>
+                                            <td class="text-right" width="10">:</td>
+                                            <td class="text-right">RP. ' . number_format($model_pembayaran->kurang_bayar, '0', '.', '.') . '</td>
+                                        </tr>
+                                    ';
+                        } else {
+                            $label = '
+                                        <tr>
+                                            <td class="text-left">Harga Kamar</td>
+                                            <td class="text-right" width="10">:</td>
+                                            <td class="text-right">RP. ' . number_format($model_pembayaran->jumlah_pembayaran, '0', '.', '.') . '</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left">Total Bayar</td>
+                                            <td class="text-right" width="10">:</td>
+                                            <td class="text-right">RP. ' . number_format($model_pembayaran->total_bayar, '0', '.', '.') . '</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left">Kurang Bayar</td>
+                                            <td class="text-right" width="10">:</td>
+                                            <td class="text-right">RP. ' . number_format($model_pembayaran->kurang_bayar, '0', '.', '.') . '</td>
+                                        </tr>
+                                    ';
+                        }
+                    }
+
+                    Potonganharga::where('kode', (int)$kode)->update([
+                        'pembayaran_id' => intval($pembayaran_id),
+                        'expired' => 'Y'
+                    ]);
+
+                    if (intval($model_pembayaran->total_bayar) >= intval($model_pembayaran->kurang_bayar)) {
+                        Pembayaran::where('id', (int)$pembayaran_id)->update([
+                            'status_pembayaran' => 'completed'
+                        ]);
+
+                        Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
+                            'status' => 1,
+                            'operator_id' => auth()->user()->id,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
+
+                        $response = [
+                            'status' => 200,
+                            'message' => 'completed',
+                            'label' => $label,
+                        ];
+
+                        DB::commit();
+                        return response()->json($response);
+                    }
+
+                    $response = [
+                        'status' => 200,
+                        'message' => 'success',
+                        'label' => $label,
+                    ];
+                } else {
+                    $response = [
+                        'status' => 400,
+                        'message' => 'error',
+                    ];
+                }
+
+                DB::commit();
+                return response()->json($response);
+            } catch (Exception $e) {
+                DB::rollBack();
+                $response = [
+                    'status' => 422,
+                    'message' => 'error' . $e->getMessage(),
+                ];
+            }
+        }
+    }
     public function selesaikanpembayarankamar()
     {
         if (request()->ajax()) {
             $transaksi_id = htmlspecialchars(request()->input('transaksi_id'), ENT_QUOTES, 'UTF-8');
             $total_bayar = htmlspecialchars(request()->input('total_bayar'), ENT_QUOTES, 'UTF-8');
-            $potongan_harga = htmlspecialchars(request()->input('potongan_harga'), ENT_QUOTES, 'UTF-8');
 
-            $potongan = $potongan_harga ? str_replace('.', '', $potongan_harga) : 0;
             $pembayaran = $total_bayar ? str_replace('.', '', $total_bayar) : 0;
             $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), ENT_QUOTES, 'UTF-8');
 
@@ -590,11 +797,11 @@ class SewaController extends Controller
                     DB::beginTransaction();
                     $model_pembayaran = Pembayaran::where('id', $transaksi_id)->first();
 
-                    $jumlah_pembayaran = intval($model_pembayaran->jumlah_pembayaran) - (intval($model_pembayaran->potongan_harga) + intval($potongan));
+                    $jumlah_pembayaran = intval($model_pembayaran->jumlah_pembayaran) - intval($model_pembayaran->potongan_harga);
 
-                    $tot_potongan = intval($model_pembayaran->potongan_harga) + intval($potongan);
+                    $tot_potongan = intval($model_pembayaran->potongan_harga);
                     $tot_bayar = intval($model_pembayaran->total_bayar) + intval($pembayaran);
-                    $tot_kurangbayar = (intval($model_pembayaran->kurang_bayar) - intval($pembayaran)) - intval($potongan);
+                    $tot_kurangbayar = (intval($model_pembayaran->kurang_bayar) - intval($pembayaran));
 
                     if ($tot_bayar >= $jumlah_pembayaran) {
                         DB::table('pembayarans')->where('id', $model_pembayaran->id)->update([
@@ -680,6 +887,7 @@ class SewaController extends Controller
             return response()->json($response);
         }
     }
+    // isi token kamar
     public function bayarisitokenkamar()
     {
         if (request()->ajax()) {
