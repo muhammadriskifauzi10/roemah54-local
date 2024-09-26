@@ -50,10 +50,10 @@
                 class="list-group-item list-group-item-action border-0 {{ request()->is('penyewaankamar*') ? 'active' : '' }}">
                 Penyewaan Kamar
             </a>
-            <a href="{{ route('dendacheckout') }}"
+            {{-- <a href="{{ route('dendacheckout') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('dendacheckout*') ? 'active' : '' }}">
                 Denda Checkout
-            </a>
+            </a> --}}
 
             {{-- layanan --}}
             {{-- <div class="fw-bold my-3">Layanan</div>
