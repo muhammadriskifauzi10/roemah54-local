@@ -13,16 +13,18 @@
                     </ol>
                 </nav>
 
-                <div class="mb-3">
-                    <button type="button" class="btn btn-dark d-flex align-items-center justify-content-center gap-1"
-                        onclick="openModalKamar()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                            class="bi bi-plus-lg" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd"
-                                d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
-                        </svg>
-                        Kamar</button>
-                </div>
+                @can('tambah lokasi')
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-dark d-flex align-items-center justify-content-center gap-1"
+                            onclick="openModalKamar()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                class="bi bi-plus-lg" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                    d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
+                            </svg>
+                            Kamar</button>
+                    </div>
+                @endcan
 
                 {{-- Kamar --}}
                 <div class="card border-0">
@@ -160,6 +162,7 @@
             formData.append("lantai", $("#lantai").val());
             formData.append("tipekamar", $("#tipekamar").val());
             formData.append("token_listrik", $("#token_listrik").val());
+            formData.append("kapasitas", $("#kapasitas").val());
 
             $.ajax({
                 url: "{{ route('kamar.postkamar') }}",
@@ -179,13 +182,17 @@
                         $("#lantai").removeClass("is-invalid")
                         $("#errorLantai").text("")
 
+                        // Token Listrik
+                        $("#token_listrik").removeClass("is-invalid")
+                        $("#errorTokenListrik").text("")
+
                         // Tipe Kamar
                         $("#tipekamar").removeClass("is-invalid")
                         $("#errorTipeKamar").text("")
 
-                        // Token Listrik
-                        $("#token_listrik").removeClass("is-invalid")
-                        $("#errorTokenListrik").text("")
+                        // kapasitas
+                        $("#kapasitas").removeClass("is-invalid")
+                        $("#errorKapasitas").text("")
 
                         $("#universalModal").modal("hide")
                         setTimeout(function() {
@@ -201,6 +208,15 @@
                             $("#errorLantai").text("")
                         }
 
+                        // Token Listrik
+                        if (response.dataError.hasOwnProperty('token_listrik')) {
+                            $("#token_listrik").addClass("is-invalid")
+                            $("#errorTokenListrik").text(response.dataError['token_listrik'])
+                        } else {
+                            $("#token_listrik").removeClass("is-invalid")
+                            $("#errorTokenListrik").text("")
+                        }
+
                         // Tipe Kamar
                         if (response.dataError.hasOwnProperty('tipekamar')) {
                             $("#tipekamar").addClass("is-invalid")
@@ -210,13 +226,13 @@
                             $("#errorTipeKamar").text("")
                         }
 
-                        // Token Listrik
-                        if (response.dataError.hasOwnProperty('token_listrik')) {
-                            $("#token_listrik").addClass("is-invalid")
-                            $("#errorTokenListrik").text(response.dataError['token_listrik'])
+                        // kapasitas
+                        if (response.dataError.hasOwnProperty('kapasitas')) {
+                            $("#kapasitas").addClass("is-invalid")
+                            $("#errorKapasitas").text(response.dataError['kapasitas'])
                         } else {
-                            $("#token_listrik").removeClass("is-invalid")
-                            $("#errorTokenListrik").text("")
+                            $("#kapasitas").removeClass("is-invalid")
+                            $("#errorKapasitas").text("")
                         }
 
                         $("#btnRequest").prop("disabled", false)

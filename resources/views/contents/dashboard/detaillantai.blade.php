@@ -360,6 +360,8 @@
                 // total bayar
                 $("#total_bayar").addClass("is-invalid")
                 $("#errorTotalBayar").text("Kolom ini wajib diisi")
+
+                error++
             } else {
                 // total harga
                 $("#total_bayar").removeClass("is-invalid")

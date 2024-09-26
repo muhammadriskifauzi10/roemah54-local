@@ -36,7 +36,7 @@ class KamarController extends Controller
                 $status = "<strong class='badge bg-danger fw-bold'>Belum Terisi</strong>";
             }
 
-            if (auth()->user()->role_id == 1 || auth()->user()->role_id == 3) {
+            if (auth()->user()->can('edit lokasi')) {
                 $editkamar = '
                 <button type="button" class="btn btn-warning text-light fw-bold d-flex align-items-center justify-content-center gap-1" data-edit="' . $row->id . '" onclick="openModalEditKamar(this)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
@@ -110,6 +110,12 @@ class KamarController extends Controller
                         <span class="text-danger" id="errorLantai"></span>
                     </div>
                     <div class="mb-3">
+                        <label for="token_listrik" class="form-label fw-bold">Token Listrik <sup class="text-danger">*</sup></label>
+                        <input type="text" class="form-control"
+                            name="token_listrik" id="token_listrik" placeholder="Masukkan token listrik">
+                        <span class="text-danger" id="errorTokenListrik"></span>
+                    </div>
+                    <div class="mb-3">
                         <label for="tipekamar" class="form-label fw-bold">Tipe Kamar <sup class="text-danger">*</sup></label>
                         <select class="form-select form-select-2"
                             name="tipekamar" id="tipekamar" style="width: 100%;">
@@ -118,17 +124,17 @@ class KamarController extends Controller
                         </select>
                         <span class="text-danger" id="errorTipeKamar"></span>
                     </div>
-                    <div>
-                        <label for="token_listrik" class="form-label fw-bold">Token Listrik <sup class="text-danger">*</sup></label>
-                        <input type="text" class="form-control"
-                            name="token_listrik" id="token_listrik" placeholder="Masukkan token listrik">
-                        <span class="text-danger" id="errorTokenListrik"></span>
+                    <div class="mb-3">
+                        <label for="kapasitas" class="form-label fw-bold">Kapasitas <sup class="text-danger">*</sup></label>
+                        <input type="number" class="form-control"
+                            name="kapasitas" id="kapasitas" placeholder="Masukkan jumlah kapasitas">
+                        <span class="text-danger" id="errorKapasitas"></span>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success w-100" id="btnRequest">
-                        Ya
-                    </button>
+                    <div>
+                        <button type="submit" class="btn btn-success w-100" id="btnRequest">
+                            Ya
+                        </button>
+                    </div>
                 </div>
             </form>
             ';
@@ -178,17 +184,17 @@ class KamarController extends Controller
                             </select>
                             <span class="text-danger" id="errorTipeKamar"></span>
                         </div>
-                        <div>
+                        <div class="mb-3">
                             <label for="token_listrik" class="form-label fw-bold">Token Listrik <sup class="text-danger">*</sup></label>
                             <input type="text" class="form-control"
                                 name="token_listrik" id="token_listrik" placeholder="Masukkan token listrik" value="' . $kamar->token_listrik . '">
                             <span class="text-danger" id="errorTokenListrik"></span>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success w-100" id="btnRequest">
-                            Ya
-                        </button>
+                        <div>
+                            <button type="submit" class="btn btn-success w-100" id="btnRequest">
+                                Ya
+                            </button>
+                        </div>
                     </div>
                 </form>
                 ';
@@ -215,6 +221,7 @@ class KamarController extends Controller
                 $lantai = htmlspecialchars(request()->input('lantai'), ENT_QUOTES, 'UTF-8');
                 $tipekamar = htmlspecialchars(request()->input('tipekamar'), ENT_QUOTES, 'UTF-8');
                 $token_listrik = htmlspecialchars(request()->input('token_listrik'), ENT_QUOTES, 'UTF-8');
+                $kapasitas = htmlspecialchars(request()->input('kapasitas'), ENT_QUOTES, 'UTF-8');
 
                 $validator = Validator::make(request()->all(), [
                     'lantai' => [
@@ -231,10 +238,13 @@ class KamarController extends Controller
                             }
                         },
                     ],
-                    'token_listrik' => ['required', 'unique:lokasis,token_listrik']
+                    'token_listrik' => ['required', 'unique:lokasis,token_listrik'],
+                    'kapasitas' => 'required|gt:0',
                 ], [
                     'token_listrik.required' => 'Kolom ini wajib diisi',
                     'token_listrik.unique' => 'Kolom ini sudah terdaftar',
+                    'kapasitas.required' => 'Kolom ini wajib diisi',
+                    'kapasitas.gt' => 'Kolom ini harus lebih dari 0',
                 ]);
 
                 if ($validator->fails()) {
@@ -255,10 +265,11 @@ class KamarController extends Controller
 
                 Lokasi::create([
                     'jenisruangan_id' => 2,
+                    'token_listrik' => $token_listrik,
                     'lantai_id' => $lantai,
                     'nomor_kamar' => $nomor_kamar,
+                    'kapasitas' => $kapasitas,
                     'tipekamar_id' => $tipekamar,
-                    'token_listrik' => $token_listrik,
                     'operator_id' => auth()->user()->id
                 ]);
 

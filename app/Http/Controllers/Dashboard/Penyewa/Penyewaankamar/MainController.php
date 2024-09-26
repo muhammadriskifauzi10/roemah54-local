@@ -37,6 +37,7 @@ class MainController extends Controller
         $penyewa = request()->input('penyewa');
         $mitra = request()->input('mitra');
         $status_pembayaran = request()->input('status_pembayaran');
+        $status = request()->input('status');
 
         $penyewaankamar = Pembayaran::when($minDate && $maxDate, function ($query) use ($minDate, $maxDate) {
             $query->whereDate('tanggal_masuk', '>=', $minDate)
@@ -54,6 +55,9 @@ class MainController extends Controller
             })
             ->when($status_pembayaran !== "Pilih Status Pembayaran", function ($query) use ($status_pembayaran) {
                 $query->where('status_pembayaran', $status_pembayaran);
+            })
+            ->when($status !== "Pilih Status", function ($query) use ($status) {
+                $query->where('status', $status);
             })
             ->orderBy('tanggal_masuk', 'DESC')
             ->get();
@@ -155,7 +159,6 @@ class MainController extends Controller
             // status pembayaran
             if ($row->status == 1) {
                 $status = "<span class='badge bg-success'>Sedang Menyewa</span>";
-
                 if (Carbon::now() > Carbon::parse($row->tanggal_keluar)) {
                     $perpanjang = '<button type="button" class="btn btn-success fw-bold d-flex align-items-center justify-content-center gap-1" onclick="openModalPerpanjangPenyewaanKamar(event, ' . $row->id . ')" style="width: 180px;">
                         <svg xmlns="http://www.w3.org/2000/svg"

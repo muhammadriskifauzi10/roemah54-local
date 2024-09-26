@@ -17,16 +17,14 @@
                 <div class="card border-0">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-xl-6 mb-3">
+                            <div class="col-xl-4 mb-3">
                                 <label for="minDate" class="form-label fw-600">Min Tanggal Masuk</label>
                                 <input type="date" class="form-control" id="minDate" value="{{ date('Y-m-01') }}">
                             </div>
-                            <div class="col-xl-6 mb-3">
+                            <div class="col-xl-4 mb-3">
                                 <label for="maxDate" class="form-label fw-600">Max Tanggal Masuk</label>
                                 <input type="date" class="form-control" id="maxDate" value="{{ date('Y-m-d') }}">
                             </div>
-                        </div>
-                        <div class="row">
                             <div class="col-xl-4 mb-3">
                                 <label for="penyewa" class="form-label">Pilih Penyewa</label>
                                 <select class="form-select form-select-2" name="penyewa" id="penyewa"
@@ -37,6 +35,8 @@
                                     @endforeach
                                 </select>
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-xl-4 mb-3">
                                 <label for="mitra" class="form-label">Mitra</label>
                                 <select class="form-select form-select-2" name="mitra" id="mitra"
@@ -55,6 +55,15 @@
                                     <option value="failed">Dibatalkan</option>
                                     <option value="completed">Lunas</option>
                                     <option value="pending">Belum Lunas</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-4 mb-3">
+                                <label for="status" class="form-label">Status Penyewa</label>
+                                <select class="form-select form-select-2" name="status" id="status"
+                                    style="width: 100%;">
+                                    <option>Pilih Status</option>
+                                    <option value="1" selected>Sedang Menyewa</option>
+                                    <option value="0">Tamu Pulang</option>
                                 </select>
                             </div>
                         </div>
@@ -105,6 +114,7 @@
                         d.penyewa = $("#penyewa").val();
                         d.mitra = $("#mitra").val();
                         d.status_pembayaran = $("#status_pembayaran").val();
+                        d.status = $("#status").val();
                     },
                 },
                 columns: [{
@@ -201,7 +211,7 @@
                 // }
             });
 
-            $("#minDate, #maxDate, #penyewa, #mitra, #status_pembayaran").change(function() {
+            $("#minDate, #maxDate, #penyewa, #mitra, #status_pembayaran, #status").change(function() {
                 tablePenyewaanKamar.ajax.reload();
             });
         });
@@ -258,25 +268,16 @@
 
             let error = 0;
 
-            if (($("#total_bayar").val() == "" || $("#total_bayar").val() == 0) && ($("#potongan_harga")
-                    .val() == "" || $(
-                        "#potongan_harga").val() == 0)) {
+            if (($("#total_bayar").val() == "" || $("#total_bayar").val() == 0)) {
                 // total bayar
                 $("#total_bayar").addClass("is-invalid")
                 $("#errorTotalBayar").text("Kolom ini wajib diisi")
 
-                // potongan harga
-                $("#potongan_harga").addClass("is-invalid")
-                $("#errorPotonganHarga").text("Kolom ini wajib diisi")
                 error++
             } else {
                 // total harga
                 $("#total_bayar").removeClass("is-invalid")
                 $("#errorTotalBayar").text("")
-
-                // potongan harga
-                $("#potongan_harga").removeClass("is-invalid")
-                $("#errorPotonganHarga").text("")
             }
 
             if (error == 0) {
@@ -286,7 +287,6 @@
                 formData.append("token", $("#token").val());
                 formData.append("transaksi_id", $("#transaksi_id").val());
                 formData.append("total_bayar", $("#total_bayar").val());
-                formData.append("potongan_harga", $("#potongan_harga").val());
                 formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
 
                 $.ajax({

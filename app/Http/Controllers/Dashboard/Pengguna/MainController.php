@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Dashboard\Pengguna;
 
 use App\Http\Controllers\Controller;
-use App\Models\Role;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class MainController extends Controller
 {
@@ -22,31 +22,57 @@ class MainController extends Controller
     }
     public function datatablepengguna()
     {
-        $pengguna = User::where('id', '<>', auth()->user()->id)->orderby('role_id', 'ASC')->get();
+        $pengguna = User::where('users.id', '<>', auth()->user()->id)
+            ->join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->orderBy('roles.id', 'ASC') // Atau 'roles.name' jika ingin berdasarkan nama role
+            ->select('users.*') // Hanya ambil kolom dari tabel users
+            ->get();
 
         $output = [];
         $no = 1;
         foreach ($pengguna as $row) {
 
+            if (auth()->user()->can('lihat pengguna')) {
+                $lihatpengguna = '
+                    <a href="' . route('pengguna.detailpengguna', encrypt($row->id)) . '" class="btn btn-info text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 100px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                        </svg>    
+                        Detail
+                    </a>
+                ';
+            } else {
+                $lihatpengguna = '';
+            }
+
+            if (auth()->user()->can('hapus pengguna')) {
+                $hapuspengguna = '
+                    <button type="button" class="btn btn-danger text-light fw-bold d-flex align-items-center justify-content-center gap-1" data-hapus="' . $row->id . '" onclick="requestHapusPengguna(this)" style="width: 100px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                        </svg>
+                        Hapus
+                    </button>
+                ';
+            } else {
+                $hapuspengguna = '';
+            }
+
+            if ($lihatpengguna == '' && $hapuspengguna == '') {
+                $aksibutton = '-';
+            } else {
+                $aksibutton = $lihatpengguna . $hapuspengguna;
+            }
+
             $aksi = '<div class="d-flex flex-column align-items-center justify-content-center gap-1">
-                        <a href="' . route('pengguna.detailpengguna', encrypt($row->id)) . '" class="btn btn-info text-light fw-bold d-flex align-items-center justify-content-center gap-1" style="width: 100px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
-                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                            </svg>    
-                            Detail
-                        </a>
-                        <button type="button" class="btn btn-danger text-light fw-bold d-flex align-items-center justify-content-center gap-1" data-hapus="' . $row->id . '" onclick="requestHapusPengguna(this)" style="width: 100px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                                <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
-                            </svg>
-                            Hapus
-                        </button>
-                   </div>';
+                        ' . $aksibutton . '
+                    </div>';
 
             $output[] = [
                 'nomor' => "<strong>" . $no++ . "</strong>",
-                'role' => $row->roles->role,
+                'role' => $row->getRoleNames(),
                 'nama_pengguna' => $row->username,
                 'status' => $row->status == 1 ? '<span class="badge bg-green">Aktif</span>' : '<span class="badge bg-red">Nonaktif</span>',
                 'aksi' => $aksi,
@@ -103,7 +129,6 @@ class MainController extends Controller
             $password = htmlspecialchars(request()->input('password'), true);
 
             $post = User::create([
-                'role_id' => $role,
                 'username' => $nama_pengguna,
                 'slug' => Str::slug($nama_pengguna),
                 'email' => Str::lower(preg_replace('/\s+/', '', $nama_pengguna) . "@gmail.com"),
@@ -111,6 +136,8 @@ class MainController extends Controller
             ]);
 
             if ($post) {
+                $post->assignRole(Role::find($role)->name);
+
                 DB::commit();
                 return redirect()->route('pengguna')->with('messageSuccess', 'Pengguna berhasil ditambahkan!');
             }
@@ -129,10 +156,10 @@ class MainController extends Controller
 
         $role = Role::query();
 
-        if (auth()->user()->role_id == 1) {
+        if (auth()->user()->hasRole('Developer')) {
             $role = Role::all();
         } else {
-            $role = Role::where('id', auth()->user()->role_id)->get();
+            $role = Role::where('name', auth()->user()->getRoleNames())->get();
         }
 
         $pengguna = User::where('id', $id)->first();
@@ -260,7 +287,6 @@ class MainController extends Controller
             $password = htmlspecialchars(request()->input('password'), true);
 
             $update = User::where('id', $id)->update([
-                'role_id' => $role,
                 'username' => $nama_baru,
                 'slug' => Str::slug($nama_baru),
                 'email' => Str::lower(preg_replace('/\s+/', '', $nama_baru) . "@gmail.com"),
