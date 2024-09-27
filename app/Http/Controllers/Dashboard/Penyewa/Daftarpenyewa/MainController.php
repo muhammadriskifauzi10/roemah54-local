@@ -50,7 +50,7 @@ class MainController extends Controller
                         $jenis_kelamin = "-";
                   }
 
-                  if (auth()->user()->can('edit daftarpenyewa')) {
+                  // if (auth()->user()->can('edit daftarpenyewa')) {
                         $editdaftarpenyewa = '
                         <a href="' . route('daftarpenyewa.edit', encrypt($row->id)) . '" class="btn btn-warning text-light fw-bold d-flex align-items-center justify-content-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
@@ -59,9 +59,9 @@ class MainController extends Controller
                             Edit Penyewa
                         </a>
                         ';
-                  } else {
-                        $editdaftarpenyewa = '-';
-                  }
+                  // } else {
+                  //       $editdaftarpenyewa = '-';
+                  // }
 
                   if ($row->jenis_penyewa == "Umum") {
                         $fotoktp = '<a href="' . asset('img/ktp/umum/' . $row->fotoktp) . '" class="text-decoration-none fw-bold fw-bold" target="_blank">Lihat File</a>';
