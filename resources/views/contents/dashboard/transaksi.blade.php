@@ -51,15 +51,16 @@
                             <tr>
                                 <th scope="col" class="text-left">Pemasukan</th>
                                 <th scope="col" class="text-right">:</th>
-                                <th scope="col" class="text-left" colspan="5" id="pemasukan"></th>
+                                <th scope="col" class="text-left" id="pemasukan"></th>
                             </tr>
                             <tr>
                                 <th scope="col" class="text-left">Pengeluaran</th>
                                 <th scope="col" class="text-right">:</th>
-                                <th scope="col" class="text-left" colspan="5" id="pengeluaran"></th>
+                                <th scope="col" class="text-left" id="pengeluaran"></th>
                             </tr>
                         </table>
-                        <table class="table table-light table-hover border-0 m-0" id="datatableTransaksi">
+                        <table class="table table-light table-hover border-0 m-0" id="datatableTransaksi"
+                            style="width: 100%; white-space: nowrap;">
                             <thead>
                                 <tr>
                                     <th scope="col">No</th>
@@ -129,8 +130,7 @@
                         return json.data;
                     },
                 },
-                columns: [
-                    {
+                columns: [{
                         data: "nomor",
                     },
                     {

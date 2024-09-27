@@ -16,6 +16,7 @@ class Penyewa extends Model
         'namalengkap',
         'noktp',
         'nohp',
+        'jenis_kelamin',
         'alamat',
         'jenis_penyewa',
         'fotoktp',

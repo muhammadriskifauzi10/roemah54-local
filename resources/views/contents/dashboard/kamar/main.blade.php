@@ -29,7 +29,8 @@
                 {{-- Kamar --}}
                 <div class="card border-0">
                     <div class="card-body">
-                        <table class="table table-light table-hover border-0 m-0" id="datatableKamar">
+                        <table class="table table-light table-hover border-0 m-0" id="datatableKamar"
+                            style="width: 100%; white-space: nowrap;">
                             <thead>
                                 <tr>
                                     <th scope="col">No</th>

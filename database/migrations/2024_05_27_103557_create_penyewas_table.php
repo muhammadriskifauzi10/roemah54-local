@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('namalengkap', 191);
             $table->string('noktp', 50);
             $table->string('nohp', 50);
+            $table->string('jenis_kelamin', 1);
             $table->text('alamat');
             $table->string('jenis_penyewa', 100)->default('Umum');
             $table->string('fotoktp', 100);

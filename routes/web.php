@@ -2,12 +2,9 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
-use App\Http\Controllers\Dashboard\Asrama\Kamar\MainController as KamarMainController;
 use App\Http\Controllers\Dashboard\Asrama\Mahasiswa\MainController as MahasiswaMainController;
-use App\Http\Controllers\Dashboard\Asrama\MainController as AsramaMainController;
 use App\Http\Controllers\Dashboard\Bisnis\Ritel\MainController as RitelMainController;
 use App\Http\Controllers\Dashboard\Harga\MainController as HargaMainController;
-use App\Http\Controllers\Dashboard\HargaController;
 use App\Http\Controllers\Dashboard\Inventaris\Barang\MainController as BarangMainController;
 use App\Http\Controllers\Dashboard\Inventaris\Kategori\MainController as KategoriMainController;
 use App\Http\Controllers\Dashboard\Inventaris\Log\MainController as LogMainController;
@@ -24,12 +21,6 @@ use App\Http\Controllers\Dashboard\Scan\MainController as ScanMainController;
 use App\Http\Controllers\Dashboard\SewaController;
 use App\Http\Controllers\Dashboard\Tipekamar\MainController as TipekamarMainController;
 use App\Http\Controllers\Dashboard\TransaksiController;
-use App\Models\Asrama;
-use App\Models\Pembayaran;
-use App\Models\Transaksi;
-use App\Models\Transaksiasrama;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
@@ -69,6 +60,9 @@ Route::group(['middleware' => 'auth'], function () {
     // daftar penyewa
     Route::get('/daftarpenyewa', [DaftarpenyewaMainController::class, 'index'])->name('daftarpenyewa');
     Route::post('/daftarpenyewa/datatabledaftarpenyewa', [DaftarpenyewaMainController::class, 'datatabledaftarpenyewa'])->name('daftarpenyewa.datatabledaftarpenyewa');
+    Route::get('/daftarpenyewa/edit/{id}', [DaftarpenyewaMainController::class, 'edit'])->name('daftarpenyewa.edit');
+    Route::put('/daftarpenyewa/edit/{id}', [DaftarpenyewaMainController::class, 'update'])->name('daftarpenyewa.update');
+
     // Penyewaan Kamar
     Route::get('/penyewaankamar', [PenyewaankamarMainController::class, 'index'])->name('penyewaankamar');
     Route::post('/penyewaankamar/datatablepenyewaankamar', [PenyewaankamarMainController::class, 'datatablepenyewaankamar'])->name('penyewaankamar.datatablepenyewaankamar');

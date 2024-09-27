@@ -135,10 +135,31 @@
                                             </div>
                                             <div class="row">
                                                 {{-- Alamat --}}
-                                                <div class="col-lg-12">
+                                                <div class="col-lg-6">
                                                     <label for="alamat" class="form-label fw-bold">Alamat KTP</label>
                                                     <textarea class="form-control @error('alamat') is-invalid @enderror" name="alamat" id="alamat">{{ old('alamat') }}</textarea>
                                                     @error('alamat')
+                                                        <div class="invalid-feedback">
+                                                            {{ $message }}
+                                                        </div>
+                                                    @enderror
+                                                </div>
+                                                {{-- jenis kelamin --}}
+                                                <div class="col-lg-6 mb-3">
+                                                    <label for="jenis_kelamin" class="form-label fw-bold">Jenis
+                                                        Kelamin</label>
+                                                    <select
+                                                        class="form-select form-select-2 @error('jenis_kelamin') is-invalid @enderror"
+                                                        name="jenis_kelamin" id="jenis_kelamin" style="width: 100%;">
+                                                        <option>Pilih Jenis Kelamin</option>
+                                                        <option value="L"
+                                                            {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-Laki
+                                                        </option>
+                                                        <option value="P"
+                                                            {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan
+                                                        </option>
+                                                    </select>
+                                                    @error('jenis_kelamin')
                                                         <div class="invalid-feedback">
                                                             {{ $message }}
                                                         </div>

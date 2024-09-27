@@ -31,7 +31,7 @@
                 <div class="card border-0">
                     <div class="card-body">
                         <table class="table table-light table-hover border-0 m-0" id="datatablePengguna"
-                            style="width: 100%">
+                            style="width: 100%; white-space: nowrap;">
                             <thead>
                                 <tr>
                                     <th scope="col">No</th>

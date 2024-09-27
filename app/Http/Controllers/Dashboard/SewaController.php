@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Str;
 use App\Mail\PotonganhargaEmail;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Harga;
@@ -79,6 +78,13 @@ class SewaController extends Controller
             'namalengkap' => 'required',
             'noktp' => 'required|numeric|digits:16',
             'nohp' => 'required|regex:/^08[0-9]{8,}$/',
+            'jenis_kelamin' => [
+                function ($attribute, $value, $fail) {
+                    if ($value == "Pilih Jenis Kelamin") {
+                        $fail('Kolom ini wajib dipilih');
+                    }
+                },
+            ],
             'lantai' => [
                 function ($attribute, $value, $fail) {
                     if (!Lantai::where('id', (int)$value)->exists()) {
@@ -148,6 +154,7 @@ class SewaController extends Controller
             $kamar = htmlspecialchars(request()->input('kamar'), true);
             $jenissewa = request()->input('jenissewa');
             $mitra = request()->input('mitra');
+            $jenis_kelamin = htmlspecialchars(request()->input('jenis_kelamin'), true);
             $alamat = htmlspecialchars(request()->input('alamat'), true);
             $fotoktp = request()->file('fotoktp');
 
@@ -165,6 +172,7 @@ class SewaController extends Controller
                     'namalengkap' => $namalengkap,
                     'noktp' => $noktp,
                     'nohp' => $nohp,
+                    'jenis_kelamin' => $jenis_kelamin,
                     'alamat' => $alamat,
                     'fotoktp' => "",
                     'operator_id' => auth()->user()->id,
@@ -200,6 +208,7 @@ class SewaController extends Controller
                     'namalengkap' => $namalengkap,
                     'noktp' => $noktp,
                     'nohp' => $nohp,
+                    'jenis_kelamin' => $jenis_kelamin,
                     'alamat' => $alamat,
                     'fotoktp' => $fotoktp,
                     'status' => 1,
@@ -936,17 +945,6 @@ class SewaController extends Controller
                     $transaksi->tipe = "pengeluaran";
                     $transaksi->operator_id = auth()->user()->id;
                     $transaksi->save();
-
-                    $model_post_pembayaran = new Pembayaran();
-                    $model_post_pembayaran->tagih_id = 2;
-                    $model_post_pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
-                    $model_post_pembayaran->penyewa_id = $model_pembayaran->penyewa_id;
-                    $model_post_pembayaran->lokasi_id = $model_pembayaran->lokasi_id;
-                    $model_post_pembayaran->jumlah_pembayaran = str_replace('.', '', $jumlah_pembayaran);
-                    $model_post_pembayaran->total_bayar = str_replace('.', '', $jumlah_pembayaran);
-                    $model_post_pembayaran->status_pembayaran = 'completed';
-                    $model_post_pembayaran->operator_id = auth()->user()->id;
-                    $model_post_pembayaran->save();
 
                     $model_post_tokenlistrik = new Tokenlistrik();
                     $model_post_tokenlistrik->tanggal_token = date('Y-m-d H:i:s');

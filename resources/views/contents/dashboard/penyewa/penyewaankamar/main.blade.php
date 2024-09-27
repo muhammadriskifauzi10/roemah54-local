@@ -19,7 +19,7 @@
                         <div class="row">
                             <div class="col-xl-4 mb-3">
                                 <label for="minDate" class="form-label fw-600">Min Tanggal Masuk</label>
-                                <input type="date" class="form-control" id="minDate" value="{{ date('Y-m-01') }}">
+                                <input type="date" class="form-control" id="minDate" value="{{ $tanggal_masuk }}">
                             </div>
                             <div class="col-xl-4 mb-3">
                                 <label for="maxDate" class="form-label fw-600">Max Tanggal Masuk</label>
@@ -62,12 +62,12 @@
                                 <select class="form-select form-select-2" name="status" id="status"
                                     style="width: 100%;">
                                     <option>Pilih Status</option>
+                                    <option value="0">Tidak Menyewa</option>
                                     <option value="1" selected>Sedang Menyewa</option>
-                                    <option value="0">Tamu Pulang</option>
                                 </select>
                             </div>
                         </div>
-                        <table class="table table-light table-hover border-0 m-0" id="datatablePenyewaanKamar">
+                        <table class="table table-light table-hover border-0 m-0" id="datatablePenyewaanKamar" style="width: 100%; white-space: nowrap">
                             <thead>
                                 <tr>
                                     <th scope="col">No</th>
@@ -103,6 +103,7 @@
         $(document).ready(function() {
             tablePenyewaanKamar = $("#datatablePenyewaanKamar").DataTable({
                 processing: true,
+                pageLength: 100,
                 ajax: {
                     url: "{{ route('penyewaankamar.datatablepenyewaankamar') }}",
                     type: "POST",

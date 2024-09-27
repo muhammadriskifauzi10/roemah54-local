@@ -23,9 +23,13 @@ class MainController extends Controller
     {
         $penyewa = Penyewa::all();
 
+        $pembayaran = Pembayaran::first()->tanggal_masuk;
+        $tanggal_masuk = Carbon::parse($pembayaran)->format('Y-m-d');
+        
         $data = [
             'judul' => 'Penyewaan Kamar',
             'penyewa' => $penyewa,
+            'tanggal_masuk' => $tanggal_masuk
         ];
 
         return view('contents.dashboard.penyewa.penyewaankamar.main', $data);
@@ -207,8 +211,8 @@ class MainController extends Controller
 
             $output[] = [
                 'nomor' => "<strong>" . $no++ . "</strong>",
-                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("d-m-Y H:i:s"),
-                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("d-m-Y H:i:s"),
+                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("d-m-Y H:i"),
+                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("d-m-Y H:i"),
                 'nama_penyewa' => $row->penyewas->namalengkap,
                 'nomor_kamar' => $row->lokasis->nomor_kamar,
                 'tipe_kamar' => $row->tipekamar,

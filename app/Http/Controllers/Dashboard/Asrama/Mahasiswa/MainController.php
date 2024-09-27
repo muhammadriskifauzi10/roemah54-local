@@ -286,7 +286,7 @@ class MainController extends Controller
                     'noktp' => $noktp,
                     'nohp' => $nohp,
                     'alamat' => $alamat,
-                    'jenis_penyewa' => 'Mahasiswa',
+                    'jenis_penyewa' => 'Asrama',
                     'fotoktp' => "",
                     'operator_id' => auth()->user()->id,
                 ]);
@@ -321,7 +321,7 @@ class MainController extends Controller
                     'noktp' => $noktp,
                     'nohp' => $nohp,
                     'alamat' => $alamat,
-                    'jenis_penyewa' => 'Mahasiswa',
+                    'jenis_penyewa' => 'Asrama',
                     'fotoktp' => $fotoktp,
                     'status' => 1,
                     'operator_id' => auth()->user()->id,
