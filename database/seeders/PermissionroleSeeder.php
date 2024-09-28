@@ -72,29 +72,29 @@ class PermissionroleSeeder extends Seeder
 
         // Membuat izin
         // pengguna
-        Permission::create(['name' => 'tambah daftarpenyewa']);
-        Permission::create(['name' => 'lihat daftarpenyewa']);
-        Permission::create(['name' => 'edit daftarpenyewa']);
-        Permission::create(['name' => 'hapus daftarpenyewa']);
+        // Permission::create(['name' => 'tambah daftarpenyewa']);
+        // Permission::create(['name' => 'lihat daftarpenyewa']);
+        // Permission::create(['name' => 'edit daftarpenyewa']);
+        // Permission::create(['name' => 'hapus daftarpenyewa']);
 
         // Membuat peran
         // developer
         $roledeveloper = Role::findByName('Developer');
-        $roledeveloper->givePermissionTo('tambah daftarpenyewa');
-        $roledeveloper->givePermissionTo('lihat daftarpenyewa');
-        $roledeveloper->givePermissionTo('edit daftarpenyewa');
-        $roledeveloper->givePermissionTo('hapus daftarpenyewa');
+        $roledeveloper->revokePermissionTo('tambah daftarpenyewa');
+        $roledeveloper->revokePermissionTo('lihat daftarpenyewa');
+        $roledeveloper->revokePermissionTo('edit daftarpenyewa');
+        $roledeveloper->revokePermissionTo('hapus daftarpenyewa');
 
         // owner
         $roleowner = Role::findByName('Owner');
-        $roleowner->givePermissionTo('lihat daftarpenyewa');
+        $roleowner->revokePermissionTo('lihat daftarpenyewa');
        
         // super admin
         $rolesuperadmin = Role::findByName('Superadmin');
-        $rolesuperadmin->givePermissionTo('lihat daftarpenyewa');
+        $rolesuperadmin->revokePermissionTo('lihat daftarpenyewa');
 
         // admin
         $admin = Role::findByName('admin');
-        $admin->givePermissionTo('lihat daftarpenyewa');
+        $admin->revokePermissionTo('lihat daftarpenyewa');
     }
 }
