@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Dashboard\Menu;
 
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
+use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class MainController extends Controller
 {
@@ -28,9 +31,7 @@ class MainController extends Controller
         $no = 1;
 
         foreach ($menus as $menu) {
-
             if (is_null($menu->parent_id)) {
-
                 $menuaksi = '
                 <a href="' . route('menu.edit', encrypt($menu->id)) . '" class="btn btn-warning text-light fw-bold d-flex align-items-center justify-content-center gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
@@ -93,41 +94,60 @@ class MainController extends Controller
             abort(404);
         }
 
-        $menu = Menu::where('id', $id)->first();
+        $menus = Menu::with('children')
+            ->select('menus.id', 'menus.name', 'menus.route', 'menus.parent_id', 'menus.order')
+            ->join('menuroles', 'menus.id', '=', 'menuroles.menu_id')
+            ->where('menuroles.role_id', auth()->user()->roles->pluck('id'))
+            ->orderBy('menus.order', 'ASC')
+            ->get();
 
         $data = [
             'judul' => 'Edit Menu',
-            'menu' => $menu,
+            'menus' => $menus,
         ];
 
         return view('contents.dashboard.menu.edit', $data);
     }
-    public function getmenufromreferensidari()
+    public function update()
     {
-        if (request()->ajax()) {
-            $referensi_dari = request()->input('referensi_dari');
-            $submenu = request()->input('submenu');
-            if (Menu::where('id', (int)$referensi_dari)->exists()) {
-                $optionmenu = [];
-                foreach (Menu::where('parent_id', (int)$referensi_dari)->get() as $row) {
-                    $optionmenu[] = '<option value="' . $row->id . '">' . $row->name . '</option>';
-                }
+        try {
+            DB::beginTransaction();
 
+            $validator = Validator::make(request()->all(), [
+                'order' => 'required|array',
+                'order.*.id' => 'required|integer|exists:menus,id',
+                'order.*.order' => 'required|integer',
+            ]);
+
+            if ($validator->fails()) {
                 $response = [
-                    'status' => 200,
-                    'message' => 'success',
-                    'data' => [
-                        'dataHTML' => implode("", $optionmenu)
-                    ]
+                    'status' => 422,
+                    'message' => 'validation',
+                    'dataError' => $validator->errors()
                 ];
-            } else {
-                $response = [
-                    'status' => 400,
-                    'message' => 'opps',
-                ];
+
+                return response()->json($response);
             }
-        }
 
-        return response()->json($response);
+            foreach (request()->input('order') as $menu) {
+                Menu::where('id', $menu['id'])->update(
+                    [
+                        'order' => $menu['order'],
+                        'parent_id' => $menu['parent_id'] ?? null
+                    ]
+                );
+            }
+
+            $response = [
+                'status' => 200,
+                'message' => 'success',
+            ];
+
+            DB::commit();
+            return response()->json($response);
+        } catch (Exception $e) {
+            DB::rollBack();
+            echo $e->getMessage();
+        }
     }
 }

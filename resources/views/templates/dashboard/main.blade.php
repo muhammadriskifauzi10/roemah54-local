@@ -86,6 +86,7 @@
 
     {{-- Jquery JS --}}
     <script src="{{ asset('js/jquery.min.js') }}"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
     {{-- Bootstrap JS --}}
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
@@ -118,7 +119,7 @@
     <script>
         $(document).ready(function() {
             $("#trigger-button").on("click", function() {
-                var listMenu = $("#menu > .list-menu")
+                var listMenu = $("#sidebar-menu > .list-menu")
 
                 if (listMenu.hasClass("show")) {
                     listMenu.removeClass("show");

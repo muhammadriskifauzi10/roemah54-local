@@ -194,8 +194,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/menu', [MenuMainController::class, 'index'])->name('menu');
     Route::post('/menu/datatablemenu', [MenuMainController::class, 'datatablemenu'])->name('menu.datatablemenu');
     Route::get('/menu/edit/{id}', [MenuMainController::class, 'edit'])->name('menu.edit');
-    Route::post('/menu/getmenufromreferensidari', [MenuMainController::class, 'getmenufromreferensidari'])->name('menu.getmenufromreferensidari');
-    Route::put('/menu/edit/{id}', [MenuMainController::class, 'update'])->name('menu.update');
+    Route::post('/menu/edit', [MenuMainController::class, 'update'])->name('menu.update');
 
     // // scan
     // // penggunaan barang inventaris
