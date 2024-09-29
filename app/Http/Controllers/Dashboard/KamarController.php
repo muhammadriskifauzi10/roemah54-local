@@ -7,7 +7,6 @@ use App\Models\Harga;
 use App\Models\Lokasi;
 use App\Models\Lantai;
 use App\Models\Tipekamar;
-use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -250,8 +249,8 @@ class KamarController extends Controller
 
                 if ($validator->fails()) {
                     $response = [
-                        'status' => 400,
-                        'message' => 'opps',
+                        'status' => 422,
+                        'message' => 'validation',
                         'dataError' => $validator->errors()
                     ];
 

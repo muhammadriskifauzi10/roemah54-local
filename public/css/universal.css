@@ -202,11 +202,11 @@ h6 {
 
 /* Computer */
 @media (max-width: 1200px) {
-    #menu > .list-menu {
+    #sidebar-menu > .list-menu {
         display: none;
     }
 
-    #menu > .list-menu.show {
+    #sidebar-menu > .list-menu.show {
         margin-top: 1rem !important;
         display: block;
     }
@@ -217,7 +217,7 @@ h6 {
 }
 
 @media (min-width: 1200px) {
-    #menu > .list-menu {
+    #sidebar-menu > .list-menu {
         display: block;
     }
 

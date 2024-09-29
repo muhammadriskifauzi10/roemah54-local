@@ -113,7 +113,7 @@
         // Kamar
         function openModalKamar() {
             var formData = new FormData();
-            formData.append("token", $("#token").val());
+            formData.append("token", $("meta[name='csrf-token']").attr("content"));
 
             $.ajax({
                 url: "{{ route('kamar.getmodalkamar') }}",
@@ -245,7 +245,7 @@
         // Edit Kamar 
         function openModalEditKamar(e) {
             var formData = new FormData();
-            formData.append("token", $("#token").val());
+            formData.append("token", $("meta[name='csrf-token']").attr("content"));
             formData.append("kamar_id", e.getAttribute('data-edit'));
 
             $.ajax({

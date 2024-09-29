@@ -1,8 +1,13 @@
 @php
-    $menus = App\Models\Menu::orderBy('order', 'ASC')->get();
+    $menus = App\Models\Menu::with('children')
+        ->select('menus.id', 'menus.name', 'menus.route', 'menus.parent_id', 'menus.order')
+        ->join('menuroles', 'menus.id', '=', 'menuroles.menu_id')
+        ->where('menuroles.role_id', auth()->user()->roles->pluck('id'))
+        ->orderBy('menus.order', 'ASC')
+        ->get();
 @endphp
 
-<div id="menu">
+<div id="sidebar-menu">
     <div class="trigger-menu">
         <button type="button" class="btn btn-dark d-flex align-items-center gap-1" id="trigger-button">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list"
@@ -22,18 +27,15 @@
             </a>
 
             @foreach ($menus as $menu)
-                @if (is_null($menu->parent_id) &&
-                        auth()->user()->hasAnyRole(explode('|', $menu->role)))
+                @if (is_null($menu->parent_id))
                     <div class="fw-bold my-3">{{ $menu->name }}</div>
 
                     @if ($menu->children->isNotEmpty())
                         @foreach ($menu->children as $child)
-                            @if (auth()->user()->hasAnyRole(explode('|', $child->role)))
-                                <a href="{{ route($child->route) }}"
-                                    class="list-group-item list-group-item-action border-0 {{ request()->is($child->route . '*') ? 'active' : '' }}">
-                                    {{ $child->name }}
-                                </a>
-                            @endif
+                            <a href="{{ route($child->route) }}"
+                                class="list-group-item list-group-item-action border-0 {{ request()->is($child->route . '*') ? 'active' : '' }}">
+                                {{ $child->name }}
+                            </a>
                         @endforeach
                     @endif
                 @endif

@@ -30,7 +30,9 @@
                         <table class="table table-light table-hover border-0 m-0" id="datatableRole" style="width: 100%">
                             <thead>
                                 <tr>
+                                    <th scope="col">No</th>
                                     <th scope="col">Nama Role</th>
+                                    <th scope="col" width="150"></th>
                                 </tr>
                             </thead>
                         </table>
@@ -53,9 +55,14 @@
                     // dataSrc: ""
                     dataType: "json"
                 },
-                columns: [
+                columns: [{
+                        data: "nomor",
+                    },
                     {
                         data: "nama_role",
+                    },
+                    {
+                        data: "aksi",
                     },
                 ],
                 // "order": [
@@ -101,16 +108,16 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <div>
+                            <div class="mb-3">
                                 <label for="role" class="form-label fw-bold">Role</label>
                                 <input type="text" class="form-control" placeholder="Masukkan nama role" id="role">
                                 <div class="invalid-feedback" id="errorRole"></div>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-success w-100" id="btnRequest">
-                                Ya
-                            </button>
+                            <div>
+                                <button type="submit" class="btn btn-success w-100" id="btnRequest">
+                                    Ya
+                                </button>
+                            </div>
                         </div>
                     </form>
                 `
@@ -123,48 +130,146 @@
         function requestTambahRole(e) {
             e.preventDefault()
 
-            if ($("#role").val() === "") {
-                $("#role").addClass("is-invalid")
-                $("#errorRole").text("Kolom ini wajib diisi")
-            } else {
-                $("#btnRequest").prop("disabled", true)
+            $("#btnRequest").prop("disabled", true)
 
-                $("#role").removeClass("is-invalid")
-                $("#errorRole").text("")
+            $("#role").removeClass("is-invalid")
+            $("#errorRole").text("")
 
-                var formData = new FormData();
-                formData.append("token", $("#token").val());
-                formData.append("role", $("#role").val());
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("role", $("#role").val());
 
-                $.ajax({
-                    url: "{{ route('role.tambahrole') }}",
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if (response.message == "success") {
-                            Swal.fire({
-                                title: "Berhasil",
-                                text: "Role berhasil ditambahkan",
-                                icon: "success"
-                            })
+            $.ajax({
+                url: "{{ route('role.tambahrole') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.message == "success") {
+                        Swal.fire({
+                            title: "Berhasil",
+                            text: "Role berhasil ditambahkan",
+                            icon: "success"
+                        })
 
-                            $("#role").val("")
+                        $("#role").val("")
+                        $("#role").removeClass("is-invalid")
+                        $("#errorRole").text("")
+                        setTimeout(function() {
+                            location.reload()
+                        }, 1000)
+                    } else if (response.message == "validation") {
+
+                        // role
+                        if (response.dataError.hasOwnProperty('role')) {
+                            $("#role").addClass("is-invalid")
+                            $("#errorRole").text(response.dataError['role'])
+                        } else {
                             $("#role").removeClass("is-invalid")
                             $("#errorRole").text("")
-                            setTimeout(function() {
-                                location.reload()
-                            }, 1000)
-                        } else {
-                            $("#role").addClass("is-invalid")
-                            $("#errorRole").text("Nama kolom ini sudah terdaftar")
-
-                            $("#btnRequest").prop("disabled", false)
                         }
-                    },
-                });
-            }
+
+                        $("#btnRequest").prop("disabled", false)
+                    } else {
+                        Swal.fire({
+                            title: "Opps, terjadi kesalahan",
+                            icon: "error"
+                        })
+                    }
+                },
+            });
+        }
+
+        // edit role
+        function openModalEditRole(e) {
+            var formData = new FormData();
+            formData.append("token", $("meta[name='csrf-token']").attr("content"));
+            formData.append("role_id", e.getAttribute('data-edit'));
+
+            $.ajax({
+                url: "{{ route('role.getmodaleditrole') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    $("#universalModalContent").empty();
+                    $("#universalModalContent").addClass("modal-dialog-centered");
+                    $("#universalModalContent").append(`
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div class="loading">
+                                    <span class="dots pulse1"></span>
+                                    <span class="dots pulse2"></span>
+                                    <span class="dots pulse3"></span>
+                                </div>
+                            </div>
+                        </div>
+                        `);
+                    $("#universalModal").modal("show");
+                },
+                success: function(response) {
+                    if (response.message == "success") {
+                        setTimeout(function() {
+                            $("#universalModalContent").html(response.dataHTML.trim());
+                        }, 1000);
+                    }
+                },
+            });
+        }
+
+        function requestEditRole(e) {
+            e.preventDefault()
+
+            $("#btnRequest").prop("disabled", true)
+
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("role", $("#role").val());
+            formData.append("role_id", $("#role_id").val());
+
+            $.ajax({
+                url: "{{ route('role.updaterole') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.message == "success") {
+                        Swal.fire({
+                            title: "Berhasil",
+                            text: "Role berhasil diperbarui",
+                            icon: "success"
+                        })
+
+                        // role
+                        $("#role").removeClass("is-invalid")
+                        $("#errorRole").text("")
+
+                        $("#universalModal").modal("hide")
+                        setTimeout(function() {
+                            location.reload()
+                        }, 1000)
+                    } else if (response.message == "validation") {
+                        // role
+                        if (response.dataError.hasOwnProperty('role')) {
+                            $("#role").addClass("is-invalid")
+                            $("#errorRole").text(response.dataError['role'])
+                        } else {
+                            $("#role").removeClass("is-invalid")
+                            $("#errorRole").text("")
+                        }
+
+                        $("#btnRequest").prop("disabled", false)
+                    } else {
+                        Swal.fire({
+                            title: "Opps, terjadi kesalahan",
+                            icon: "error"
+                        })
+                    }
+                },
+            });
         }
     </script>
 @endpush

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id(); // ID unik untuk setiap menu
             $table->string('name'); // Nama menu yang ditampilkan
             $table->string('route')->nullable(); // Nama route untuk mengarahkan ke halaman terkait
-            $table->string('role')->nullable(); // Role yang memiliki akses ke menu ini (misalnya: 'admin', 'developer')
             $table->unsignedBigInteger('parent_id')->nullable(); // Menghubungkan submenu dengan menu utama
             $table->integer('order')->default(0); // Menentukan urutan menu
             $table->timestamps(); // Timestamp untuk created_at dan updated_at
