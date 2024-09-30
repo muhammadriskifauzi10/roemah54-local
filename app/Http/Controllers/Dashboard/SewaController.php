@@ -65,16 +65,14 @@ class SewaController extends Controller
         ]);
 
         if (intval($total_bayar) > 0) {
-            if ($metode_pembayaran == "None" && $bukti_pembayaran == NULL) {
-                return redirect()->back()->with('messageFailed', 'Metode pembayaran dan file bukti pembayaran wajib ditentukan');
-            } elseif ($metode_pembayaran == "None") {
-                return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
-            } elseif ($bukti_pembayaran == NULL) {
-                return redirect()->back()->with('messageFailed', 'File bukti pembayaran wajib ditentukan');
+            if ($bukti_pembayaran == NULL) {
+                if ($metode_pembayaran != "None" && $metode_pembayaran != "Cash") {
+                    return redirect()->back()->with('messageFailed', 'File bukti pembayaran wajib ditentukan');
+                }
             }
         } else {
-            if ($metode_pembayaran != "None") {
-                return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi  dan file bukti pembayaran wajib ditentukan');
+            if ($metode_pembayaran != "None" && $metode_pembayaran != "Cash") {
+                return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi dan file bukti pembayaran wajib ditentukan');
             }
         }
 
@@ -354,7 +352,7 @@ class SewaController extends Controller
                         if (request()->file('bukti_pembayaran')) {
                             $bukti_pembayaran = "bukti_pembayaran" . "-" . $transaksi->id . "." . request()->file('bukti_pembayaran')->getClientOriginalExtension();
                             $file = request()->file('bukti_pembayaran');
-                            $tujuan_upload = 'img/bukti_pembayaran';
+                            $tujuan_upload = 'img/bukti_pembayaran/pemasukan';
                             $file->move($tujuan_upload, $bukti_pembayaran);
 
                             Transaksi::where('id', $transaksi->id)->update([
@@ -927,8 +925,8 @@ class SewaController extends Controller
             $foto_kwh_baru = request()->file('foto_kwh_baru');
             $jumlah_kwh_lama = htmlspecialchars(request()->input('jumlah_kwh_lama'), ENT_QUOTES, 'UTF-8');
             $jumlah_kwh_baru = htmlspecialchars(request()->input('jumlah_kwh_baru'), ENT_QUOTES, 'UTF-8');
-            $jumlah_pembayaran = htmlspecialchars(request()->input('jumlah_pembayaran'), ENT_QUOTES, 'UTF-8');
             $keterangan = htmlspecialchars(request()->input('keterangan'), ENT_QUOTES, 'UTF-8');
+            $jumlah_pembayaran = htmlspecialchars(request()->input('jumlah_pembayaran'), ENT_QUOTES, 'UTF-8');
             $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), ENT_QUOTES, 'UTF-8');
 
             if (Pembayaran::where('id', $transaksi_id)->exists()) {
@@ -967,43 +965,56 @@ class SewaController extends Controller
                     $transaksi->metode_pembayaran = $metode_pembayaran;
                     $transaksi->tipe = "pengeluaran";
                     $transaksi->operator_id = auth()->user()->id;
-                    $transaksi->save();
+                    $posttransaksi = $transaksi->save();
 
-                    $model_post_tokenlistrik = new Tokenlistrik();
-                    $model_post_tokenlistrik->tanggal_token = date('Y-m-d H:i:s');
-                    $model_post_tokenlistrik->pembayaran_id = $model_pembayaran->id;
-                    $model_post_tokenlistrik->penyewa_id = $model_pembayaran->penyewa_id;
-                    $model_post_tokenlistrik->lokasi_id = $model_pembayaran->lokasi_id;
-                    $model_post_tokenlistrik->jumlah_kwh_lama = $jumlah_kwh_lama;
-                    $model_post_tokenlistrik->jumlah_kwh_baru = $jumlah_kwh_baru;
-                    $model_post_tokenlistrik->jumlah_pembayaran = str_replace('.', '', $jumlah_pembayaran);
-                    $model_post_tokenlistrik->keterangan = $keterangan;
-                    $model_post_tokenlistrik->operator_id = auth()->user()->id;
-                    $model_post_tokenlistrik->save();
+                    if ($posttransaksi) {
 
-                    // foto kwh loma
-                    $fotokwhlamatokenlistrik = "kwhlama" . "-" . $model_post_tokenlistrik->id . "." .  $foto_kwh_lama->getClientOriginalExtension();
-                    $file = $foto_kwh_lama;
-                    $tujuan_upload = 'img/fotokwhlamatokenlistrik';
-                    $file->move($tujuan_upload, $fotokwhlamatokenlistrik);
+                        $bukti_pembayaran = "bukti_pembayaran" . "-" . $transaksi->id . "." . request()->file('bukti_pembayaran')->getClientOriginalExtension();
+                        $file = request()->file('bukti_pembayaran');
+                        $tujuan_upload = 'img/bukti_pembayaran/pengeluaran';
+                        $file->move($tujuan_upload, $bukti_pembayaran);
 
-                    // foto kwh baru
-                    $fotokwhbarutokenlistrik = "kwhbaru" . "-" . $model_post_tokenlistrik->id . "." .  $foto_kwh_baru->getClientOriginalExtension();
-                    $file = $foto_kwh_baru;
-                    $tujuan_upload = 'img/fotokwhbarutokenlistrik';
-                    $file->move($tujuan_upload, $fotokwhbarutokenlistrik);
+                        Transaksi::where('id', $transaksi->id)->update([
+                            'bukti_pembayaran' => $bukti_pembayaran
+                        ]);
 
-                    Tokenlistrik::where('id', $model_post_tokenlistrik->id)->update([
-                        'fotokwhlama' => $fotokwhlamatokenlistrik,
-                        'fotokwhbaru' => $fotokwhbarutokenlistrik,
-                    ]);
+                        $model_post_tokenlistrik = new Tokenlistrik();
+                        $model_post_tokenlistrik->tanggal_token = date('Y-m-d H:i:s');
+                        $model_post_tokenlistrik->pembayaran_id = $model_pembayaran->id;
+                        $model_post_tokenlistrik->penyewa_id = $model_pembayaran->penyewa_id;
+                        $model_post_tokenlistrik->lokasi_id = $model_pembayaran->lokasi_id;
+                        $model_post_tokenlistrik->jumlah_kwh_lama = $jumlah_kwh_lama;
+                        $model_post_tokenlistrik->jumlah_kwh_baru = $jumlah_kwh_baru;
+                        $model_post_tokenlistrik->jumlah_pembayaran = str_replace('.', '', $jumlah_pembayaran);
+                        $model_post_tokenlistrik->bukti_pembayaran = $bukti_pembayaran;
+                        $model_post_tokenlistrik->keterangan = $keterangan;
+                        $model_post_tokenlistrik->operator_id = auth()->user()->id;
+                        $model_post_tokenlistrik->save();
 
-                    DB::commit();
-                    $response = [
-                        'status' => 200,
-                        'message' => 'success',
-                        'data' => request()->all()
-                    ];
+                        // foto kwh loma
+                        $fotokwhlamatokenlistrik = "kwhlama" . "-" . $model_post_tokenlistrik->id . "." .  $foto_kwh_lama->getClientOriginalExtension();
+                        $file = $foto_kwh_lama;
+                        $tujuan_upload = 'img/fotokwhlamatokenlistrik';
+                        $file->move($tujuan_upload, $fotokwhlamatokenlistrik);
+
+                        // foto kwh baru
+                        $fotokwhbarutokenlistrik = "kwhbaru" . "-" . $model_post_tokenlistrik->id . "." .  $foto_kwh_baru->getClientOriginalExtension();
+                        $file = $foto_kwh_baru;
+                        $tujuan_upload = 'img/fotokwhbarutokenlistrik';
+                        $file->move($tujuan_upload, $fotokwhbarutokenlistrik);
+
+                        Tokenlistrik::where('id', $model_post_tokenlistrik->id)->update([
+                            'fotokwhlama' => $fotokwhlamatokenlistrik,
+                            'fotokwhbaru' => $fotokwhbarutokenlistrik,
+                        ]);
+
+                        DB::commit();
+                        $response = [
+                            'status' => 200,
+                            'message' => 'success',
+                            'data' => request()->all()
+                        ];
+                    }
                 } catch (Exception $e) {
                     DB::rollBack();
                     $response = [

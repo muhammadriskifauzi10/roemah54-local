@@ -570,6 +570,11 @@
                                 <span class="text-danger" id="errorJumlahKWHBaru"></span>
                             </div>
                             <div class="mb-3">
+                                <label for="keterangan" class="form-label fw-bold">Keterangan <sup class="red">*</sup></label>
+                                <textarea class="form-control" name="keterangan" id="keterangan"></textarea>
+                                <span class="text-danger" id="errorKeterangan"></span>
+                            </div>
+                            <div class="mb-3">
                                 <label for="jumlah_pembayaran" class="form-label fw-bold">Jumlah Pembayaran <sup class="red">*</sup></label>
                                 <div class="input-group" style="z-index: 0;">
                                     <span class="input-group-text bg-success text-light fw-bold">RP</span>
@@ -580,9 +585,9 @@
                                 <span class="text-danger" id="errorJumlahPembayaran"></span>
                             </div>
                             <div class="mb-3">
-                                <label for="keterangan" class="form-label fw-bold">Keterangan <sup class="red">*</sup></label>
-                                <textarea class="form-control" name="keterangan" id="keterangan"></textarea>
-                                <span class="text-danger" id="errorKeterangan"></span>
+                                <label for="bukti_pembayaran" class="form-label fw-bold">Bukti Pembayaran <sup class="red">*</sup></label>
+                                <input type="file" class="form-control" name="bukti_pembayaran" id="bukti_pembayaran">
+                                <span class="text-danger" id="errorBuktiPembayaran"></span>
                             </div>
                             <div class="mb-3">
                                 <label for="cash" class="form-label fw-bold">
@@ -705,6 +710,15 @@
                 $("#jumlah_kwh_baru").removeClass("is-invalid")
                 $("#errorJumlahKWHBaru").text("")
             }
+            // Keterangan
+            if ($("#keterangan").val() == "") {
+                $("#keterangan").addClass("is-invalid")
+                $("#errorKeterangan").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                $("#keterangan").removeClass("is-invalid")
+                $("#errorKeterangan").text("")
+            }
             // Jumlah Pembayaran
             if ($("#jumlah_pembayaran").val() == "" || $("#jumlah_pembayaran").val() == 0) {
                 $("#jumlah_pembayaran").addClass("is-invalid")
@@ -714,14 +728,25 @@
                 $("#jumlah_pembayaran").removeClass("is-invalid")
                 $("#errorJumlahPembayaran").text("")
             }
-            // Keterangan
-            if ($("#keterangan").val() == "") {
-                $("#keterangan").addClass("is-invalid")
-                $("#errorKeterangan").text("Kolom ini wajib diisi")
+            // bukti pembayaran
+            if ($('#bukti_pembayaran')[0].files.length === 0) {
+                $("#bukti_pembayaran").addClass("is-invalid")
+                $("#errorBuktiPembayaran").text("Kolom ini wajib diisi")
                 error++
             } else {
-                $("#keterangan").removeClass("is-invalid")
-                $("#errorKeterangan").text("")
+                let file = $('#bukti_pembayaran')[0].files[0];
+                let fileType = file.type;
+                let allowedTypes = ['image/jpeg', 'image/jpg'];
+
+                // Check if the file type is allowed
+                if (!allowedTypes.includes(fileType)) {
+                    $('#bukti_pembayaran').addClass('is-invalid');
+                    $('#errorBuktiPembayaran').text('Ekstensi file hanya mendukung format jpg dan jpeg');
+                    error++;
+                } else {
+                    $("#bukti_pembayaran").removeClass("is-invalid")
+                    $("#errorBuktiPembayaran").text("")
+                }
             }
 
             if (error == 0) {

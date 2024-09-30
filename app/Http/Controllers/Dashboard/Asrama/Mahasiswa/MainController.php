@@ -215,16 +215,14 @@ class MainController extends Controller
         ]);
 
         if (intval($total_bayar) > 0) {
-            if ($metode_pembayaran == "None" && $bukti_pembayaran == NULL) {
-                return redirect()->back()->with('messageFailed', 'Metode pembayaran dan file bukti pembayaran wajib ditentukan');
-            } elseif ($metode_pembayaran == "None") {
-                return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
-            } elseif ($bukti_pembayaran == NULL) {
-                return redirect()->back()->with('messageFailed', 'File bukti pembayaran wajib ditentukan');
+            if ($bukti_pembayaran == NULL) {
+                if ($metode_pembayaran != "None" && $metode_pembayaran != "Cash") {
+                    return redirect()->back()->with('messageFailed', 'File bukti pembayaran wajib ditentukan');
+                }
             }
         } else {
-            if ($metode_pembayaran != "None") {
-                return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi  dan file bukti pembayaran wajib ditentukan');
+            if ($metode_pembayaran != "None" && $metode_pembayaran != "Cash") {
+                return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi dan file bukti pembayaran wajib ditentukan');
             }
         }
 
