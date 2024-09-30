@@ -16,7 +16,9 @@ class Transaksi extends Model
     }
 
     public function penyewas() {
-        return $this->hasOne(Penyewa::class, 'id', 'penyewa_id');
+        return $this->hasOne(Penyewa::class, 'id', 'penyewa_id')->withDefault([
+            'nama_lengkap' => '-'
+        ]);
     }
 
     public function lokasis()

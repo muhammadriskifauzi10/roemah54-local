@@ -549,7 +549,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                             <div class="mb-3">
+                            <div class="mb-3">
                                 <label for="foto_kwh_lama" class="form-label fw-bold">Foto KWH Lama <sup class="red">*</sup></label>
                                 <input type="file" class="form-control" name="foto_kwh_lama" id="foto_kwh_lama">
                                 <span class="text-danger" id="errorFotoKWHLama"></span>
@@ -558,6 +558,11 @@
                                 <label for="jumlah_kwh_lama" class="form-label fw-bold">Jumlah KWH Lama <sup class="red">*</sup></label>
                                 <input type="number" class="form-control" name="jumlah_kwh_lama" id="jumlah_kwh_lama" placeholder="0">
                                 <span class="text-danger" id="errorJumlahKWHLama"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="foto_kwh_baru" class="form-label fw-bold">Foto KWH Baru <sup class="red">*</sup></label>
+                                <input type="file" class="form-control" name="foto_kwh_baru" id="foto_kwh_baru">
+                                <span class="text-danger" id="errorFotoKWHBaru"></span>
                             </div>
                             <div class="mb-3">
                                 <label for="jumlah_kwh_baru" class="form-label fw-bold">Jumlah KWH Baru <sup class="red">*</sup></label>
@@ -642,6 +647,7 @@
 
             let error = 0;
 
+            // foto kwh lama
             if ($('#foto_kwh_lama')[0].files.length === 0) {
                 $("#foto_kwh_lama").addClass("is-invalid")
                 $("#errorFotoKWHLama").text("Kolom ini wajib diisi")
@@ -669,6 +675,26 @@
             } else {
                 $("#jumlah_kwh_lama").removeClass("is-invalid")
                 $("#errorJumlahKWHLama").text("")
+            }
+            // foto kwh baru
+            if ($('#foto_kwh_baru')[0].files.length === 0) {
+                $("#foto_kwh_baru").addClass("is-invalid")
+                $("#errorFotoKWHBaru").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                let file = $('#foto_kwh_baru')[0].files[0];
+                let fileType = file.type;
+                let allowedTypes = ['image/jpeg', 'image/jpg'];
+
+                // Check if the file type is allowed
+                if (!allowedTypes.includes(fileType)) {
+                    $('#foto_kwh_baru').addClass('is-invalid');
+                    $('#errorFotoKWHBaru').text('Ekstensi file hanya mendukung format jpg dan jpeg');
+                    error++;
+                } else {
+                    $("#foto_kwh_baru").removeClass("is-invalid")
+                    $("#errorFotoKWHBaru").text("")
+                }
             }
             // KWH Baru
             if ($("#jumlah_kwh_baru").val() == "") {

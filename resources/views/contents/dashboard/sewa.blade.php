@@ -277,22 +277,40 @@
                                             Pembayaran
                                         </div>
                                         <div class="card-body">
-                                            {{-- total bayar --}}
-                                            <div class="mb-3">
-                                                <label for="total_bayar" class="form-label fw-bold">Total
-                                                    Bayar</label>
-                                                <div class="input-group" style="z-index: 0;">
-                                                    <span class="input-group-text bg-success text-light fw-bold">RP</span>
-                                                    <input type="text"
-                                                        class="form-control formatrupiah @error('total_bayar') is-invalid @enderror"
-                                                        name="total_bayar" id="total_bayar" placeholder="0">
-                                                    @error('total_bayar')
+                                            <div class="row">
+                                                {{-- total bayar --}}
+                                                <div class="col-lg-6 mb-3">
+                                                    <label for="total_bayar" class="form-label fw-bold">Total
+                                                        Bayar</label>
+                                                    <div class="input-group" style="z-index: 0;">
+                                                        <span
+                                                            class="input-group-text bg-success text-light fw-bold">RP</span>
+                                                        <input type="text"
+                                                            class="form-control formatrupiah @error('total_bayar') is-invalid @enderror"
+                                                            name="total_bayar" id="total_bayar" placeholder="0">
+                                                        @error('total_bayar')
+                                                            <div class="invalid-feedback">
+                                                                {{ $message }}
+                                                            </div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                {{-- upload bukti pembayaran --}}
+                                                <div class="col-lg-6 mb-3">
+                                                    <label for="bukti_pembayaran" class="form-label fw-bold">File Bukti
+                                                        Pembayaran</label>
+                                                    <input type="file"
+                                                        class="form-control @error('bukti_pembayaran') is-invalid @enderror"
+                                                        name="bukti_pembayaran" id="bukti_pembayaran"
+                                                        value="{{ old('bukti_pembayaran') }}">
+                                                    @error('bukti_pembayaran')
                                                         <div class="invalid-feedback">
                                                             {{ $message }}
                                                         </div>
                                                     @enderror
                                                 </div>
                                             </div>
+
                                             {{-- tipe pembayaran --}}
                                             <div>
                                                 <label for="cash" class="form-label fw-bold">

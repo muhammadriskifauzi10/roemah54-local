@@ -189,7 +189,7 @@ class MainController extends Controller
             ->whereColumn('lokasis.kapasitas', '>', 'lokasis.jumlah_penyewa')
             ->orderBy('lokasis.lantai_id', 'ASC')
             ->get();
-            
+
         $data = [
             'judul' => 'Tambah Asrama Mahasiswa',
             'kamar' => $kamar
@@ -202,6 +202,8 @@ class MainController extends Controller
         $noktp = htmlspecialchars(request()->input('noktp'), true);
         $total_bayar = htmlspecialchars(request()->input('total_bayar'), true);
         $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), true);
+        $bukti_pembayaran = request()->file('bukti_pembayaran');
+
         if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Mahasiswa')->exists()) {
             $rulefotoktp = 'required|mimes:jpg,jpeg,png';
         } else {
@@ -213,12 +215,16 @@ class MainController extends Controller
         ]);
 
         if (intval($total_bayar) > 0) {
-            if ($metode_pembayaran == "None") {
+            if ($metode_pembayaran == "None" && $bukti_pembayaran == NULL) {
+                return redirect()->back()->with('messageFailed', 'Metode pembayaran dan file bukti pembayaran wajib ditentukan');
+            } elseif ($metode_pembayaran == "None") {
                 return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
+            } elseif ($bukti_pembayaran == NULL) {
+                return redirect()->back()->with('messageFailed', 'File bukti pembayaran wajib ditentukan');
             }
         } else {
             if ($metode_pembayaran != "None") {
-                return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi');
+                return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi  dan file bukti pembayaran wajib ditentukan');
             }
         }
 
@@ -237,6 +243,14 @@ class MainController extends Controller
             'fotoktp' => $rulefotoktp,
             'total_bayar' => 'nullable|numeric',
             'alamat' => 'required',
+            'jenis_kelamin' => [
+                function ($attribute, $value, $fail) {
+                    if ($value == "Pilih Jenis Kelamin") {
+                        $fail('Kolom ini wajib dipilih');
+                    }
+                },
+            ],
+            'bukti_pembayaran' => 'mimes:jpg,jpeg,png',
             // 'tipe_pembayaran' => 'required',
         ], [
             'tanggalmasuk.required' => 'Kolom ini wajib diisi',
@@ -252,6 +266,7 @@ class MainController extends Controller
             'total_bayar.required' => 'Kolom ini wajib diisi',
             'total_bayar.not_in' => 'Kolom ini wajib diisi',
             'alamat.required' => 'Kolom ini wajib diisi',
+            'bukti_pembayaran.mimes' => 'Ekstensi file hanya mendukung format jpg dan jpeg',
             // 'tipe_pembayaran.required' => 'Kolom ini tidak valid',
         ]);
 
@@ -271,6 +286,7 @@ class MainController extends Controller
             $nohp = htmlspecialchars(request()->input('nohp'), true);
             $lokasi_id = htmlspecialchars(request()->input('lokasi'), true);
             $lokasi = Lokasi::where('id', (int)$lokasi_id)->first();
+            $jenis_kelamin = htmlspecialchars(request()->input('jenis_kelamin'), true);
             $alamat = htmlspecialchars(request()->input('alamat'), true);
             $fotoktp = request()->file('fotoktp');
 
@@ -285,6 +301,7 @@ class MainController extends Controller
                     'namalengkap' => $namalengkap,
                     'noktp' => $noktp,
                     'nohp' => $nohp,
+                    'jenis_kelamin' => $jenis_kelamin,
                     'alamat' => $alamat,
                     'jenis_penyewa' => 'Asrama',
                     'fotoktp' => "",
@@ -320,6 +337,7 @@ class MainController extends Controller
                     'namalengkap' => $namalengkap,
                     'noktp' => $noktp,
                     'nohp' => $nohp,
+                    'jenis_kelamin' => $jenis_kelamin,
                     'alamat' => $alamat,
                     'jenis_penyewa' => 'Asrama',
                     'fotoktp' => $fotoktp,
@@ -395,7 +413,20 @@ class MainController extends Controller
                     $transaksi->jumlah_uang = $total_bayar;
                     $transaksi->metode_pembayaran = $metode_pembayaran;
                     $transaksi->operator_id = auth()->user()->id;
-                    $transaksi->save();
+                    $posttransaksi = $transaksi->save();
+
+                    if ($posttransaksi) {
+                        if (request()->file('bukti_pembayaran')) {
+                            $bukti_pembayaran = "bukti_pembayaran" . "-" . $transaksi->id . "." . request()->file('bukti_pembayaran')->getClientOriginalExtension();
+                            $file = request()->file('bukti_pembayaran');
+                            $tujuan_upload = 'img/bukti_pembayaran';
+                            $file->move($tujuan_upload, $bukti_pembayaran);
+
+                            Transaksi::where('id', $transaksi->id)->update([
+                                'bukti_pembayaran' => $bukti_pembayaran
+                            ]);
+                        }
+                    }
                 }
 
                 Lokasi::where('id', (int)$lokasi_id)->increment('jumlah_penyewa');

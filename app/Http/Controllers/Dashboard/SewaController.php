@@ -52,6 +52,8 @@ class SewaController extends Controller
         $noktp = htmlspecialchars(request()->input('noktp'), true);
         $total_bayar = htmlspecialchars(request()->input('total_bayar'), true);
         $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), true);
+        $bukti_pembayaran = request()->file('bukti_pembayaran');
+
         if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->exists()) {
             $rulefotoktp = 'required|mimes:jpg,jpeg,png';
         } else {
@@ -63,12 +65,16 @@ class SewaController extends Controller
         ]);
 
         if (intval($total_bayar) > 0) {
-            if ($metode_pembayaran == "None") {
+            if ($metode_pembayaran == "None" && $bukti_pembayaran == NULL) {
+                return redirect()->back()->with('messageFailed', 'Metode pembayaran dan file bukti pembayaran wajib ditentukan');
+            } elseif ($metode_pembayaran == "None") {
                 return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
+            } elseif ($bukti_pembayaran == NULL) {
+                return redirect()->back()->with('messageFailed', 'File bukti pembayaran wajib ditentukan');
             }
         } else {
             if ($metode_pembayaran != "None") {
-                return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi');
+                return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi  dan file bukti pembayaran wajib ditentukan');
             }
         }
 
@@ -78,13 +84,6 @@ class SewaController extends Controller
             'namalengkap' => 'required',
             'noktp' => 'required|numeric|digits:16',
             'nohp' => 'required|regex:/^08[0-9]{8,}$/',
-            'jenis_kelamin' => [
-                function ($attribute, $value, $fail) {
-                    if ($value == "Pilih Jenis Kelamin") {
-                        $fail('Kolom ini wajib dipilih');
-                    }
-                },
-            ],
             'lantai' => [
                 function ($attribute, $value, $fail) {
                     if (!Lantai::where('id', (int)$value)->exists()) {
@@ -117,6 +116,14 @@ class SewaController extends Controller
             'total_bayar' => 'nullable|numeric',
             'diskon' => 'nullable|numeric|min:0|max:100',
             'alamat' => 'required',
+            'jenis_kelamin' => [
+                function ($attribute, $value, $fail) {
+                    if ($value == "Pilih Jenis Kelamin") {
+                        $fail('Kolom ini wajib dipilih');
+                    }
+                },
+            ],
+            'bukti_pembayaran' => 'mimes:jpg,jpeg,png',
             // 'tipe_pembayaran' => 'required',
         ], [
             'tanggalmasuk.required' => 'Kolom ini wajib diisi',
@@ -132,6 +139,7 @@ class SewaController extends Controller
             'total_bayar.required' => 'Kolom ini wajib diisi',
             'total_bayar.not_in' => 'Kolom ini wajib diisi',
             'alamat.required' => 'Kolom ini wajib diisi',
+            'bukti_pembayaran.mimes' => 'Ekstensi file hanya mendukung format jpg dan jpeg',
             // 'tipe_pembayaran.required' => 'Kolom ini tidak valid',
         ]);
 
@@ -285,6 +293,7 @@ class SewaController extends Controller
             }
 
             $pembayaran = new Pembayaran();
+            $pembayaran->tagih_id = 1;
             if (intval($total_bayar) > 0) {
                 $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
             }
@@ -339,7 +348,20 @@ class SewaController extends Controller
                     $transaksi->jumlah_uang = $total_bayar;
                     $transaksi->metode_pembayaran = $metode_pembayaran;
                     $transaksi->operator_id = auth()->user()->id;
-                    $transaksi->save();
+                    $posttransaksi = $transaksi->save();
+
+                    if ($posttransaksi) {
+                        if (request()->file('bukti_pembayaran')) {
+                            $bukti_pembayaran = "bukti_pembayaran" . "-" . $transaksi->id . "." . request()->file('bukti_pembayaran')->getClientOriginalExtension();
+                            $file = request()->file('bukti_pembayaran');
+                            $tujuan_upload = 'img/bukti_pembayaran';
+                            $file->move($tujuan_upload, $bukti_pembayaran);
+
+                            Transaksi::where('id', $transaksi->id)->update([
+                                'bukti_pembayaran' => $bukti_pembayaran
+                            ]);
+                        }
+                    }
                 }
 
                 Lokasi::where('id', $kamar)->increment('jumlah_penyewa');
@@ -902,6 +924,7 @@ class SewaController extends Controller
         if (request()->ajax()) {
             $transaksi_id = htmlspecialchars(request()->input('transaksi_id'), ENT_QUOTES, 'UTF-8');
             $foto_kwh_lama = request()->file('foto_kwh_lama');
+            $foto_kwh_baru = request()->file('foto_kwh_baru');
             $jumlah_kwh_lama = htmlspecialchars(request()->input('jumlah_kwh_lama'), ENT_QUOTES, 'UTF-8');
             $jumlah_kwh_baru = htmlspecialchars(request()->input('jumlah_kwh_baru'), ENT_QUOTES, 'UTF-8');
             $jumlah_pembayaran = htmlspecialchars(request()->input('jumlah_pembayaran'), ENT_QUOTES, 'UTF-8');
@@ -958,13 +981,21 @@ class SewaController extends Controller
                     $model_post_tokenlistrik->operator_id = auth()->user()->id;
                     $model_post_tokenlistrik->save();
 
+                    // foto kwh loma
                     $fotokwhlamatokenlistrik = "kwhlama" . "-" . $model_post_tokenlistrik->id . "." .  $foto_kwh_lama->getClientOriginalExtension();
                     $file = $foto_kwh_lama;
                     $tujuan_upload = 'img/fotokwhlamatokenlistrik';
                     $file->move($tujuan_upload, $fotokwhlamatokenlistrik);
 
+                    // foto kwh baru
+                    $fotokwhbarutokenlistrik = "kwhbaru" . "-" . $model_post_tokenlistrik->id . "." .  $foto_kwh_baru->getClientOriginalExtension();
+                    $file = $foto_kwh_baru;
+                    $tujuan_upload = 'img/fotokwhbarutokenlistrik';
+                    $file->move($tujuan_upload, $fotokwhbarutokenlistrik);
+
                     Tokenlistrik::where('id', $model_post_tokenlistrik->id)->update([
-                        'fotokwhlama' => $fotokwhlamatokenlistrik
+                        'fotokwhlama' => $fotokwhlamatokenlistrik,
+                        'fotokwhbaru' => $fotokwhbarutokenlistrik,
                     ]);
 
                     DB::commit();

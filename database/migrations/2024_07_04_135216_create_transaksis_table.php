@@ -19,6 +19,7 @@ return new class extends Migration
             $table->dateTime('tanggal_transaksi');
             $table->decimal('jumlah_uang', 15, 2);
             $table->string('metode_pembayaran');
+            $table->string('bukti_pembayaran', 100)->nullable();
             $table->enum('tipe', ['pemasukan', 'pengeluaran'])->default('pemasukan');
             $table->integer('operator_id');
             $table->timestamps();

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('jumlah_pembayaran', 15, 2)->nullable();
             $table->text('keterangan')->nullable();
             $table->string('fotokwhlama', 100)->nullable();
+            $table->string('fotokwhbaru', 100)->nullable();
             $table->integer('operator_id');
             $table->timestamps();
         });
