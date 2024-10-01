@@ -76,6 +76,7 @@
                                     <th scope="col">Metode Pembayaran</th>
                                     <th scope="col">Tipe</th>
                                     <th scope="col">Jumlah Uang</th>
+                                    <th scope="col">Bukti Pembayaran</th>
                                 </tr>
                             </thead>
                         </table>
@@ -168,6 +169,9 @@
                     },
                     {
                         data: "jumlah_uang",
+                    },
+                    {
+                        data: "bukti_pembayaran",
                     },
                 ],
                 dom: "lBfrtip",

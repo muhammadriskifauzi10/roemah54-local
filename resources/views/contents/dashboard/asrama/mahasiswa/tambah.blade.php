@@ -244,7 +244,7 @@
                                             {{-- tipe pembayaran --}}
                                             <div>
                                                 <label for="cash" class="form-label fw-bold">
-                                                    Tipe Pembayaran
+                                                    Metode Pembayaran
                                                 </label>
                                                 <div class="row">
                                                     <div class="col-lg-2">

@@ -66,12 +66,26 @@ class SewaController extends Controller
 
         if (intval($total_bayar) > 0) {
             if ($bukti_pembayaran == NULL) {
-                if ($metode_pembayaran != "None" && $metode_pembayaran != "Cash") {
+                if ($metode_pembayaran == "None") {
+                    return redirect()->back()->with('messageFailed', 'File bukti pembayaran dan metode pembayaran wajib ditentukan');
+                } elseif ($metode_pembayaran != "None") {
                     return redirect()->back()->with('messageFailed', 'File bukti pembayaran wajib ditentukan');
                 }
             }
+
+            if ($metode_pembayaran == "None") {
+                return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
+            }
         } else {
-            if ($metode_pembayaran != "None" && $metode_pembayaran != "Cash") {
+            if ($bukti_pembayaran != NULL) {
+                if ($metode_pembayaran == "None") {
+                    return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi dan metode pembayaran wajib ditentukan');
+                } elseif ($metode_pembayaran != "None") {
+                    return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi');
+                }
+            }
+
+            if ($metode_pembayaran != "None") {
                 return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi dan file bukti pembayaran wajib ditentukan');
             }
         }
@@ -492,7 +506,7 @@ class SewaController extends Controller
                 }
 
                 $dataHTML = '
-                <form class="modal-content" onsubmit="requestSelesaikanPembayaranKamar(event)" autocomplete="off">
+                <form class="modal-content" onsubmit="requestSelesaikanPembayaranKamar(event)" autocomplete="off" id="formselesaikanpembayarankamar">
                     <input type="hidden" name="__token" value="' . request()->input('token') . '" id="token">
                     <input type="hidden" name="transaksi_id" value="' . $model_pembayaran->id . '" id="transaksi_id">
                     <div class="modal-header">
@@ -526,6 +540,11 @@ class SewaController extends Controller
                                     name="total_bayar" id="total_bayar" value="0">
                             </div>
                             <span class="text-danger" id="errorTotalBayar"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bukti_pembayaran" class="form-label fw-bold">Bukti Pembayaran <sup class="red">*</sup></label>
+                            <input type="file" class="form-control" name="bukti_pembayaran" id="bukti_pembayaran">
+                            <span class="text-danger" id="errorBuktiPembayaran"></span>
                         </div>
                         <div class="mb-3">
                             <label for="cash" class="form-label fw-bold">
@@ -891,7 +910,20 @@ class SewaController extends Controller
                         $transaksi->metode_pembayaran = $metode_pembayaran;
                         $transaksi->tipe = "pemasukan";
                         $transaksi->operator_id = auth()->user()->id;
-                        $transaksi->save();
+                        $posttransaksi = $transaksi->save();
+
+                        if ($posttransaksi) {
+                            if (request()->file('bukti_pembayaran')) {
+                                $bukti_pembayaran = "bukti_pembayaran" . "-" . $transaksi->id . "." . request()->file('bukti_pembayaran')->getClientOriginalExtension();
+                                $file = request()->file('bukti_pembayaran');
+                                $tujuan_upload = 'img/bukti_pembayaran/pemasukan';
+                                $file->move($tujuan_upload, $bukti_pembayaran);
+
+                                Transaksi::where('id', $transaksi->id)->update([
+                                    'bukti_pembayaran' => $bukti_pembayaran
+                                ]);
+                            }
+                        }
                     }
 
                     DB::commit();
@@ -1080,9 +1112,9 @@ class SewaController extends Controller
                 }
 
                 $dataHTML = '
-                <form class="modal-content" onsubmit="requestBayarPerpanjangPenyewaanKamar(event)" autocomplete="off">
-                    <input type="hidden" name="__token" value="' . request()->input('token') . '" id="token">
-                    <input type="hidden" name="__pembayaran_id" value="' . $pembayaran_id . '" id="pembayaran_id">
+                <form class="modal-content" onsubmit="requestBayarPerpanjangPenyewaanKamar(event)" autocomplete="off" id="formbayarperpanjangkamar">
+                    <input type="hidden" name="_token" value="' . request()->input('token') . '" id="token">
+                    <input type="hidden" name="_pembayaran_id" value="' . $pembayaran_id . '" id="pembayaran_id">
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="universalModalLabel">Perpanjang Penyewaan Kamar</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1101,14 +1133,26 @@ class SewaController extends Controller
                             </div>
                         </div>
                         <div class="mb-3">
+                            <label for="bukti_pembayaran" class="form-label fw-bold">Bukti Pembayaran</label>
+                            <input type="file" class="form-control" name="bukti_pembayaran" id="bukti_pembayaran">
+                            <span class="text-danger" id="errorBuktiPembayaran"></span>
+                        </div>
+                        <div class="mb-3">
                             <label for="cash" class="form-label fw-bold">
                                 Metode Pembayaran
                             </label>
-                            <div class="row">
-                            <div class="col-6">
+                            <div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio"
+                                        name="metode_pembayaran" id="none" value="None"
+                                        checked>
+                                    <label class="form-check-label" for="none">
+                                        Tidak Ada
+                                    </label>
+                                </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="metode_pembayaran" id="cash"
-                                        value="Cash" checked>
+                                        value="Cash">
                                     <label class="form-check-label" for="cash">
                                         Cash
                                     </label>
@@ -1120,8 +1164,6 @@ class SewaController extends Controller
                                         Debit
                                     </label>
                                 </div>
-                            </div>
-                            <div class="col-6">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="metode_pembayaran" id="qris"
                                         value="QRIS">
@@ -1136,7 +1178,6 @@ class SewaController extends Controller
                                         Transfer
                                     </label>
                                 </div>
-                            </div>
                             </div>
                         </div>
                         <div>
@@ -1166,11 +1207,12 @@ class SewaController extends Controller
     public function bayarperpanjangankamar()
     {
         if (request()->ajax()) {
-            $pembayaran_id = htmlspecialchars(request()->input('pembayaran_id'), ENT_QUOTES, 'UTF-8');
+            $pembayaran_id = htmlspecialchars(request()->input('_pembayaran_id'), ENT_QUOTES, 'UTF-8');
             $jenissewa = request()->input('jenissewa');
             $jumlahhari = htmlspecialchars(request()->input('jumlahhari'), true);
             $total_bayar = htmlspecialchars(request()->input('total_bayar'), true);
             $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), ENT_QUOTES, 'UTF-8');
+
             if (Pembayaran::where('id', $pembayaran_id)->exists()) {
                 try {
                     DB::beginTransaction();
@@ -1320,7 +1362,20 @@ class SewaController extends Controller
                             $transaksi->metode_pembayaran = $metode_pembayaran;
                             $transaksi->tipe = "pemasukan";
                             $transaksi->operator_id = auth()->user()->id;
-                            $transaksi->save();
+                            $posttransaksi = $transaksi->save();
+
+                            if ($posttransaksi) {
+                                if (request()->file('bukti_pembayaran')) {
+                                    $bukti_pembayaran = "bukti_pembayaran" . "-" . $transaksi->id . "." . request()->file('bukti_pembayaran')->getClientOriginalExtension();
+                                    $file = request()->file('bukti_pembayaran');
+                                    $tujuan_upload = 'img/bukti_pembayaran/pemasukan';
+                                    $file->move($tujuan_upload, $bukti_pembayaran);
+
+                                    Transaksi::where('id', $transaksi->id)->update([
+                                        'bukti_pembayaran' => $bukti_pembayaran
+                                    ]);
+                                }
+                            }
                         }
 
                         Lokasi::where('id', $model_pembayaran->lokasi_id)->update([
@@ -1382,7 +1437,7 @@ class SewaController extends Controller
                 }
             } else {
                 $response = [
-                    'status' => 422,
+                    'status' => 400,
                     'message' => 'error',
                 ];
             }

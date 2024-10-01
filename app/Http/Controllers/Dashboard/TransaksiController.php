@@ -33,6 +33,7 @@ class TransaksiController extends Controller
                 'transaksis.jumlah_uang',
                 'transaksis.metode_pembayaran',
                 'transaksis.tipe',
+                'transaksis.bukti_pembayaran',
                 'p.tanggal_masuk',
                 'p.tanggal_keluar',
                 'p.penyewa_id',
@@ -64,6 +65,13 @@ class TransaksiController extends Controller
         $output = [];
         $no = 1;
         foreach ($transaksi as $row) {
+
+            if ($row->bukti_pembayaran) {
+                $bukti_pembayaran = $row->tipe == "pemasukan" ? '<a href="' . asset('img/bukti_pembayaran/pemasukan/' . $row->bukti_pembayaran) . '" class="text-decoration-none fw-bold fw-bold" target="_blank">Lihat File</a>' : '<a href="' . asset('img/bukti_pembayaran/pengeluaran/' . $row->bukti_pembayaran) . '" class="text-decoration-none fw-bold fw-bold" target="_blank">Lihat File</a>';
+            } else {
+                $bukti_pembayaran = '-';
+            }
+
             $output[] = [
                 'nomor' => "<strong>" . $no++ . "</strong>",
                 'tanggal_transaksi' => Carbon::parse($row->tanggal_transaksi)->format("d-m-Y H:i:s"),
@@ -78,6 +86,7 @@ class TransaksiController extends Controller
                 'metode_pembayaran' => $row->metode_pembayaran,
                 'tipe' => $row->tipe == "pemasukan" ? "Pemasukan" : "Pengeluaran",
                 'jumlah_uang' => $row->jumlah_uang ? "RP. " . number_format($row->jumlah_uang, '0', '.', '.') : "RP. 0",
+                'bukti_pembayaran' => $bukti_pembayaran,
             ];
         }
 
