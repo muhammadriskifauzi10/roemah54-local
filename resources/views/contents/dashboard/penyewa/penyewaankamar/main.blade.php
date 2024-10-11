@@ -67,7 +67,8 @@
                                 </select>
                             </div>
                         </div>
-                        <table class="table table-light table-hover border-0 m-0" id="datatablePenyewaanKamar" style="width: 100%; white-space: nowrap">
+                        <table class="table table-light table-hover border-0 m-0" id="datatablePenyewaanKamar"
+                            style="width: 100%; white-space: nowrap">
                             <thead>
                                 <tr>
                                     <th scope="col">No</th>
@@ -235,16 +236,16 @@
                     $("#universalModalContent").empty();
                     $("#universalModalContent").addClass("modal-dialog-centered");
                     $("#universalModalContent").append(`
-                    <div class="modal-content">
-                        <div class="modal-body">
-                            <div class="loading">
-                                <span class="dots pulse1"></span>
-                                <span class="dots pulse2"></span>
-                                <span class="dots pulse3"></span>
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div class="loading">
+                                    <span class="dots pulse1"></span>
+                                    <span class="dots pulse2"></span>
+                                    <span class="dots pulse3"></span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    `);
+                        `);
                     $("#universalModal").modal("show");
                 },
                 success: function(response) {
@@ -269,6 +270,7 @@
 
             let error = 0;
 
+            // total bayar
             if (($("#total_bayar").val() == "" || $("#total_bayar").val() == 0)) {
                 // total bayar
                 $("#total_bayar").addClass("is-invalid")
@@ -281,14 +283,31 @@
                 $("#errorTotalBayar").text("")
             }
 
+            // bukti pembayaran
+            if ($('#bukti_pembayaran')[0].files.length === 0) {
+                $("#bukti_pembayaran").addClass("is-invalid")
+                $("#errorBuktiPembayaran").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                let file = $('#bukti_pembayaran')[0].files[0];
+                let fileType = file.type;
+                let allowedTypes = ['image/jpeg', 'image/jpg'];
+
+                // Check if the file type is allowed
+                if (!allowedTypes.includes(fileType)) {
+                    $('#bukti_pembayaran').addClass('is-invalid');
+                    $('#errorBuktiPembayaran').text('Ekstensi file hanya mendukung format jpg dan jpeg');
+                    error++;
+                } else {
+                    $("#bukti_pembayaran").removeClass("is-invalid")
+                    $("#errorBuktiPembayaran").text("")
+                }
+            }
+
             if (error == 0) {
                 $("#btnRequest").prop("disabled", true)
 
-                var formData = new FormData();
-                formData.append("token", $("#token").val());
-                formData.append("transaksi_id", $("#transaksi_id").val());
-                formData.append("total_bayar", $("#total_bayar").val());
-                formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
+                var formData = new FormData($('#formselesaikanpembayarankamar')[0]);
 
                 $.ajax({
                     url: "{{ route('postselesaikanpembayarankamar') }}",
@@ -316,6 +335,119 @@
                     },
                 });
             }
+        }
+
+        function onGetToken(pembayaran_id) {
+
+            let error = 0;
+
+            if (($("#potongan_harga").val() == "" || $("#potongan_harga").val() == 0)) {
+                // potongan harga
+                $("#potongan_harga").addClass("is-invalid")
+                $("#errorPotonganHarga").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                // potongan harga
+                $("#potongan_harga").removeClass("is-invalid")
+                $("#errorPotonganHarga").text("")
+            }
+
+            if (error == 0) {
+
+                $("#btnRequestGetToken").prop("disabled", true)
+
+                var formData = new FormData();
+                formData.append("potongan_harga", $("#potongan_harga").val());
+                formData.append("pembayaran_id", pembayaran_id);
+
+                $.ajax({
+                    url: "{{ route('sendemailverifikasipotonganharga') }}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.message == "success") {
+                            $("#btnRequestGetToken").prop("disabled", false)
+
+                            // potongan harga
+                            $("#potongan_harga").removeClass("is-invalid")
+                            $("#potongan_harga").val(0)
+                            $("#errorPotonganHarga").text("")
+                        } else {
+                            $("#btnRequestGetToken").prop("disabled", false)
+
+                            Swal.fire({
+                                title: "Opps, terjadi kesalahan",
+                                icon: "error"
+                            })
+                        }
+                    },
+                });
+            }
+        }
+
+        function onVerifikasi(pembayaran_id) {
+            $("#btnRequestVerifikasi").prop("disabled", true)
+
+            var formData = new FormData();
+            formData.append("pembayaran_id", pembayaran_id);
+            formData.append("kode", $("#kode").val());
+
+            $.ajax({
+                url: "{{ route('verifikasipotonganharga') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.message == "completed") {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        $("#labelpembayaran").empty()
+                        $("#labelpembayaran").append(response['label'])
+
+                        $("#kode").val("")
+
+                        Swal.fire({
+                            title: "Berhasil",
+                            text: "Token valid, berhasil menerapkan potongan harga",
+                            icon: "success"
+                        })
+
+                        setTimeout(function() {
+                            location.reload()
+                        }, 1000)
+                    } else if (response.message == "success") {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        $("#labelpembayaran").empty()
+                        $("#labelpembayaran").append(response['label'])
+
+                        $("#kode").val("")
+
+                        Swal.fire({
+                            title: "Berhasil",
+                            text: "Token valid, berhasil menerapkan potongan harga",
+                            icon: "success"
+                        })
+                    } else if (response.message == "error") {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        Swal.fire({
+                            title: "Token tidak ditemukan",
+                            icon: "error"
+                        })
+                    } else {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        Swal.fire({
+                            title: "Opps, terjadi kesalahan",
+                            icon: "error"
+                        })
+                    }
+                },
+            });
         }
 
         // perpanjang
@@ -375,7 +507,11 @@
         function requestBayarPerpanjangPenyewaanKamar(e) {
             e.preventDefault()
 
+            let total_bayar = $("#total_bayar").val();
+            let metode_pembayaran = $("input[name='metode_pembayaran']:checked").val();
+
             let error = 0;
+            // jenis sewa
             if ($("#jenissewa").val() === "Pilih Jenis Sewa") {
                 $("#jenissewa").addClass("is-invalid")
                 $("#errorJenisSewa").text("Kolom ini wajib diisi")
@@ -385,16 +521,77 @@
                 $("#errorJenisSewa").text("")
             }
 
+            let message = '';
+
+            // bukti pembayaran
+            if (parseInt(total_bayar) > 0) {
+                if ($('#bukti_pembayaran')[0].files.length === 0) {
+                    if (metode_pembayaran === "None") {
+                        message = 'File bukti pembayaran dan metode pembayaran wajib ditentukan';
+                    } else {
+                        message = 'File bukti pembayaran wajib ditentukan';
+                    }
+                } else {
+                    if (metode_pembayaran === "None") {
+                        message = 'Metode pembayaran wajib ditentukan';
+                    }
+
+                    let file = $('#bukti_pembayaran')[0].files[0];
+                    let fileType = file.type;
+                    let allowedTypes = ['image/jpeg', 'image/jpg'];
+
+                    // Check if the file type is allowed
+                    if (!allowedTypes.includes(fileType)) {
+                        $('#bukti_pembayaran').addClass('is-invalid');
+                        $('#errorBuktiPembayaran').text('Ekstensi file hanya mendukung format jpg dan jpeg');
+                        error++;
+                    } else {
+                        $("#bukti_pembayaran").removeClass("is-invalid")
+                        $("#errorBuktiPembayaran").text("")
+                    }
+                }
+            } else {
+                if ($('#bukti_pembayaran')[0].files.length > 0) {
+                    if (metode_pembayaran === "None") {
+                        message = 'Pembayaran wajib diisi dan metode pembayaran wajib ditentukan';
+                    } else {
+                        message = 'Pembayaran wajib diisi';
+                    }
+
+                    let file = $('#bukti_pembayaran')[0].files[0];
+                    let fileType = file.type;
+                    let allowedTypes = ['image/jpeg', 'image/jpg'];
+
+                    // Check if the file type is allowed
+                    if (!allowedTypes.includes(fileType)) {
+                        $('#bukti_pembayaran').addClass('is-invalid');
+                        $('#errorBuktiPembayaran').text('Ekstensi file hanya mendukung format jpg dan jpeg');
+                        error++;
+                    } else {
+                        $("#bukti_pembayaran").removeClass("is-invalid")
+                        $("#errorBuktiPembayaran").text("")
+                    }
+                } else {
+                    if (metode_pembayaran !== "None") {
+                        message = 'Pembayaran wajib diisi dan file bukti pembayaran wajib ditentukan';
+                    }
+                }
+            }
+
+            // Show the error message using SweetAlert
+            if (message) {
+                error++
+
+                Swal.fire({
+                    title: message,
+                    icon: "error"
+                });
+            }
+
             if (error == 0) {
                 $("#btnRequest").prop("disabled", true)
 
-                var formData = new FormData();
-                formData.append("token", $("#token").val());
-                formData.append("pembayaran_id", $("#pembayaran_id").val());
-                formData.append("jenissewa", $("#jenissewa").val());
-                formData.append("jumlahhari", $("#jumlahhari").val());
-                formData.append("total_bayar", $("#total_bayar").val());
-                formData.append("metode_pembayaran", $("input[name='metode_pembayaran']:checked").val());
+                var formData = new FormData($('#formbayarperpanjangkamar')[0]);
 
                 $.ajax({
                     url: "{{ route('postbayarperpanjangankamar') }}",
