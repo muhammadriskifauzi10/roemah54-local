@@ -347,7 +347,7 @@ class MainController extends Controller
                 // $kamar = $kamar->where('id', '<>', $model_pembayaran->lokasi_id)->where('jenisruangan_id', 2)->orderby('id', 'ASC')->get();
 
                 $kamar = Lokasi::where('id', '<>', $model_pembayaran->lokasi_id)
-                    ->whereIn('tipekamar_id', [5, 6])
+                    ->whereIn('tipekamar_id', [5, 6, 7])
                     ->whereColumn('lokasis.kapasitas', '>', 'lokasis.jumlah_penyewa')
                     ->where('jenisruangan_id', 2)
                     ->orderby('id', 'ASC')
