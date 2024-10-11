@@ -60,7 +60,6 @@ class MainController extends Controller
     {
         $penyewaankamar = Pembayaran::whereDate('created_at', Carbon::today())
             ->latest()
-            ->take(5)
             ->get();
 
         $output = [];
