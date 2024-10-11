@@ -18,7 +18,7 @@
             <div class="col-xl-10">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item active" aria-current="page">Lantai</li>
+                        <li class="breadcrumb-item active" aria-current="page">Dasbor</li>
                     </ol>
                 </nav>
 
@@ -35,7 +35,7 @@
                     <div class="row">
                         @foreach ($lantai as $row)
                             <a href="{{ route('dasbor.detaillantai', $row->id) }}"
-                                class="col-xl-12 lantai text-decoration-none mb-4">
+                                class="col-xl-6 lantai text-decoration-none mb-4">
                                 <div class="card border-0 rounded" style="height: 100%">
                                     <div class="card-header bg-green text-light text-center fw-bold">
                                         {{ $row->namalantai }}
@@ -132,6 +132,32 @@
                 @else
                     <p class="m-0 text-center fw-bold text-secondary">-_- Lantai Kosong -_-</p>
                 @endif
+
+                {{-- penyewa terbaru --}}
+                <div class="card border-0">
+                    <div class="card-header bg-green text-light text-center fw-bold">
+                        Penyewa Terbaru
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-light table-hover border-0 m-0" id="datatablePenyewaanKamar"
+                            style="width: 100%; white-space: nowrap">
+                            <thead>
+                                <tr>
+                                    <th scope="col">No</th>
+                                    <th scope="col">Tanggal Masuk</th>
+                                    <th scope="col">Tanggal Keluar</th>
+                                    <th scope="col">Nama Penyewa</th>
+                                    <th scope="col">Nomor Kamar</th>
+                                    <th scope="col">Tipe Kamar</th>
+                                    <th scope="col">Mitra</th>
+                                    <th scope="col">Jenis Sewa</th>
+                                    <th scope="col">Status Pembayaran</th>
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -139,6 +165,64 @@
 
 @push('myscripts')
     <script>
+        var tablePenyewaanKamar
+        $(document).ready(function() {
+            tablePenyewaanKamar = $("#datatablePenyewaanKamar").DataTable({
+                processing: true,
+                ajax: {
+                    url: "{{ route('dasbor.datatablepenyewaankamar') }}",
+                    type: "POST",
+                    // dataSrc: ""
+                    dataType: "json",
+                },
+                columns: [{
+                        data: "nomor",
+                    },
+                    {
+                        data: "tanggal_masuk",
+                    },
+                    {
+                        data: "tanggal_keluar",
+                    },
+                    {
+                        data: "nama_penyewa",
+                    },
+                    {
+                        data: "nomor_kamar",
+                    },
+                    {
+                        data: "tipe_kamar",
+                    },
+                    {
+                        data: "mitra",
+                    },
+                    {
+                        data: "jenissewa",
+                    },
+                    {
+                        data: "status_pembayaran",
+                    },
+                    {
+                        data: "status",
+                    },
+                ],
+                // "order": [
+                //     [1, 'asc']
+                // ],
+                // scrollY: "700px",
+                scrollX: true,
+                // scrollCollapse: true,
+                // paging:         false,
+                // fixedColumns: {
+                //     left: 3,
+                // }
+                paging: false, // Menonaktifkan pagination
+                info: false, // Menonaktifkan informasi jumlah data
+                searching: false, // Menonaktifkan pencarian
+                dom: "t", // Hanya menampilkan tabel tanpa elemen lain (paging, info, dll)
+            });
+        });
+
         function requestLantai() {
             Swal.fire({
                 title: 'Tambah Lantai?',

@@ -193,18 +193,19 @@
                             </div>
                         </div>
 
-                        {{-- daftar kamar belum terisi --}}
                         <div class="col-xl-3 mb-3">
-                            <div class="card border-0">
+                            {{-- daftar kamar umum belum terisi --}}
+                            <div class="card border-0 mb-3">
                                 <div class="card-header bg-danger text-light text-center fw-bold">
-                                    Daftar Kamar Belum Terisi
+                                    Daftar Kamar Umum Belum Terisi
                                 </div>
                                 <div class="card-body">
                                     <table style="width: 100%">
-                                        @if (App\Models\Lokasi::where('jenisruangan_id', 2)->where('lantai_id', $lantai->id)->where('status', 0)->count() > 0)
+                                        @if (App\Models\Lokasi::where('jenisruangan_id', 2)->where('lantai_id', $lantai->id)->whereNotIn('tipekamar_id', [5, 6, 7])->where('status', 0)->count() > 0)
                                             @php
                                                 $kamar = App\Models\Lokasi::where('jenisruangan_id', 2)
                                                     ->where('lantai_id', $lantai->id)
+                                                    ->whereNotIn('tipekamar_id', [5, 6, 7])
                                                     ->where('status', 0)
                                                     ->get();
                                                 $total = count($kamar);
@@ -223,6 +224,66 @@
                                                     <td>:</td>
                                                     <td class="fw-bold text-danger" style="text-align: right;">
                                                         {{ $row->tipekamars->tipekamar }}</td>
+                                                </tr>
+
+                                                @if (++$counter < $total)
+                                                    <tr>
+                                                        <td colspan="3">
+                                                            <hr>
+                                                        </td>
+                                                    </tr>
+                                                @endif
+                                            @endforeach
+                                        @else
+                                            <tr>
+                                                <td colspan="3" style="text-align: center">Semua Kamar Terisi</td>
+                                            </tr>
+                                        @endif
+                                    </table>
+                                </div>
+                            </div>
+                            {{-- daftar kamar asrama --}}
+                            <div class="card border-0 mb-3">
+                                <div class="card-header bg-danger text-light text-center fw-bold">
+                                    Daftar Kamar Asrama Belum Terisi
+                                </div>
+                                <div class="card-body">
+                                    <table style="width: 100%">
+                                        @if (App\Models\Lokasi::where('jenisruangan_id', 2)->where('lantai_id', $lantai->id)->whereIn('tipekamar_id', [5, 6, 7])->whereColumn('lokasis.kapasitas', '>', 'lokasis.jumlah_penyewa')->count() > 0)
+                                            @php
+                                                $kamar = App\Models\Lokasi::where('jenisruangan_id', 2)
+                                                    ->where('lantai_id', $lantai->id)
+                                                    ->whereIn('tipekamar_id', [5, 6, 7])
+                                                    ->whereColumn('lokasis.kapasitas', '>', 'lokasis.jumlah_penyewa')
+                                                    ->get();
+                                                $total = count($kamar);
+                                                $counter = 0;
+                                            @endphp
+
+                                            @foreach ($kamar as $row)
+                                                <tr>
+                                                    <td>Nomor Kamar</td>
+                                                    <td>:</td>
+                                                    <td class="fw-bold text-danger" style="text-align: right;">
+                                                        {{ $row->nomor_kamar }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Tipe Kamar</td>
+                                                    <td>:</td>
+                                                    <td class="fw-bold text-danger" style="text-align: right;">
+                                                        {{ $row->tipekamars->tipekamar }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Kapasitas</td>
+                                                    <td>:</td>
+                                                    <td class="fw-bold text-danger" style="text-align: right;">
+                                                        {{ $row->kapasitas }} Mahasiswa/i</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Sisa</td>
+                                                    <td>:</td>
+                                                    <td class="fw-bold text-danger" style="text-align: right;">
+                                                        {{ $row->jumlah_penyewa }} Mahasiswa/i</td>
                                                 </tr>
 
                                                 @if (++$counter < $total)

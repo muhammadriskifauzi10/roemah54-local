@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Lantai;
 use App\Models\Lokasi;
+use App\Models\Pembayaran;
 use App\Models\Penyewa;
 use App\Models\Transaksi;
 use Carbon\Carbon;
@@ -54,6 +55,50 @@ class MainController extends Controller
         ];
 
         return view('contents.dashboard.main', $data);
+    }
+    public function datatablepenyewaankamar()
+    {
+        $penyewaankamar = Pembayaran::whereDate('created_at', Carbon::today())
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $output = [];
+        $no = 1;
+        foreach ($penyewaankamar as $row) {
+            // status pembayaran
+            if ($row->status_pembayaran == "completed") {
+                $status_pembayaran = "<span class='badge bg-success'>Lunas</span>";
+            } elseif ($row->status_pembayaran == "pending") {
+                $status_pembayaran = "<span class='badge bg-warning text-light'>Belum Lunas</span>";
+            } elseif ($row->status_pembayaran == "failed") {
+                $status_pembayaran = "<span class='badge bg-danger'>Dibatalkan</span>";
+            }
+
+            // status
+            if ($row->status == 1) {
+                $status = "<span class='badge bg-success'>Sedang Menyewa</span>";
+            } else {
+                $status = "<span class='badge bg-danger'>-</span>";
+            }
+
+            $output[] = [
+                'nomor' => "<strong>" . $no++ . "</strong>",
+                'tanggal_masuk' => Carbon::parse($row->tanggal_masuk)->format("d-m-Y H:i"),
+                'tanggal_keluar' => Carbon::parse($row->tanggal_keluar)->format("d-m-Y H:i"),
+                'nama_penyewa' => $row->penyewas->namalengkap,
+                'nomor_kamar' => $row->lokasis->nomor_kamar,
+                'tipe_kamar' => $row->tipekamar,
+                'mitra' => $row->mitras->mitra,
+                'jenissewa' => $row->jenissewa,
+                'status_pembayaran' => $status_pembayaran,
+                'status' => $status,
+            ];
+        }
+
+        return response()->json([
+            'data' => $output
+        ]);
     }
     public function detaildata(Lantai $lantai)
     {
