@@ -67,7 +67,8 @@
                                 </select>
                             </div>
                         </div>
-                        <table class="table table-light table-hover border-0 m-0" id="datatablePenyewaanKamar" style="width: 100%; white-space: nowrap">
+                        <table class="table table-light table-hover border-0 m-0" id="datatablePenyewaanKamar"
+                            style="width: 100%; white-space: nowrap">
                             <thead>
                                 <tr>
                                     <th scope="col">No</th>

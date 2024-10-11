@@ -160,7 +160,7 @@ class MainController extends Controller
                 $pulangkantamu = '';
             }
 
-            // status pembayaran
+            // status
             if ($row->status == 1) {
                 $status = "<span class='badge bg-success'>Sedang Menyewa</span>";
                 if (Carbon::now() > Carbon::parse($row->tanggal_keluar)) {

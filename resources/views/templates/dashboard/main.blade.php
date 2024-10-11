@@ -119,7 +119,7 @@
     <script>
         $(document).ready(function() {
             $("#trigger-button").on("click", function() {
-                var listMenu = $("#sidebar-menu > .list-menu")
+                var listMenu = $("#menu > .list-menu")
 
                 if (listMenu.hasClass("show")) {
                     listMenu.removeClass("show");

@@ -47,6 +47,7 @@ Route::group(['middleware' => 'auth'], function () {
     // dasbor
     Route::get('/dasbor', [MainController::class, 'index'])->name('dasbor');
     Route::get('/dasbor/{lantai:id}', [MainController::class, 'detaildata'])->name('dasbor.detaillantai');
+    Route::post('/dasbor/datatablepenyewaankamar', [MainController::class, 'datatablepenyewaankamar'])->name('dasbor.datatablepenyewaankamar');
     Route::get('/dasbor/detailpenyewa/{penyewa:id}', [MainController::class, 'detailpenyewa'])->name('dasbor.detailpenyewa');
 
     // // Lantai
@@ -191,10 +192,10 @@ Route::group(['middleware' => 'auth'], function () {
 
     // manajemen menu
     // menu
-    Route::get('/menu', [MenuMainController::class, 'index'])->name('menu');
-    Route::post('/menu/datatablemenu', [MenuMainController::class, 'datatablemenu'])->name('menu.datatablemenu');
-    Route::get('/menu/edit/{id}', [MenuMainController::class, 'edit'])->name('menu.edit');
-    Route::post('/menu/edit', [MenuMainController::class, 'update'])->name('menu.update');
+    // Route::get('/menu', [MenuMainController::class, 'index'])->name('menu');
+    // Route::post('/menu/datatablemenu', [MenuMainController::class, 'datatablemenu'])->name('menu.datatablemenu');
+    // Route::get('/menu/edit/{id}', [MenuMainController::class, 'edit'])->name('menu.edit');
+    // Route::post('/menu/edit', [MenuMainController::class, 'update'])->name('menu.update');
 
     // // scan
     // // penggunaan barang inventaris
