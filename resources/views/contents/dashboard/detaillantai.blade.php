@@ -283,7 +283,8 @@
                                                     <td>Sisa</td>
                                                     <td>:</td>
                                                     <td class="fw-bold text-danger" style="text-align: right;">
-                                                        {{ $row->jumlah_penyewa }} Mahasiswa/i</td>
+                                                        {{ intval($row->kapasitas) - intval($row->jumlah_penyewa) }}
+                                                        Mahasiswa/i</td>
                                                 </tr>
 
                                                 @if (++$counter < $total)

@@ -1236,6 +1236,8 @@ class SewaController extends Controller
                         $diskon = 0;
                         $potongan_harga = 0;
                         $jumlah_pembayaran = 500000;
+
+                        $tagih = 3;
                     } else {
                         if (stripos($jenissewa, 'Harian') !== false) {
                             $tenggatwaktu = $this->check_out($tanggalmasuk_format);
@@ -1295,6 +1297,8 @@ class SewaController extends Controller
                                 $jumlah_pembayaran = $model_harga->bulanan - $potongan_harga;
                             }
                         }
+
+                        $tagih = 1;
                     }
 
                     if (intval($total_bayar) >= intval($jumlah_pembayaran)) {
@@ -1306,7 +1310,7 @@ class SewaController extends Controller
                     }
 
                     $model_post_pembayaran = new Pembayaran();
-                    $model_post_pembayaran->tagih_id = 1;
+                    $model_post_pembayaran->tagih_id = $tagih;
                     if (intval($total_bayar) > 0) {
                         $model_post_pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
                     }
@@ -1355,7 +1359,7 @@ class SewaController extends Controller
 
                             $transaksi = new Transaksi();
                             $transaksi->no_transaksi = $no_transaksi;
-                            $transaksi->tagih_id = 1;
+                            $transaksi->tagih_id = $tagih;
                             $transaksi->pembayaran_id = $model_post_pembayaran->id;
                             $transaksi->tanggal_transaksi = date('Y-m-d H:i:s');
                             $transaksi->jumlah_uang = $total_bayar;
