@@ -208,8 +208,7 @@
 
                         // Hitung total pemasukan dan pengeluaran
                         json.data.forEach(function(row) {
-                            totalPenyewaTerbaru += parseFloat(row.jumlah_uang.replace(
-                                /[^0-9,-]+/g, "").replace(',', '.'));
+                            totalPenyewaTerbaru += parseFloat(row.total);
                         });
 
                         $("#total").text(json.total)
