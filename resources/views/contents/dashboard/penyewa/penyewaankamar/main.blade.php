@@ -13,7 +13,7 @@
                     </ol>
                 </nav>
 
-                {{-- Penyewaan kamar --}}
+                {{-- penyewaan kamar --}}
                 <div class="card border-0">
                     <div class="card-body">
                         <div class="row">

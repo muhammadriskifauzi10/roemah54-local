@@ -35,7 +35,7 @@
                                             $query->where('status', 1)->orWhere('status', 2);
                                         })->count() > 0)
                                     @foreach ($lantai->lokasis as $l)
-                                        @foreach (App\Models\Pembayaran::whereIn('mitra_id', [1, 2])->where('lokasi_id', $l->id)->where('status', '<>', 0)->get() as $p)
+                                        @foreach (App\Models\Pembayaran::whereIn('mitra_id', [1, 2])->where('lokasi_id', $l->id)->where('status', 1)->get() as $p)
                                             @if ($p->status_pembayaran == 'completed')
                                                 {{-- kamar terisi --}}
                                                 <a href="{{ route('dasbor.detailpenyewa', $p->penyewa_id) }}"
@@ -125,12 +125,12 @@
                                                     </div>
                                                 </a>
                                             @elseif ($p->status_pembayaran == 'pending')
-                                                {{-- booking / belum lunas --}}
+                                                {{-- belum lunas --}}
                                                 <a href="{{ route('dasbor.detailpenyewa', $p->penyewa_id) }}"
                                                     class="col-xl-6 kamar text-decoration-none mb-4">
                                                     <div class="card border-0 rounded" style="height: 100%">
                                                         <div class="card-header bg-warning text-light text-center fw-bold">
-                                                            Booking / Belum Lunas
+                                                            Belum Lunas
                                                         </div>
                                                         <div class="card-body d-flex flex-column">
                                                             <table style="width: 100%">
@@ -254,7 +254,7 @@
                                                 $kamar = App\Models\Lokasi::where('jenisruangan_id', 2)
                                                     ->where('lantai_id', $lantai->id)
                                                     ->whereIn('tipekamar_id', [5, 6, 7])
-                                                    ->whereColumn('lokasis.kapasitas', '>', 'lokasis.jumlah_penyewa')
+                                                    ->where('status', 1)
                                                     ->get();
                                                 $total = count($kamar);
                                                 $counter = 0;

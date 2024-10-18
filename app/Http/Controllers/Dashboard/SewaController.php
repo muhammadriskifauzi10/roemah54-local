@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Mail\PotonganhargaEmail;
+use App\Models\Booking;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Harga;
 use App\Models\Lokasi;
@@ -49,10 +50,9 @@ class SewaController extends Controller
     }
     public function create()
     {
+        $booking = htmlspecialchars(request()->input('booking'), true);
+
         $noktp = htmlspecialchars(request()->input('noktp'), true);
-        $total_bayar = htmlspecialchars(request()->input('total_bayar'), true);
-        $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), true);
-        $bukti_pembayaran = request()->file('bukti_pembayaran');
 
         if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->exists()) {
             $rulefotoktp = 'required|mimes:jpg,jpeg,png';
@@ -60,41 +60,40 @@ class SewaController extends Controller
             $rulefotoktp = 'mimes:jpg,jpeg,png';
         }
 
-        request()->merge([
-            'total_bayar' => str_replace('.', '', request()->input('total_bayar')),
-        ]);
+        if ($booking == "Y") {
+            $ruledari_tanggal = 'required|date';
+            $rulesampai_tanggal = 'required|date';
 
-        if (intval($total_bayar) > 0) {
-            if ($bukti_pembayaran == NULL) {
-                if ($metode_pembayaran == "None") {
-                    return redirect()->back()->with('messageFailed', 'File bukti pembayaran dan metode pembayaran wajib ditentukan');
-                } elseif ($metode_pembayaran != "None") {
-                    return redirect()->back()->with('messageFailed', 'File bukti pembayaran wajib ditentukan');
-                }
-            }
-
-            if ($metode_pembayaran == "None") {
-                return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
-            }
+            $rulenamalengkap = '';
+            $rulenoktp = 'nullable|numeric|digits:16';
+            $rulealamat = '';
+            $rulejeniskelamin = '';
+            $rulefotoktp = 'mimes:jpg,jpeg,png';
+            $ruletanggalmmasuk = 'date';
         } else {
-            if ($bukti_pembayaran != NULL) {
-                if ($metode_pembayaran == "None") {
-                    return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi dan metode pembayaran wajib ditentukan');
-                } elseif ($metode_pembayaran != "None") {
-                    return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi');
-                }
-            }
+            $ruledari_tanggal = '';
+            $rulesampai_tanggal = '';
 
-            if ($metode_pembayaran != "None") {
-                return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi dan file bukti pembayaran wajib ditentukan');
-            }
+            $rulenamalengkap = 'required';
+            $rulenoktp = 'required|numeric|digits:16';
+            $rulealamat = 'required';
+            $rulejeniskelamin = [
+                function ($attribute, $value, $fail) {
+                    if ($value == "Pilih Jenis Kelamin") {
+                        $fail('Kolom ini wajib dipilih');
+                    }
+                },
+            ];
+            $ruletanggalmmasuk = 'required|date';
         }
 
         $validator = Validator::make(request()->all(), [
-            'tanggalmasuk' => 'required|date',
+            'dari_tanggal' => $ruledari_tanggal,
+            'sampai_tanggal' => $rulesampai_tanggal,
+            'tanggalmasuk' => $ruletanggalmmasuk,
             'jumlahhari' => 'nullable|numeric',
-            'namalengkap' => 'required',
-            'noktp' => 'required|numeric|digits:16',
+            'namalengkap' => $rulenamalengkap,
+            'noktp' => $rulenoktp,
             'nohp' => 'required|regex:/^08[0-9]{8,}$/',
             'lantai' => [
                 function ($attribute, $value, $fail) {
@@ -127,17 +126,13 @@ class SewaController extends Controller
             'fotoktp' => $rulefotoktp,
             'total_bayar' => 'nullable|numeric',
             'diskon' => 'nullable|numeric|min:0|max:100',
-            'alamat' => 'required',
-            'jenis_kelamin' => [
-                function ($attribute, $value, $fail) {
-                    if ($value == "Pilih Jenis Kelamin") {
-                        $fail('Kolom ini wajib dipilih');
-                    }
-                },
-            ],
+            'alamat' => $rulealamat,
+            'jenis_kelamin' => $rulejeniskelamin,
             'bukti_pembayaran' => 'mimes:jpg,jpeg,png',
             // 'tipe_pembayaran' => 'required',
         ], [
+            'dari_tanggal.required' => 'Kolom ini wajib diisi',
+            'sampai_tanggal.required' => 'Kolom ini wajib diisi',
             'tanggalmasuk.required' => 'Kolom ini wajib diisi',
             'tanggalmasuk.date' => 'Kolom ini wajib diisi',
             'namalengkap.required' => 'Kolom ini wajib diisi',
@@ -170,16 +165,48 @@ class SewaController extends Controller
             $tanggalmasuk_format = Carbon::parse($tanggalmasuk)->format('Y-m-d H:i');
             $namalengkap = htmlspecialchars(request()->input('namalengkap'), true);
             $nohp = htmlspecialchars(request()->input('nohp'), true);
-            // $lantai = htmlspecialchars(request()->input('lantai'), true);
             $kamar = htmlspecialchars(request()->input('kamar'), true);
             $jenissewa = request()->input('jenissewa');
             $mitra = request()->input('mitra');
             $jenis_kelamin = htmlspecialchars(request()->input('jenis_kelamin'), true);
             $alamat = htmlspecialchars(request()->input('alamat'), true);
             $fotoktp = request()->file('fotoktp');
-
             $model_kamar = Lokasi::where('id', $kamar)->first();
             $model_harga = Harga::where('tipekamar_id', (int)$model_kamar->tipekamar_id)->where('mitra_id', (int)$mitra)->first();
+
+            // metode pembayaran
+            $total_bayar = htmlspecialchars(request()->input('total_bayar'), true);
+            $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), true);
+            $bukti_pembayaran = request()->file('bukti_pembayaran');
+            request()->merge([
+                'total_bayar' => str_replace('.', '', request()->input('total_bayar')),
+            ]);
+
+            if (intval($total_bayar) > 0) {
+                if ($bukti_pembayaran == NULL) {
+                    if ($metode_pembayaran == "None") {
+                        return redirect()->back()->with('messageFailed', 'File bukti pembayaran dan metode pembayaran wajib ditentukan');
+                    } elseif ($metode_pembayaran != "None") {
+                        return redirect()->back()->with('messageFailed', 'File bukti pembayaran wajib ditentukan');
+                    }
+                }
+
+                if ($metode_pembayaran == "None") {
+                    return redirect()->back()->with('messageFailed', 'Metode pembayaran wajib ditentukan');
+                }
+            } else {
+                if ($bukti_pembayaran != NULL) {
+                    if ($metode_pembayaran == "None") {
+                        return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi dan metode pembayaran wajib ditentukan');
+                    } elseif ($metode_pembayaran != "None") {
+                        return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi');
+                    }
+                }
+
+                if ($metode_pembayaran != "None") {
+                    return redirect()->back()->with('messageFailed', 'Pembayaran wajib diisi dan file bukti pembayaran wajib ditentukan');
+                }
+            }
 
             if ($total_bayar) {
                 $total_bayar = str_replace(".", "", $total_bayar);
@@ -187,6 +214,9 @@ class SewaController extends Controller
                 $total_bayar = 0;
             }
 
+            if ($jenis_kelamin == "Pilih Jenis Kelamin") {
+                $jenis_kelamin = NULL;
+            }
             if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->exists()) {
                 $penyewa = Penyewa::create([
                     'namalengkap' => $namalengkap,
@@ -198,15 +228,17 @@ class SewaController extends Controller
                     'operator_id' => auth()->user()->id,
                 ]);
 
-                $fotoktp = "penyewa" . "-" . $penyewa->id . "." .  request()->file('fotoktp')->getClientOriginalExtension();
-                $file = request()->file('fotoktp');
-                $tujuan_upload = 'img/ktp/umum';
-                $file->move($tujuan_upload, $fotoktp);
+                if (request()->file('fotoktp')) {
+                    $fotoktp = "penyewa" . "-" . $penyewa->id . "." .  request()->file('fotoktp')->getClientOriginalExtension();
+                    $file = request()->file('fotoktp');
+                    $tujuan_upload = 'img/ktp/umum';
+                    $file->move($tujuan_upload, $fotoktp);
 
-                Penyewa::where('id', $penyewa->id)->update([
-                    'fotoktp' => $fotoktp,
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
+                    Penyewa::where('id', $penyewa->id)->update([
+                        'fotoktp' => $fotoktp,
+                        'updated_at' => date("Y-m-d H:i:s"),
+                    ]);
+                }
             } else {
                 $penyewa = Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->first();
 
@@ -304,28 +336,66 @@ class SewaController extends Controller
                 $status_kamar = 2;
             }
 
-            $pembayaran = new Pembayaran();
-            $pembayaran->tagih_id = 1;
-            if (intval($total_bayar) > 0) {
-                $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
+            if ($booking == "Y") {
+                $dari_tanggal = htmlspecialchars(request()->input('dari_tanggal'), true);
+                $sampai_tanggal = htmlspecialchars(request()->input('sampai_tanggal'), true);
+
+                $daritanggal_format = Carbon::parse($dari_tanggal)->format('Y-m-d H:i');
+                $sampaitanggal_format = Carbon::parse($sampai_tanggal)->format('Y-m-d H:i');
+                $catatan = htmlspecialchars(request()->input('catatan'), true);
+
+                $pembayaran = new Pembayaran();
+                $pembayaran->tagih_id = 1;
+                if (intval($total_bayar) > 0) {
+                    $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
+                }
+                $pembayaran->lokasi_id = $kamar;
+                $pembayaran->mitra_id = $mitra;
+                $pembayaran->tipekamar_id = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->id;
+                $pembayaran->tipekamar = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->tipekamar;
+                $pembayaran->jenissewa = $jenissewa;
+                $pembayaran->jumlah_pembayaran = intval($jumlah_pembayaran) + intval($potongan_harga);
+                $pembayaran->diskon = $diskon;
+                $pembayaran->potongan_harga = intval($potongan_harga);
+                $pembayaran->total_bayar = $total_bayar;
+                $pembayaran->kurang_bayar = intval($jumlah_pembayaran) - intval($total_bayar);
+                $pembayaran->status_pembayaran = $status_pembayaran;
+                $pembayaran->status = 2;
+                $pembayaran->operator_id = auth()->user()->id;
+                $post = $pembayaran->save();
+
+                $booking = new Booking();
+                $booking->pembayaran_id = $pembayaran->id;
+                $booking->dari_tanggal = $daritanggal_format;
+                $booking->sampai_tanggal = $sampaitanggal_format;
+                $booking->lokasi_id = $kamar;
+                $booking->catatan = $catatan;
+                $booking->operator_id = auth()->user()->id;
+                $booking->save();
+            } else {
+                $pembayaran = new Pembayaran();
+                $pembayaran->tagih_id = 1;
+                if (intval($total_bayar) > 0) {
+                    $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
+                }
+                $pembayaran->tanggal_masuk = $tanggalmasuk_format;
+                $pembayaran->tanggal_keluar = $tenggatwaktu;
+                $pembayaran->penyewa_id = $penyewa->id;
+                $pembayaran->lokasi_id = $kamar;
+                $pembayaran->mitra_id = $mitra;
+                $pembayaran->tipekamar_id = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->id;
+                $pembayaran->tipekamar = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->tipekamar;
+                $pembayaran->jenissewa = $jenissewa;
+                $pembayaran->jumlah_pembayaran = intval($jumlah_pembayaran) + intval($potongan_harga);
+                $pembayaran->diskon = $diskon;
+                $pembayaran->potongan_harga = intval($potongan_harga);
+                $pembayaran->total_bayar = $total_bayar;
+                $pembayaran->kurang_bayar = intval($jumlah_pembayaran) - intval($total_bayar);
+                $pembayaran->status_pembayaran = $status_pembayaran;
+                $pembayaran->status = 1;
+                $pembayaran->operator_id = auth()->user()->id;
+                $post = $pembayaran->save();
             }
-            $pembayaran->tanggal_masuk = $tanggalmasuk_format;
-            $pembayaran->tanggal_keluar = $tenggatwaktu;
-            $pembayaran->penyewa_id = $penyewa->id;
-            $pembayaran->lokasi_id = $kamar;
-            $pembayaran->mitra_id = $mitra;
-            $pembayaran->tipekamar_id = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->id;
-            $pembayaran->tipekamar = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->tipekamar;
-            $pembayaran->jenissewa = $jenissewa;
-            $pembayaran->jumlah_pembayaran = intval($jumlah_pembayaran) + intval($potongan_harga);
-            $pembayaran->diskon = $diskon;
-            $pembayaran->potongan_harga = intval($potongan_harga);
-            $pembayaran->total_bayar = $total_bayar;
-            $pembayaran->kurang_bayar = intval($jumlah_pembayaran) - intval($total_bayar);
-            $pembayaran->status_pembayaran = $status_pembayaran;
-            $pembayaran->status = 1;
-            $pembayaran->operator_id = auth()->user()->id;
-            $post = $pembayaran->save();
 
             if ($post) {
 
@@ -376,15 +446,20 @@ class SewaController extends Controller
                     }
                 }
 
-                Lokasi::where('id', $kamar)->increment('jumlah_penyewa');
-                Lokasi::where('id', $kamar)->update([
-                    'status' => $status_kamar,
-                    'operator_id' => auth()->user()->id,
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
+                if ($booking != "Y") {
+                    DB::commit();
+                    return redirect()->route('dasbor')->with('messageSuccess', 'Kamar berhasil di booking');
+                } else {
 
-                DB::commit();
-                return redirect()->route('dasbor')->with('messageSuccess', 'Penyewaan kamar berhasil ditambahkan');
+                    Lokasi::where('id', $kamar)->increment('jumlah_penyewa');
+                    Lokasi::where('id', $kamar)->update([
+                        'status' => $status_kamar,
+                        'operator_id' => auth()->user()->id,
+                        'updated_at' => date("Y-m-d H:i:s"),
+                    ]);
+                    DB::commit();
+                    return redirect()->route('dasbor')->with('messageSuccess', 'Penyewaan kamar berhasil ditambahkan');
+                }
             }
         } catch (Exception $e) {
             DB::rollBack();
@@ -1456,19 +1531,35 @@ class SewaController extends Controller
         if (request()->ajax()) {
             $lantai = htmlspecialchars(request()->input('lantai'), ENT_QUOTES, 'UTF-8');
             if (Lantai::where('id', (int)$lantai)->exists()) {
-                $kamar = Lokasi::where('jenisruangan_id', 2)->where('lantai_id', (int)$lantai)
-                    ->whereNotIn('tipekamar_id', [5, 6])
-                    ->where('status', 0)->get();
+                $now = Carbon::now();
+
+                $kamar = DB::table('lokasis as l')
+                    ->leftJoin('bookings as b', 'l.id', '=', 'b.lokasi_id')
+                    ->select('l.id', 'l.nomor_kamar', 'l.tipekamar_id', 'l.lantai_id', 'b.dari_tanggal', 'b.sampai_tanggal')
+                    ->where('l.jenisruangan_id', 2)
+                    ->where('l.lantai_id', (int)$lantai)
+                    ->whereNotIn('l.tipekamar_id', [5, 6, 7])
+                    ->where('l.status', 0)
+                    ->where(function ($query) use ($now) {
+                        // Cek jika tidak ada booking atau booking di luar rentang dari_tanggal dan sampai_tanggal
+                        $query->whereNull('b.dari_tanggal')
+                        ->orWhere(function ($query) use ($now) {
+                            $query->where('b.dari_tanggal', '>', $now)
+                            ->orWhere('b.sampai_tanggal', '<', $now);
+                        });
+                    })
+                    ->get();
 
                 $selectkamar = [];
                 foreach ($kamar as $row) {
-                    $selectkamar[] = '<option value="' . $row->id . '">Nomor Kamar: ' . $row->nomor_kamar . ' | Tipe Kamar: ' . $row->tipekamars->tipekamar . '</option>';
+                    $selectkamar[] = '<option value="' . $row->id . '">Nomor Kamar: ' . $row->nomor_kamar . ' | Tipe Kamar: ' . Tipekamar::where('id', $row->tipekamar_id)->first()->tipekamar . '</option>';
                 }
 
                 $response = [
                     'status' => 200,
                     'message' => 'success',
                     'data' => [
+                        'now' => $now,
                         'namalantai' => Lantai::where('id', (int)$lantai)->first()->namalantai,
                         'dataHTML' => implode(" ", $selectkamar)
                     ]

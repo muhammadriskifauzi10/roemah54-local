@@ -71,6 +71,67 @@
                                 <form action="{{ route('postsewa') }}" autocomplete="off" method="POST"
                                     enctype="multipart/form-data">
                                     @csrf
+                                    {{-- booking --}}
+                                    <div class="d-flex justify-content-end mb-3">
+                                        <label for="y" class="form-label fw-bold me-3 noselect">
+                                            Booking?
+                                        </label>
+                                        <div class="form-check-inline">
+                                            <input class="form-check-input" type="checkbox" name="booking" id="y"
+                                                value="Y" {{ old('booking') == 'Y' ? 'checked' : '' }}
+                                                onchange="onBooking()">
+                                            <label class="form-check-label noselect" for="y">
+                                                Ya
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div id="input-booking" hidden>
+                                        <div class="row justify-content-end">
+                                            <div class="col-lg-6">
+                                                <div class="card border-2 border-dark mb-3">
+                                                    <div class="card-body">
+                                                        {{-- dari tanggal --}}
+                                                        <div class="mb-3">
+                                                            <label for="dari_tanggal" class="form-label fw-bold">Dari
+                                                                Tanggal
+                                                                <sup class="text-danger">*</sup></label>
+                                                            <input type="datetime-local"
+                                                                class="form-control @error('dari_tanggal') is-invalid @enderror"
+                                                                name="dari_tanggal" id="dari_tanggal"
+                                                                value="{{ old('dari_tanggal') }}">
+                                                            @error('dari_tanggal')
+                                                                <div class="invalid-feedback">
+                                                                    {{ $message }}
+                                                                </div>
+                                                            @enderror
+                                                        </div>
+
+                                                        {{-- sampai tanggal --}}
+                                                        <div class="mb-3">
+                                                            <label for="sampai_tanggal" class="form-label fw-bold">Sampai
+                                                                Tanggal <sup class="text-danger">*</sup></label>
+                                                            <input type="datetime-local"
+                                                                class="form-control @error('sampai_tanggal') is-invalid @enderror"
+                                                                name="sampai_tanggal" id="sampai_tanggal"
+                                                                value="{{ old('sampai_tanggal') }}">
+                                                            @error('sampai_tanggal')
+                                                                <div class="invalid-feedback">
+                                                                    {{ $message }}
+                                                                </div>
+                                                            @enderror
+                                                        </div>
+
+                                                        {{-- catatan --}}
+                                                        <div>
+                                                            <label for="catatan" class="form-label fw-bold">Catatan</label>
+                                                            <textarea class="form-control" name="catatan" id="catatan">{{ old('catatan') }}</textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     {{-- data diri --}}
                                     <div class="card border-2 border-dark mb-3">
                                         <div class="card-header bg-dark text-light">
@@ -93,7 +154,8 @@
                                                 </div>
                                                 {{-- Nama --}}
                                                 <div class="col-lg-6 mb-3">
-                                                    <label for="namalengkap" class="form-label fw-bold">Nama Lengkap</label>
+                                                    <label for="namalengkap" class="form-label fw-bold">Nama
+                                                        Lengkap</label>
                                                     <input type="text"
                                                         class="form-control @error('namalengkap') is-invalid @enderror"
                                                         name="namalengkap" id="namalengkap"
@@ -455,6 +517,8 @@
 
 @push('myscripts')
     <script>
+        onBooking()
+
         $(document).ready(function() {
             $("#btn-submit").on("click", function() {
                 $("#btn-submit").html(`
@@ -501,6 +565,26 @@
                 $("#gambarktpModal").modal("hide")
             });
         })
+
+        function onBooking() {
+            var booking = $("input[name='booking']").is(':checked')
+
+            if (booking) {
+                $("#tanggalmasuk").attr("disabled", true)
+                $("#tanggalmasuk").removeClass("is-invalid")
+
+                // input booking
+                $("#input-booking").removeAttr("hidden")
+            } else {
+                $("#tanggalmasuk").removeAttr("disabled")
+
+                $("#dari_tanggal").removeClass("is-invalid")
+                $("#sampai_tanggal").removeClass("is-invalid")
+
+                // input booking
+                $("#input-booking").attr("hidden", true)
+            }
+        }
 
         function onNoKtp(event) {
             const noktp = event.target.value;

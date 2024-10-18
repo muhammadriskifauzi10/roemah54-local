@@ -59,6 +59,7 @@ class MainController extends Controller
     public function datatablepenyewaankamar()
     {
         $penyewaankamar = Pembayaran::whereDate('created_at', Carbon::today())
+            ->where('status', 1)
             ->latest()
             ->get();
 
@@ -96,7 +97,8 @@ class MainController extends Controller
         }
 
         return response()->json([
-            'data' => $output
+            'data' => $output,
+            'total' => $penyewaankamar->count(),
         ]);
     }
     public function detaildata(Lantai $lantai)

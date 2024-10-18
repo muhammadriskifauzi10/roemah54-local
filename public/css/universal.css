@@ -184,6 +184,13 @@ h6 {
     text-align: right !important;
 }
 
+.noselect {
+    user-select: none; /* For modern browsers */
+    -webkit-user-select: none; /* For Safari */
+    -moz-user-select: none; /* For Firefox */
+    -ms-user-select: none; /* For Internet Explorer/Edge */
+}
+
 /* Android */
 @media (max-width: 576px) {
 }
