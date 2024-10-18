@@ -59,7 +59,6 @@ class MainController extends Controller
     public function datatablepenyewaankamar()
     {
         $penyewaankamar = Pembayaran::whereDate('created_at', Carbon::today())
-            ->where('status', 1)
             ->latest()
             ->get();
 
