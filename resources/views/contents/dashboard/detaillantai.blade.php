@@ -318,8 +318,8 @@
         function requestBatalkanPembayaran(e, pembayaran_id) {
             e.preventDefault()
             Swal.fire({
-                title: 'Batalkan Booking Kamar?',
-                text: "Anda yakin ingin membatalkan booking kamar ini!",
+                title: 'Batalkan Kamar?',
+                text: "Anda yakin ingin membatalkan kamar ini!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#25d366', // Warna hijau

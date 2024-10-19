@@ -63,6 +63,7 @@ class MainController extends Controller
             ->when($status !== "Pilih Status", function ($query) use ($status) {
                 $query->where('status', $status);
             })
+            ->where('status', '<>', 2)
             ->orderBy('tanggal_masuk', 'DESC')
             ->get();
 

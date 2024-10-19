@@ -93,7 +93,17 @@
                                                     <tr>
                                                         <td>Harian</td>
                                                         <td class="text-right fw-bold">
-                                                            {{ DB::table('lokasis as k')->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')->join('lantais as l', 'k.lantai_id', '=', 'l.id')->join('penyewas as s', 'p.penyewa_id', '=', 's.id')->where('l.id', $row->id)->where('p.tagih_id', 1)->where('p.jenissewa', 'Harian')->where('k.status', 1)->where('p.status_pembayaran', '!=', 'failed')->where('p.status', 1)->distinct('k.id')->count('k.id') }}
+                                                            {{ DB::table('lokasis as k')
+                                                            ->join('pembayarans as p', 'k.id', '=', 'p.lokasi_id')
+                                                            ->join('lantais as l', 'k.lantai_id', '=', 'l.id')
+                                                            ->join('penyewas as s', 'p.penyewa_id', '=', 's.id')
+                                                            ->where('l.id', $row->id)->where('p.tagih_id', 1)
+                                                            ->where('p.jenissewa', 'Harian')
+                                                            ->where('k.status', 1)
+                                                            ->where('p.status_pembayaran', '!=', 'failed')
+                                                            ->where('p.status', 1)
+                                                            ->distinct('k.id')
+                                                            ->count('k.id') }}
                                                             Kamar
                                                         </td>
                                                     </tr>

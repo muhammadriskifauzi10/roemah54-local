@@ -53,8 +53,7 @@ class SewaController extends Controller
         $booking = htmlspecialchars(request()->input('booking'), true);
 
         $noktp = htmlspecialchars(request()->input('noktp'), true);
-
-        if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->exists()) {
+        if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->where('status', '<>', 2)->exists()) {
             $rulefotoktp = 'required|mimes:jpg,jpeg,png';
         } else {
             $rulefotoktp = 'mimes:jpg,jpeg,png';
@@ -70,6 +69,8 @@ class SewaController extends Controller
             $rulejeniskelamin = '';
             $rulefotoktp = 'mimes:jpg,jpeg,png';
             $ruletanggalmmasuk = 'date';
+
+            $status_penyewa = 2;
         } else {
             $ruledari_tanggal = '';
             $rulesampai_tanggal = '';
@@ -85,6 +86,8 @@ class SewaController extends Controller
                 },
             ];
             $ruletanggalmmasuk = 'required|date';
+
+            $status_penyewa = 1;
         }
 
         $validator = Validator::make(request()->all(), [
@@ -225,6 +228,7 @@ class SewaController extends Controller
                     'jenis_kelamin' => $jenis_kelamin,
                     'alamat' => $alamat,
                     'fotoktp' => "",
+                    'status' => $status_penyewa,
                     'operator_id' => auth()->user()->id,
                 ]);
 
@@ -263,7 +267,7 @@ class SewaController extends Controller
                     'jenis_kelamin' => $jenis_kelamin,
                     'alamat' => $alamat,
                     'fotoktp' => $fotoktp,
-                    'status' => 1,
+                    'status' => $status_penyewa,
                     'operator_id' => auth()->user()->id,
                     'updated_at' => date("Y-m-d H:i:s"),
                 ]);
@@ -333,7 +337,7 @@ class SewaController extends Controller
                 $status_kamar = 1;
             } else {
                 $status_pembayaran = "pending";
-                $status_kamar = 2;
+                // $status_kamar = 2;
             }
 
             if ($booking == "Y") {
@@ -349,6 +353,7 @@ class SewaController extends Controller
                 if (intval($total_bayar) > 0) {
                     $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
                 }
+                $pembayaran->penyewa_id = $penyewa->id;
                 $pembayaran->lokasi_id = $kamar;
                 $pembayaran->mitra_id = $mitra;
                 $pembayaran->tipekamar_id = Tipekamar::where('id', $model_harga->tipekamar_id)->first()->id;
@@ -364,14 +369,14 @@ class SewaController extends Controller
                 $pembayaran->operator_id = auth()->user()->id;
                 $post = $pembayaran->save();
 
-                $booking = new Booking();
-                $booking->pembayaran_id = $pembayaran->id;
-                $booking->dari_tanggal = $daritanggal_format;
-                $booking->sampai_tanggal = $sampaitanggal_format;
-                $booking->lokasi_id = $kamar;
-                $booking->catatan = $catatan;
-                $booking->operator_id = auth()->user()->id;
-                $booking->save();
+                $model_booking = new Booking();
+                $model_booking->pembayaran_id = $pembayaran->id;
+                $model_booking->dari_tanggal = $daritanggal_format;
+                $model_booking->sampai_tanggal = $sampaitanggal_format;
+                $model_booking->lokasi_id = $kamar;
+                $model_booking->catatan = $catatan;
+                $model_booking->operator_id = auth()->user()->id;
+                $model_booking->save();
             } else {
                 $pembayaran = new Pembayaran();
                 $pembayaran->tagih_id = 1;
@@ -446,11 +451,10 @@ class SewaController extends Controller
                     }
                 }
 
-                if ($booking != "Y") {
+                if ($booking == "Y") {
                     DB::commit();
                     return redirect()->route('dasbor')->with('messageSuccess', 'Kamar berhasil di booking');
                 } else {
-
                     Lokasi::where('id', $kamar)->increment('jumlah_penyewa');
                     Lokasi::where('id', $kamar)->update([
                         'status' => $status_kamar,
@@ -1543,10 +1547,10 @@ class SewaController extends Controller
                     ->where(function ($query) use ($now) {
                         // Cek jika tidak ada booking atau booking di luar rentang dari_tanggal dan sampai_tanggal
                         $query->whereNull('b.dari_tanggal')
-                        ->orWhere(function ($query) use ($now) {
-                            $query->where('b.dari_tanggal', '>', $now)
-                            ->orWhere('b.sampai_tanggal', '<', $now);
-                        });
+                            ->orWhere(function ($query) use ($now) {
+                                $query->where('b.dari_tanggal', '>', $now)
+                                    ->orWhere('b.sampai_tanggal', '<', $now);
+                            });
                     })
                     ->get();
 
