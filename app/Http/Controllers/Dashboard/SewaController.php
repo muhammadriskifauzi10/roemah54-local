@@ -524,7 +524,7 @@ class SewaController extends Controller
                         'operator_id' => auth()->user()->id,
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
-
+                    
                     $response = [
                         'status' => 200,
                         'message' => 'success',
@@ -1558,7 +1558,7 @@ class SewaController extends Controller
         if (request()->ajax()) {
             $lantai = htmlspecialchars(request()->input('lantai'), ENT_QUOTES, 'UTF-8');
             if (Lantai::where('id', (int)$lantai)->exists()) {
-                $now = Carbon::now()->addDay(4);
+                $now = Carbon::now();
 
                 $kamar = DB::table('lokasis as l')
                     ->leftJoin('bookings as b', 'l.id', '=', 'b.lokasi_id')
@@ -1568,17 +1568,14 @@ class SewaController extends Controller
                     ->whereNotIn('l.tipekamar_id', [5, 6, 7])
                     ->where('l.status', 0)
                     ->where(function ($query) use ($now) {
+                        // Kondisi untuk memeriksa booking dari_tanggal atau sampai_tanggal
                         $query->whereNull('b.dari_tanggal')
                             ->orWhere(function ($query) use ($now) {
-                                $query->where(function ($query) use ($now) {
-                                    // Kondisi untuk menghindari tanggal sekarang berada di rentang dari_tanggal dan sampai_tanggal
-                                    $query->where('b.dari_tanggal', '>=', $now)
-                                        ->orWhere('b.sampai_tanggal', '<=', $now);
-                                });
+                                $query->whereDate('b.dari_tanggal', '>', $now)
+                                    ->orWhereDate('b.sampai_tanggal', '<', $now);
                             });
                     })
                     ->get();
-
 
                 $selectkamar = [];
                 foreach ($kamar as $row) {

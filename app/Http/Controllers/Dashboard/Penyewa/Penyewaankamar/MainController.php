@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard\Penyewa\Penyewaankamar;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
 use App\Models\Lokasi;
 use App\Models\Mitra;
 use App\Models\Pembayaran;
@@ -25,7 +26,7 @@ class MainController extends Controller
 
         $pembayaran = Pembayaran::first()->tanggal_masuk;
         $tanggal_masuk = Carbon::parse($pembayaran)->format('Y-m-d');
-        
+
         $data = [
             'judul' => 'Penyewaan Kamar',
             'penyewa' => $penyewa,
