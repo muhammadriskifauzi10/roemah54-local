@@ -443,7 +443,7 @@
                             </div>
                         </div>
                     </div>
-                    {{-- Detail Penyewaan --}}
+                    {{-- detail penyewaan --}}
                     <div class="col-xl-3 mb-3 detailpenyewaan">
                         <div class="card border-0">
                             <div class="card-header bg-green text-light text-center fw-bold">

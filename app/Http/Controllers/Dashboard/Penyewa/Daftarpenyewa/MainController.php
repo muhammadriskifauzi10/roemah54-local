@@ -51,7 +51,7 @@ class MainController extends Controller
                   }
 
                   // if (auth()->user()->can('edit daftarpenyewa')) {
-                        $editdaftarpenyewa = '
+                  $editdaftarpenyewa = '
                         <a href="' . route('daftarpenyewa.edit', encrypt($row->id)) . '" class="btn btn-warning text-light fw-bold d-flex align-items-center justify-content-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
                                 <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001"/>
@@ -75,14 +75,14 @@ class MainController extends Controller
 
                   $output[] = [
                         'nomor' => "<strong>" . $no++ . "</strong>",
-                        'nama_lengkap' => $row->namalengkap,
-                        'no_ktp' => $row->noktp,
-                        'no_hp' => $row->nohp,
+                        'nama_lengkap' => $row->namalengkap ? $row->namalengkap : '-',
+                        'no_ktp' => $row->noktp ? $row->noktp : '-',
+                        'no_hp' => $row->nohp ? $row->nohp : '-',
                         'jenis_kelamin' => $jenis_kelamin,
-                        'alamat' => nl2br($row->alamat),
-                        'jenis_penyewa' => $row->jenis_penyewa,
+                        'alamat' => nl2br($row->alamat) ? nl2br($row->alamat) : '-',
+                        'jenis_penyewa' => $row->jenis_penyewa ? $row->jenis_penyewa : '-',
                         'status' => $status,
-                        'foto_ktp' => $fotoktp,
+                        'foto_ktp' => $fotoktp ? $fotoktp : '-',
                         'aksi' => $aksi
                   ];
             }

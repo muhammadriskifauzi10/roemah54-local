@@ -14,6 +14,7 @@ use App\Http\Controllers\Dashboard\Lokasi\MainController as LokasiMainController
 use App\Http\Controllers\Dashboard\MainController;
 use App\Http\Controllers\Dashboard\Menu\MainController as MenuMainController;
 use App\Http\Controllers\Dashboard\Pengguna\MainController as PenggunaMainController;
+use App\Http\Controllers\Dashboard\Penyewa\Booking\MainController as BookingMainController;
 use App\Http\Controllers\Dashboard\Penyewa\Daftarpenyewa\MainController as DaftarpenyewaMainController;
 use App\Http\Controllers\Dashboard\Penyewa\Dendacheckout\MainController as DendacheckoutMainController;
 use App\Http\Controllers\Dashboard\Penyewa\Penyewaankamar\MainController as PenyewaankamarMainController;
@@ -64,6 +65,12 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/daftarpenyewa/datatabledaftarpenyewa', [DaftarpenyewaMainController::class, 'datatabledaftarpenyewa'])->name('daftarpenyewa.datatabledaftarpenyewa');
     Route::get('/daftarpenyewa/edit/{id}', [DaftarpenyewaMainController::class, 'edit'])->name('daftarpenyewa.edit');
     Route::put('/daftarpenyewa/edit/{id}', [DaftarpenyewaMainController::class, 'update'])->name('daftarpenyewa.update');
+
+    // booking
+    Route::get('/booking', [BookingMainController::class, 'index'])->name('booking');
+    Route::post('/booking/datatablebooking', [BookingMainController::class, 'datatablebooking'])->name('booking.datatablebooking');
+    Route::post('/getmodalselesaikanbooking', [BookingMainController::class, 'getmodalselesaikanbooking'])->name('getmodalselesaikanbooking');
+    Route::post('/postselesaikanbooking', [BookingMainController::class, 'postselesaikanbooking'])->name('postselesaikanbooking');
 
     // Penyewaan Kamar
     Route::get('/penyewaankamar', [PenyewaankamarMainController::class, 'index'])->name('penyewaankamar');

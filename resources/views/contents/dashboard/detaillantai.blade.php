@@ -367,12 +367,12 @@
         }
 
         // bayar kamar
-        function openModalBayarKamar(e, transaksi_id) {
+        function openModalBayarKamar(e, pembayaran_id) {
             e.preventDefault()
 
             var formData = new FormData();
             formData.append("token", $("#token").val());
-            formData.append("transaksi_id", transaksi_id);
+            formData.append("pembayaran_id", pembayaran_id);
 
             $.ajax({
                 url: "{{ route('getmodalselesaikanpembayarankamar') }}",

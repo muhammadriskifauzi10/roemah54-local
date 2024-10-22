@@ -46,6 +46,10 @@
                 class="list-group-item list-group-item-action border-0 {{ request()->is('daftarpenyewa*') ? 'active' : '' }}">
                 Daftar Penyewa
             </a>
+            <a href="{{ route('booking') }}"
+                class="list-group-item list-group-item-action border-0 {{ request()->is('booking*') ? 'active' : '' }}">
+                Daftar Penyewa Booking
+            </a>
             <a href="{{ route('penyewaankamar') }}"
                 class="list-group-item list-group-item-action border-0 {{ request()->is('penyewaankamar*') ? 'active' : '' }}">
                 Penyewaan Kamar

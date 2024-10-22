@@ -63,7 +63,6 @@ class SewaController extends Controller
             $ruledari_tanggal = 'required|date';
             $rulesampai_tanggal = 'required|date';
 
-            $rulenamalengkap = '';
             $rulenoktp = 'nullable|numeric|digits:16';
             $rulealamat = '';
             $rulejeniskelamin = '';
@@ -75,7 +74,6 @@ class SewaController extends Controller
             $ruledari_tanggal = '';
             $rulesampai_tanggal = '';
 
-            $rulenamalengkap = 'required';
             $rulenoktp = 'required|numeric|digits:16';
             $rulealamat = 'required';
             $rulejeniskelamin = [
@@ -95,7 +93,7 @@ class SewaController extends Controller
             'sampai_tanggal' => $rulesampai_tanggal,
             'tanggalmasuk' => $ruletanggalmmasuk,
             'jumlahhari' => 'nullable|numeric',
-            'namalengkap' => $rulenamalengkap,
+            'namalengkap' => 'required',
             'noktp' => $rulenoktp,
             'nohp' => 'required|regex:/^08[0-9]{8,}$/',
             'lantai' => [
@@ -220,7 +218,8 @@ class SewaController extends Controller
             if ($jenis_kelamin == "Pilih Jenis Kelamin") {
                 $jenis_kelamin = NULL;
             }
-            if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->exists()) {
+
+            if (empty($noktp)) {
                 $penyewa = Penyewa::create([
                     'namalengkap' => $namalengkap,
                     'noktp' => $noktp,
@@ -244,33 +243,58 @@ class SewaController extends Controller
                     ]);
                 }
             } else {
-                $penyewa = Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->first();
+                if (!Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->exists()) {
+                    $penyewa = Penyewa::create([
+                        'namalengkap' => $namalengkap,
+                        'noktp' => $noktp,
+                        'nohp' => $nohp,
+                        'jenis_kelamin' => $jenis_kelamin,
+                        'alamat' => $alamat,
+                        'fotoktp' => "",
+                        'status' => $status_penyewa,
+                        'operator_id' => auth()->user()->id,
+                    ]);
 
-                if (request()->file('fotoktp')) {
-                    // Hapus file KTP lama jika ada
-                    if (file_exists('img/ktp/umum/' . $penyewa->fotoktp)) {
-                        unlink('img/ktp/umum/' . $penyewa->fotoktp);
+                    if (request()->file('fotoktp')) {
+                        $fotoktp = "penyewa" . "-" . $penyewa->id . "." .  request()->file('fotoktp')->getClientOriginalExtension();
+                        $file = request()->file('fotoktp');
+                        $tujuan_upload = 'img/ktp/umum';
+                        $file->move($tujuan_upload, $fotoktp);
+
+                        Penyewa::where('id', $penyewa->id)->update([
+                            'fotoktp' => $fotoktp,
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]);
+                    }
+                } else {
+                    $penyewa = Penyewa::where('noktp', $noktp)->where('jenis_penyewa', 'Umum')->first();
+
+                    if (request()->file('fotoktp')) {
+                        // Hapus file KTP lama jika ada
+                        if (file_exists('img/ktp/umum/' . $penyewa->fotoktp)) {
+                            unlink('img/ktp/umum/' . $penyewa->fotoktp);
+                        }
+
+                        $fotoktp = "penyewa" . "-" . $penyewa->id . "." . request()->file('fotoktp')->getClientOriginalExtension();
+                        $file = request()->file('fotoktp');
+                        $tujuan_upload = 'img/ktp/umum';
+                        $file->move($tujuan_upload, $fotoktp);
+                    } else {
+                        $fotoktp = $penyewa->fotoktp;
                     }
 
-                    $fotoktp = "penyewa" . "-" . $penyewa->id . "." . request()->file('fotoktp')->getClientOriginalExtension();
-                    $file = request()->file('fotoktp');
-                    $tujuan_upload = 'img/ktp/umum';
-                    $file->move($tujuan_upload, $fotoktp);
-                } else {
-                    $fotoktp = $penyewa->fotoktp;
+                    Penyewa::where('id', $penyewa->id)->update([
+                        'namalengkap' => $namalengkap,
+                        'noktp' => $noktp,
+                        'nohp' => $nohp,
+                        'jenis_kelamin' => $jenis_kelamin,
+                        'alamat' => $alamat,
+                        'fotoktp' => $fotoktp,
+                        'status' => $status_penyewa,
+                        'operator_id' => auth()->user()->id,
+                        'updated_at' => date("Y-m-d H:i:s"),
+                    ]);
                 }
-
-                Penyewa::where('id', $penyewa->id)->update([
-                    'namalengkap' => $namalengkap,
-                    'noktp' => $noktp,
-                    'nohp' => $nohp,
-                    'jenis_kelamin' => $jenis_kelamin,
-                    'alamat' => $alamat,
-                    'fotoktp' => $fotoktp,
-                    'status' => $status_penyewa,
-                    'operator_id' => auth()->user()->id,
-                    'updated_at' => date("Y-m-d H:i:s"),
-                ]);
             }
 
             if (stripos($jenissewa, 'Harian') !== false) {
@@ -403,7 +427,6 @@ class SewaController extends Controller
             }
 
             if ($post) {
-
                 if (intval($total_bayar) > 0) {
                     // Generate no transaksi
                     $tahun = date('Y');
@@ -532,9 +555,9 @@ class SewaController extends Controller
     public function getmodalselesaikanpembayarankamar()
     {
         if (request()->ajax()) {
-            $transaksi_id = htmlspecialchars(request()->input('transaksi_id'), ENT_QUOTES, 'UTF-8');
-            if (Pembayaran::where('id', $transaksi_id)->exists()) {
-                $model_pembayaran = Pembayaran::where('id', $transaksi_id)->first();
+            $pembayaran_id = htmlspecialchars(request()->input('pembayaran_id'), ENT_QUOTES, 'UTF-8');
+            if (Pembayaran::where('id', $pembayaran_id)->exists()) {
+                $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
 
                 if ($model_pembayaran->diskon != 0) {
                     $label = '
@@ -587,7 +610,7 @@ class SewaController extends Controller
                 $dataHTML = '
                 <form class="modal-content" onsubmit="requestSelesaikanPembayaranKamar(event)" autocomplete="off" id="formselesaikanpembayarankamar">
                     <input type="hidden" name="__token" value="' . request()->input('token') . '" id="token">
-                    <input type="hidden" name="transaksi_id" value="' . $model_pembayaran->id . '" id="transaksi_id">
+                    <input type="hidden" name="pembayaran_id" value="' . $model_pembayaran->id . '" id="pembayaran_id">
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="universalModalLabel">Bayar Kamar</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -913,16 +936,16 @@ class SewaController extends Controller
     public function selesaikanpembayarankamar()
     {
         if (request()->ajax()) {
-            $transaksi_id = htmlspecialchars(request()->input('transaksi_id'), ENT_QUOTES, 'UTF-8');
+            $pembayaran_id = htmlspecialchars(request()->input('pembayaran_id'), ENT_QUOTES, 'UTF-8');
             $total_bayar = htmlspecialchars(request()->input('total_bayar'), ENT_QUOTES, 'UTF-8');
 
             $pembayaran = $total_bayar ? str_replace('.', '', $total_bayar) : 0;
             $metode_pembayaran = htmlspecialchars(request()->input('metode_pembayaran'), ENT_QUOTES, 'UTF-8');
 
-            if (Pembayaran::where('id', $transaksi_id)->exists()) {
+            if (Pembayaran::where('id', $pembayaran_id)->exists()) {
                 try {
                     DB::beginTransaction();
-                    $model_pembayaran = Pembayaran::where('id', $transaksi_id)->first();
+                    $model_pembayaran = Pembayaran::where('id', $pembayaran_id)->first();
 
                     $jumlah_pembayaran = intval($model_pembayaran->jumlah_pembayaran) - intval($model_pembayaran->potongan_harga);
 
@@ -1535,7 +1558,7 @@ class SewaController extends Controller
         if (request()->ajax()) {
             $lantai = htmlspecialchars(request()->input('lantai'), ENT_QUOTES, 'UTF-8');
             if (Lantai::where('id', (int)$lantai)->exists()) {
-                $now = Carbon::now();
+                $now = Carbon::now()->addDay(4);
 
                 $kamar = DB::table('lokasis as l')
                     ->leftJoin('bookings as b', 'l.id', '=', 'b.lokasi_id')
@@ -1545,14 +1568,17 @@ class SewaController extends Controller
                     ->whereNotIn('l.tipekamar_id', [5, 6, 7])
                     ->where('l.status', 0)
                     ->where(function ($query) use ($now) {
-                        // Cek jika tidak ada booking atau booking di luar rentang dari_tanggal dan sampai_tanggal
                         $query->whereNull('b.dari_tanggal')
                             ->orWhere(function ($query) use ($now) {
-                                $query->where('b.dari_tanggal', '>', $now)
-                                    ->orWhere('b.sampai_tanggal', '<', $now);
+                                $query->where(function ($query) use ($now) {
+                                    // Kondisi untuk menghindari tanggal sekarang berada di rentang dari_tanggal dan sampai_tanggal
+                                    $query->where('b.dari_tanggal', '>=', $now)
+                                        ->orWhere('b.sampai_tanggal', '<=', $now);
+                                });
                             });
                     })
                     ->get();
+
 
                 $selectkamar = [];
                 foreach ($kamar as $row) {
@@ -1563,7 +1589,7 @@ class SewaController extends Controller
                     'status' => 200,
                     'message' => 'success',
                     'data' => [
-                        'now' => $now,
+                        'now' => $now->format('Y-m-d'),
                         'namalantai' => Lantai::where('id', (int)$lantai)->first()->namalantai,
                         'dataHTML' => implode(" ", $selectkamar)
                     ]
