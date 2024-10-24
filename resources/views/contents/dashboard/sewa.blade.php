@@ -99,7 +99,7 @@
                                                             <input type="datetime-local"
                                                                 class="form-control @error('dari_tanggal') is-invalid @enderror"
                                                                 name="dari_tanggal" id="dari_tanggal"
-                                                                value="{{ old('dari_tanggal') }}">
+                                                                value="{{ old('dari_tanggal') }}" onchange="selectLantai()">
                                                             @error('dari_tanggal')
                                                                 <div class="invalid-feedback">
                                                                     {{ $message }}
@@ -114,7 +114,8 @@
                                                             <input type="datetime-local"
                                                                 class="form-control @error('sampai_tanggal') is-invalid @enderror"
                                                                 name="sampai_tanggal" id="sampai_tanggal"
-                                                                value="{{ old('sampai_tanggal') }}">
+                                                                value="{{ old('sampai_tanggal') }}"
+                                                                onchange="selectLantai()">
                                                             @error('sampai_tanggal')
                                                                 <div class="invalid-feedback">
                                                                     {{ $message }}
@@ -124,7 +125,8 @@
 
                                                         {{-- catatan --}}
                                                         <div>
-                                                            <label for="catatan" class="form-label fw-bold">Catatan</label>
+                                                            <label for="catatan"
+                                                                class="form-label fw-bold">Catatan</label>
                                                             <textarea class="form-control" name="catatan" id="catatan">{{ old('catatan') }}</textarea>
                                                         </div>
                                                     </div>
@@ -628,6 +630,8 @@
             `)
             var formData = new FormData();
             formData.append("lantai", $("#lantai").val());
+            formData.append("min", $("#dari_tanggal").val());
+            formData.append("max", $("#sampai_tanggal").val());
 
             $.ajax({
                 url: "{{ route('getselectlantaikamar') }}",

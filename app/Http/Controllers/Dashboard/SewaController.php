@@ -524,7 +524,7 @@ class SewaController extends Controller
                         'operator_id' => auth()->user()->id,
                         'updated_at' => date("Y-m-d H:i:s"),
                     ]);
-                    
+
                     $response = [
                         'status' => 200,
                         'message' => 'success',
@@ -1557,36 +1557,110 @@ class SewaController extends Controller
     {
         if (request()->ajax()) {
             $lantai = htmlspecialchars(request()->input('lantai'), ENT_QUOTES, 'UTF-8');
+            $min = htmlspecialchars(request()->input('min'), ENT_QUOTES, 'UTF-8');
+            $minFormat = Carbon::parse($min)->format('Y-m-d');
+            $max = htmlspecialchars(request()->input('max'), ENT_QUOTES, 'UTF-8');
+            $maxFormat = Carbon::parse($max)->format('Y-m-d');
             if (Lantai::where('id', (int)$lantai)->exists()) {
-                $now = Carbon::now();
+                // $now = Carbon::now();
 
-                $kamar = DB::table('lokasis as l')
-                    ->leftJoin('bookings as b', 'l.id', '=', 'b.lokasi_id')
-                    ->select('l.id', 'l.nomor_kamar', 'l.tipekamar_id', 'l.lantai_id', 'b.dari_tanggal', 'b.sampai_tanggal')
-                    ->where('l.jenisruangan_id', 2)
-                    ->where('l.lantai_id', (int)$lantai)
-                    ->whereNotIn('l.tipekamar_id', [5, 6, 7])
-                    ->where('l.status', 0)
-                    ->where(function ($query) use ($now) {
-                        // Kondisi untuk memeriksa booking dari_tanggal atau sampai_tanggal
-                        $query->whereNull('b.dari_tanggal')
-                            ->orWhere(function ($query) use ($now) {
-                                $query->whereDate('b.dari_tanggal', '>', $now)
-                                    ->orWhereDate('b.sampai_tanggal', '<', $now);
-                            });
-                    })
-                    ->get();
+                // $kamar = DB::table('lokasis as l')
+                //     ->leftJoin('bookings as b', 'l.id', '=', 'b.lokasi_id')
+                //     ->select(
+                //         'l.id',
+                //         'l.nomor_kamar',
+                //         'l.tipekamar_id',
+                //         'l.lantai_id',
+                //         'l.status',
+                //         'b.dari_tanggal',
+                //         'b.sampai_tanggal'
+                //     )
+                //     ->where('l.jenisruangan_id', 2)
+                //     ->where('l.lantai_id', (int)$lantai) // Pastikan $lantai adalah integer
+                //     ->whereNotIn('l.tipekamar_id', [5, 6, 7])
+                //     ->where('l.status', 0)
+                //     ->where(function ($query) use ($minFormat, $maxFormat) {
+                //         $query->whereNull('b.dari_tanggal')
+                //             ->orWhere(function ($subQuery) use ($minFormat, $maxFormat) {
+                //                 $subQuery->whereRaw("CAST(b.dari_tanggal AS DATE) >= ?", [$minFormat])
+                //                     ->whereRaw("CAST(b.dari_tanggal AS DATE) <= ?", [$maxFormat])
+                //                     ->orWhereRaw("CAST(b.sampai_tanggal AS DATE) >= ?", [$minFormat])
+                //                     ->whereRaw("CAST(b.sampai_tanggal AS DATE) <= ?", [$maxFormat]);
+                //             });
+                //     })
+                //     ->get();
+
+                // $kamar = DB::table('lokasis as l')
+                //     ->leftJoin('bookings as b', 'l.id', '=', 'b.lokasi_id')
+                //     ->select(
+                //         'l.id',
+                //         'l.nomor_kamar',
+                //         'l.tipekamar_id',
+                //         'l.lantai_id',
+                //         'b.dari_tanggal',
+                //         'b.sampai_tanggal'
+                //     )
+                //     ->where('l.jenisruangan_id', 2)
+                //     ->where('l.lantai_id', (int)$lantai)
+                //     ->whereNotIn('l.tipekamar_id', [5, 6, 7])
+                //     ->where('l.status', 0)
+                //     ->where(function ($query) use ($now, $minFormat, $maxFormat) {
+                //         $query->whereNull('b.dari_tanggal')
+                //             ->orWhere(function ($query) use ($now, $minFormat, $maxFormat) {
+                //                 $query->whereDate('b.dari_tanggal', '>', '2024-10-22')
+                //                     ->whereDate('b.sampai_tanggal', '<', '2024-10-26');
+                //             });
+                //     })
+                //     ->get();
+
+                // dd($kamar);
+                // $kamar = Lokasi::where('jenisruangan_id', 2)
+                //     ->where('lantai_id', (int)$lantai)
+                //     ->whereNotIn('tipekamar_id', [5, 6, 7])
+                //     ->where('status', 0)
+                //     ->get();
+
+                $kamar = DB::select("
+                SELECT
+                    l.id, 
+                    l.nomor_kamar, 
+                    l.tipekamar_id, 
+                    l.lantai_id, 
+                    l.status,
+                    b.dari_tanggal, 
+                    b.sampai_tanggal
+                    FROM lokasis as l
+                    LEFT JOIN bookings b ON l.id = b.lokasi_id
+                    WHERE l.jenisruangan_id = 2
+                    AND l.lantai_id = " . (int)$lantai . "
+                    AND l.tipekamar_id NOT IN (5, 6, 7)
+                    AND l.status = 0
+                    AND
+                    (
+                    (b.dari_tanggal IS NULL)
+                    OR
+                    NOT (
+                        (CAST(b.dari_tanggal AS DATE) >= '" . $minFormat . "' AND CAST(b.dari_tanggal AS DATE) <= '" . $maxFormat . "')
+                        OR
+                        (CAST(b.sampai_tanggal AS DATE) >= '" . $minFormat . "' AND CAST(b.sampai_tanggal AS DATE) <= '" . $maxFormat . "')
+                        )
+                    )
+                ");
 
                 $selectkamar = [];
                 foreach ($kamar as $row) {
+                    // if (Booking::where('lokasi_id', (int)$row->id)->whereDate('dari_tanggal', '>', $now)
+                    //     ->orWhereDate('sampai_tanggal', '<', $now)->where('status', 1)->exists()
+                    // ) {
                     $selectkamar[] = '<option value="' . $row->id . '">Nomor Kamar: ' . $row->nomor_kamar . ' | Tipe Kamar: ' . Tipekamar::where('id', $row->tipekamar_id)->first()->tipekamar . '</option>';
+                    // }
                 }
 
                 $response = [
                     'status' => 200,
                     'message' => 'success',
                     'data' => [
-                        'now' => $now->format('Y-m-d'),
+                        // 'now' => $now->format('Y-m-d'),
                         'namalantai' => Lantai::where('id', (int)$lantai)->first()->namalantai,
                         'dataHTML' => implode(" ", $selectkamar)
                     ]
