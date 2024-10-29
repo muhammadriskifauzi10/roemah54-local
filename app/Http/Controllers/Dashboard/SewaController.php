@@ -361,7 +361,7 @@ class SewaController extends Controller
                 $status_kamar = 1;
             } else {
                 $status_pembayaran = "pending";
-                // $status_kamar = 2;
+                $status_kamar = 2;
             }
 
             if ($booking == "Y") {
