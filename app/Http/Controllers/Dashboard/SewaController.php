@@ -125,7 +125,7 @@ class SewaController extends Controller
                 },
             ],
             'fotoktp' => $rulefotoktp,
-            'total_bayar' => 'nullable|numeric',
+            'total_bayar' => 'nullable',
             'diskon' => 'nullable|numeric|min:0|max:100',
             'alamat' => $rulealamat,
             'jenis_kelamin' => $rulejeniskelamin,
