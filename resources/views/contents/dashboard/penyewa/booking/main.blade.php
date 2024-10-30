@@ -383,7 +383,6 @@
                 contentType: false,
                 beforeSend: function() {
                     $("#universalModalContent").empty();
-                    $("#universalModalContent").removeClass("modal-xl");
                     $("#universalModalContent").addClass("modal-dialog-centered");
                     $("#universalModalContent").append(`
                         <div class="modal-content">
@@ -433,7 +432,7 @@
                 $("#errorTotalBayar").text("")
             }
 
-            // foto ktp
+            // bukti pembayaran
             if ($('#bukti_pembayaran')[0].files.length === 0) {
                 $("#bukti_pembayaran").addClass("is-invalid")
                 $("#errorBuktiPembayaran").text("Kolom ini wajib diisi")
@@ -485,6 +484,249 @@
                     },
                 });
             }
+        }
+
+        function onGetToken(pembayaran_id) {
+
+            let error = 0;
+
+            if (($("#potongan_harga").val() == "" || $("#potongan_harga").val() == 0)) {
+                // potongan harga
+                $("#potongan_harga").addClass("is-invalid")
+                $("#errorPotonganHarga").text("Kolom ini wajib diisi")
+                error++
+            } else {
+                // potongan harga
+                $("#potongan_harga").removeClass("is-invalid")
+                $("#errorPotonganHarga").text("")
+            }
+
+            if (error == 0) {
+
+                $("#btnRequestGetToken").prop("disabled", true)
+
+                var formData = new FormData();
+                formData.append("potongan_harga", $("#potongan_harga").val());
+                formData.append("pembayaran_id", pembayaran_id);
+
+                $.ajax({
+                    url: "{{ route('sendemailverifikasipotonganharga') }}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.message == "success") {
+                            $("#btnRequestGetToken").prop("disabled", false)
+
+                            // potongan harga
+                            $("#potongan_harga").removeClass("is-invalid")
+                            $("#potongan_harga").val(0)
+                            $("#errorPotonganHarga").text("")
+                        } else {
+                            $("#btnRequestGetToken").prop("disabled", false)
+
+                            Swal.fire({
+                                title: "Opps, terjadi kesalahan",
+                                icon: "error"
+                            })
+                        }
+                    },
+                });
+            }
+        }
+
+        function onVerifikasi(pembayaran_id) {
+            $("#btnRequestVerifikasi").prop("disabled", true)
+
+            var formData = new FormData();
+            formData.append("pembayaran_id", pembayaran_id);
+            formData.append("kode", $("#kode").val());
+
+            $.ajax({
+                url: "{{ route('verifikasipotonganharga') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.message == "completed") {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        $("#labelpembayaran").empty()
+                        $("#labelpembayaran").append(response['label'])
+
+                        $("#kode").val("")
+
+                        Swal.fire({
+                            title: "Berhasil",
+                            text: "Token valid, berhasil menerapkan potongan harga",
+                            icon: "success"
+                        })
+
+                        setTimeout(function() {
+                            location.reload()
+                        }, 1000)
+                    } else if (response.message == "success") {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        $("#labelpembayaran").empty()
+                        $("#labelpembayaran").append(response['label'])
+
+                        $("#kode").val("")
+
+                        Swal.fire({
+                            title: "Berhasil",
+                            text: "Token valid, berhasil menerapkan potongan harga",
+                            icon: "success"
+                        })
+                    } else if (response.message == "error") {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        Swal.fire({
+                            title: "Token tidak ditemukan",
+                            icon: "error"
+                        })
+                    } else {
+                        $("#btnRequestVerifikasi").prop("disabled", false)
+
+                        Swal.fire({
+                            title: "Opps, terjadi kesalahan",
+                            icon: "error"
+                        })
+                    }
+                },
+            });
+        }
+
+        // Isi Token
+        function openModalBayarIsiTokenKamar(e, transaksi_id) {
+            e.preventDefault()
+            $("#universalModalContent").empty();
+            $("#universalModalContent").addClass("modal-dialog-centered");
+            $("#universalModalContent").append(`
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="loading">
+                            <span class="dots pulse1"></span>
+                            <span class="dots pulse2"></span>
+                            <span class="dots pulse3"></span>
+                        </div>
+                    </div>
+                </div>
+                `);
+
+            $("#universalModal").modal("show");
+
+            setTimeout(function() {
+                $("#universalModalContent").html(
+                    `
+                    <form class="modal-content" onsubmit="requestBayarIsiTokenKamar(event)" autocomplete="off" enctype="multipart/form-data" id="bayarisitokenkamar">
+                        <input type="hidden" name="__token" value="` +
+                    $("meta[name='csrf-token']").attr("content") +
+                    `" id="token">
+                        <input type="hidden" name="transaksi_id" value="` + transaksi_id + `" id="transaksi_id">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="universalModalLabel">Isi Token Listrik</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="foto_kwh_lama" class="form-label fw-bold">Foto KWH Lama <sup class="red">*</sup></label>
+                                <input type="file" class="form-control" name="foto_kwh_lama" id="foto_kwh_lama">
+                                <span class="text-danger" id="errorFotoKWHLama"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="jumlah_kwh_lama" class="form-label fw-bold">Jumlah KWH Lama <sup class="red">*</sup></label>
+                                <input type="number" class="form-control" name="jumlah_kwh_lama" id="jumlah_kwh_lama" placeholder="0">
+                                <span class="text-danger" id="errorJumlahKWHLama"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="foto_kwh_baru" class="form-label fw-bold">Foto KWH Baru <sup class="red">*</sup></label>
+                                <input type="file" class="form-control" name="foto_kwh_baru" id="foto_kwh_baru">
+                                <span class="text-danger" id="errorFotoKWHBaru"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="jumlah_kwh_baru" class="form-label fw-bold">Jumlah KWH Baru <sup class="red">*</sup></label>
+                                <input type="number" class="form-control" name="jumlah_kwh_baru" id="jumlah_kwh_baru" placeholder="0">
+                                <span class="text-danger" id="errorJumlahKWHBaru"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="keterangan" class="form-label fw-bold">Keterangan <sup class="red">*</sup></label>
+                                <textarea class="form-control" name="keterangan" id="keterangan"></textarea>
+                                <span class="text-danger" id="errorKeterangan"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="jumlah_pembayaran" class="form-label fw-bold">Jumlah Pembayaran <sup class="red">*</sup></label>
+                                <div class="input-group" style="z-index: 0;">
+                                    <span class="input-group-text bg-success text-light fw-bold">RP</span>
+                                    <input type="text"
+                                        class="form-control formatrupiah"
+                                        name="jumlah_pembayaran" id="jumlah_pembayaran" value="0">
+                                </div>
+                                <span class="text-danger" id="errorJumlahPembayaran"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="bukti_pembayaran" class="form-label fw-bold">Bukti Pembayaran <sup class="red">*</sup></label>
+                                <input type="file" class="form-control" name="bukti_pembayaran" id="bukti_pembayaran">
+                                <span class="text-danger" id="errorBuktiPembayaran"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="cash" class="form-label fw-bold">
+                                    Metode Pembayaran
+                                </label>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="metode_pembayaran" id="cash"
+                                                value="Cash" checked>
+                                            <label class="form-check-label" for="cash">
+                                                Cash
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="metode_pembayaran" id="debit"
+                                                value="Debit">
+                                            <label class="form-check-label" for="debit">
+                                                Debit
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="metode_pembayaran" id="qris"
+                                                value="QRIS">
+                                            <label class="form-check-label" for="qris">
+                                                QRIS
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="metode_pembayaran" id="transfer"
+                                                value="Transfer">
+                                            <label class="form-check-label" for="transfer">
+                                                Transfer
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-success w-100" id="btnRequest">
+                                    Ya
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                `
+                );
+
+                // Money
+                $('.formatrupiah').maskMoney({
+                    allowNegative: false,
+                    precision: 0,
+                    thousands: '.'
+                });
+            }, 1000);
         }
     </script>
 @endpush
