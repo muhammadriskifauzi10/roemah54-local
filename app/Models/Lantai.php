@@ -21,4 +21,10 @@ class Lantai extends Model
     {
         return $this->hasMany(Lokasi::class)->where('jenisruangan_id', 2);
     }
+
+    public static function getName($id)
+    {
+        $data = self::where('id',$id)->first();
+        return $data ? $data->namalantai : null;
+    }
 }

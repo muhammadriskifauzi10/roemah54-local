@@ -197,6 +197,20 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/pengguna/aktifkanpengguna', [PenggunaMainController::class, 'aktifkanpengguna'])->name('pengguna.aktifkanpengguna');
     Route::put('/pengguna/updatepengguna/{id}', [PenggunaMainController::class, 'update'])->name('pengguna.updatepengguna');
 
+    Route::group(['prefix' => 'katering', 'namespace' => 'App\Http\Controllers\Dashboard\katering'], function () {
+        ///KATERING
+        Route::get('/', 'KateringController@index')->name('katering');
+        Route::post('/data', 'KateringController@kateringData')->name('katering.data');
+        Route::post('/getmodal/add', 'KateringController@getmodalAdd')->name('katering.getmodal.add');
+        Route::post('/add', 'KateringController@kateringAdd')->name('katering.add');
+
+        Route::post('/getmodal/edit', 'KateringController@getmodalEdit')->name('katering.getmodal.edit');
+        Route::post('/edit', 'KateringController@kateringEdit')->name('katering.edit');
+
+        Route::post('/delete', 'KateringController@kateringDelete')->name('katering.delete');
+        Route::get('/view/data/{id}', 'KateringController@kateringEditView')->name('katering.detail');
+    });
+
     // manajemen menu
     // menu
     // Route::get('/menu', [MenuMainController::class, 'index'])->name('menu');
